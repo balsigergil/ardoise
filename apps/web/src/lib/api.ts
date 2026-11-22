@@ -52,6 +52,23 @@ export async function request<T>(method: string, path: string, body?: unknown): 
   return (await res.json()) as T;
 }
 
+/** Raw JSON request with the CSRF header, for the sync transport (it reads errors itself). */
+export function rawRequest(
+  method: 'GET' | 'POST',
+  path: string,
+  body?: unknown,
+): Promise<Response> {
+  const headers: Record<string, string> = { accept: 'application/json' };
+  if (body !== undefined) headers['content-type'] = 'application/json';
+  if (!SAFE.has(method) && csrfToken) headers['x-csrf-token'] = csrfToken;
+  return fetch(path, {
+    method,
+    headers,
+    credentials: 'same-origin',
+    body: body === undefined ? undefined : JSON.stringify(body),
+  });
+}
+
 export const api = {
   get: <T>(path: string) => request<T>('GET', path),
   post: <T = void>(path: string, body: unknown = {}) => request<T>('POST', path, body),

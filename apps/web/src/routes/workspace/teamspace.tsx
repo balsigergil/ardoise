@@ -3,9 +3,9 @@ import {
   teamspaceRoles,
   type MemberDto,
   type Page,
-  type TeamspaceDto,
   type TeamspaceMemberDto,
   type TeamspaceRole,
+  type MutationInput,
 } from '@ardoise/shared';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
@@ -30,6 +30,7 @@ import {
 } from '@/components/ui/table';
 import { useMe } from '@/auth/session';
 import { api, pageQuery } from '@/lib/api';
+import { useMutate } from '@/sync/hooks';
 import { teamspaceQuery } from '@/lib/queries';
 import { TeamspaceForm } from './settings';
 
@@ -52,9 +53,9 @@ function AddMember({
       ),
     enabled: q.trim().length >= 2,
   });
+  const mutate = useMutate();
   const add = useMutation({
-    mutationFn: (userId: string) =>
-      api.post(`/api/workspaces/${workspaceId}/teamspaces/${teamspaceId}/members`, { userId }),
+    mutationFn: (userId: string) => mutate('teamspace.addMember', { teamspaceId, userId }),
     onSuccess: () => {
       setQ('');
       onAdded();
@@ -111,18 +112,23 @@ export function TeamspacePage({
   const refresh = async () => {
     await queryClient.invalidateQueries({ queryKey: ['workspaces', workspaceId, 'teamspaces'] });
   };
-  const join = useMutation({ mutationFn: () => api.post(`${base}/join`), onSuccess: refresh });
+  const mutate = useMutate();
+  const join = useMutation({
+    mutationFn: () => mutate('teamspace.join', { teamspaceId }),
+    onSuccess: refresh,
+  });
   const changeRole = useMutation({
     mutationFn: ({ userId, role }: { userId: string; role: TeamspaceRole }) =>
-      api.patch(`${base}/members/${userId}`, { role }),
+      mutate('teamspace.setMemberRole', { teamspaceId, userId, role }),
     onSettled: refresh,
   });
   const remove = useMutation({
-    mutationFn: (userId: string) => api.delete(`${base}/members/${userId}`),
+    mutationFn: (userId: string) => mutate('teamspace.removeMember', { teamspaceId, userId }),
     onSettled: refresh,
   });
   const update = useMutation({
-    mutationFn: (body: object) => api.patch<TeamspaceDto>(base, body),
+    mutationFn: (body: Omit<MutationInput['teamspace.update'], 'id'>) =>
+      mutate('teamspace.update', { id: teamspaceId, ...body }),
     onSuccess: async () => {
       setEditing(false);
       await refresh();

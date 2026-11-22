@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 import { describe, expect, it } from 'vitest';
-import { cacheControlFor, isSpaRoute } from './spa.js';
+import { cacheControlFor, isNoIndexRoute, isSpaRoute } from './spa.js';
 
 describe('isSpaRoute', () => {
   it.each([
@@ -35,5 +35,13 @@ describe('cacheControlFor', () => {
     expect(cacheControlFor('/index.html')).toBe('no-cache');
     expect(cacheControlFor('/favicon.svg')).toBe('no-cache');
     expect(cacheControlFor('/assets/logo.svg')).toBe('no-cache');
+  });
+});
+
+describe('isNoIndexRoute', () => {
+  it('marks public link pages only', () => {
+    expect(isNoIndexRoute('/share/abc')).toBe(true);
+    expect(isNoIndexRoute('/shared')).toBe(false);
+    expect(isNoIndexRoute('/w/1/p/2')).toBe(false);
   });
 });

@@ -27,3 +27,40 @@ afterEach(() => {
   localStorage.clear();
   document.documentElement.className = '';
 });
+
+// jsdom has no layout, so a real virtualizer renders nothing: render every row instead.
+vi.mock('@tanstack/react-virtual', () => ({
+  useVirtualizer: ({
+    count,
+    estimateSize,
+    getItemKey,
+  }: {
+    count: number;
+    estimateSize: (i: number) => number;
+    getItemKey?: (i: number) => string | number;
+  }) => ({
+    getTotalSize: () =>
+      Array.from({ length: count }, (_, i) => estimateSize(i)).reduce((a, b) => a + b, 0),
+    getVirtualItems: () =>
+      Array.from({ length: count }, (_, index) => ({
+        index,
+        key: getItemKey ? getItemKey(index) : index,
+        start: index * estimateSize(index),
+        size: estimateSize(index),
+      })),
+  }),
+}));
+
+// No server in unit tests: the poke socket never connects.
+class OfflineWebSocket {
+  static readonly OPEN = 1;
+  readyState = 0;
+  onopen: (() => void) | null = null;
+  onmessage: (() => void) | null = null;
+  onclose: (() => void) | null = null;
+  close() {
+    this.readyState = 3;
+  }
+  send() {}
+}
+vi.stubGlobal('WebSocket', OfflineWebSocket);

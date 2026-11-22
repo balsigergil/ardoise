@@ -16,3 +16,17 @@ export const safeStorage = {
     }
   },
 };
+
+export function readJson<T>(key: string): T | undefined {
+  const raw = safeStorage.get(key);
+  if (!raw) return undefined;
+  try {
+    return JSON.parse(raw) as T;
+  } catch {
+    return undefined;
+  }
+}
+
+export function writeJson(key: string, value: unknown): void {
+  safeStorage.set(key, JSON.stringify(value));
+}

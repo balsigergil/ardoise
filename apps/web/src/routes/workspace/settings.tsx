@@ -12,6 +12,8 @@ import {
   type TeamspaceVisibility,
   type WorkspaceDto,
   type WorkspaceRole,
+  newId,
+  type MutationInput,
 } from '@ardoise/shared';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Link, useRouter } from '@tanstack/react-router';
@@ -40,6 +42,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
 import { instanceInfoQuery, useMe } from '@/auth/session';
 import { api } from '@/lib/api';
+import { useMutate } from '@/sync/hooks';
 import { workspaceQuery, workspacesQuery } from '@/lib/queries';
 import { workspaceSettingsTabs, type WorkspaceSettingsTab } from './tabs';
 
@@ -47,9 +50,9 @@ function GeneralTab({ workspace }: { workspace: WorkspaceDto }) {
   const { t } = useTranslation();
   const queryClient = useQueryClient();
   const manage = canManageWorkspace(workspace.role);
+  const mutate = useMutate();
   const update = useMutation({
-    mutationFn: (body: { name: string; icon: string | null }) =>
-      api.patch<WorkspaceDto>(`/api/workspaces/${workspace.id}`, body),
+    mutationFn: (body: { name: string; icon: string | null }) => mutate('workspace.update', body),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: workspacesQuery.queryKey }),
   });
   return (
@@ -98,13 +101,14 @@ function MembersTab({ workspace }: { workspace: WorkspaceDto }) {
   );
   const refresh = () =>
     queryClient.invalidateQueries({ queryKey: ['workspaces', workspace.id, 'members'] });
+  const mutate = useMutate();
   const changeRole = useMutation({
     mutationFn: ({ userId, role }: { userId: string; role: WorkspaceRole }) =>
-      api.patch(`/api/workspaces/${workspace.id}/members/${userId}`, { role }),
+      mutate('member.setRole', { userId, role }),
     onSettled: refresh,
   });
   const remove = useMutation({
-    mutationFn: (userId: string) => api.delete(`/api/workspaces/${workspace.id}/members/${userId}`),
+    mutationFn: (userId: string) => mutate('member.remove', { userId }),
     onSuccess: async (_data, userId) => {
       if (userId === me.id) {
         await queryClient.invalidateQueries({ queryKey: workspacesQuery.queryKey });
@@ -430,9 +434,10 @@ function TeamspacesTab({ workspace }: { workspace: WorkspaceDto }) {
     [...queryKey, 'all'],
     `/api/workspaces/${workspace.id}/teamspaces`,
   );
+  const mutate = useMutate();
   const create = useMutation({
-    mutationFn: (body: object) =>
-      api.post<TeamspaceDto>(`/api/workspaces/${workspace.id}/teamspaces`, body),
+    mutationFn: (body: Omit<MutationInput['teamspace.create'], 'id'>) =>
+      mutate('teamspace.create', { id: newId(), ...body }),
     onSuccess: () => {
       setCreating(false);
       void queryClient.invalidateQueries({ queryKey });

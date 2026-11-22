@@ -29,3 +29,8 @@ export function cacheControlFor(path: string): string {
     ? 'public, max-age=31536000, immutable'
     : 'no-cache';
 }
+
+/** Public link pages are never indexed (PRODUCT §5). */
+export function isNoIndexRoute(path: string): boolean {
+  return path === '/share' || path.startsWith('/share/');
+}

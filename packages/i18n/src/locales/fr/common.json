@@ -92,7 +92,8 @@
     }
   },
   "status": {
-    "comingSoon": "Bientôt disponible"
+    "comingSoon": "Bientôt disponible",
+    "loading": "Chargement…"
   },
   "ui": {
     "close": "Fermer",
@@ -328,5 +329,122 @@
         "super_admins": "Seulement les super-admins"
       }
     }
+  },
+  "pages": {
+    "untitled": "Sans titre",
+    "title": "Titre de la page",
+    "tree": "Pages",
+    "newPrivate": "Nouvelle page privée",
+    "newIn": "Nouvelle page dans {{name}}",
+    "newSubpage": "Ajouter une sous-page",
+    "addSubpage": "Ajouter une sous-page à {{title}}",
+    "actionsFor": "Actions pour {{title}}",
+    "collapse": "Replier",
+    "expand": "Déplier",
+    "noSubpages": "Aucune page à l’intérieur",
+    "noPages": "Aucune page pour l’instant",
+    "loadFailed": "Chargement impossible. Réessayer",
+    "loadMore": "Afficher plus",
+    "loadMoreShared": "Afficher plus de pages partagées",
+    "addFavorite": "Ajouter aux favoris",
+    "removeFavorite": "Retirer des favoris",
+    "duplicate": "Dupliquer",
+    "moveTo": "Déplacer vers…",
+    "delete": "Mettre à la corbeille",
+    "trashed": "Déplacée dans la corbeille.",
+    "moveTitle": "Déplacer « {{title}} »",
+    "moveHint": "Choisissez un espace d’équipe, vos pages privées ou une autre page.",
+    "destinations": "Destinations",
+    "moveHere": "Déplacer vers {{name}}",
+    "breadcrumb": "Emplacement de la page",
+    "subpages": "Pages à l’intérieur",
+    "notFound": "Cette page n’est pas disponible",
+    "notFoundHint": "Elle a peut-être été supprimée, ou vous n’y avez pas accès.",
+    "locked": "Verrouillée",
+    "lockedHint": "Cette page est verrouillée. Déverrouillez-la depuis le menu de la page pour la modifier.",
+    "options": "Options de la page",
+    "style": "Style",
+    "fonts": {
+      "default": "Par défaut",
+      "serif": "Serif",
+      "mono": "Mono"
+    },
+    "fullWidth": "Pleine largeur",
+    "lock": "Verrouiller la page",
+    "unlock": "Déverrouiller la page",
+    "follow": "Suivre",
+    "unfollow": "Ne plus suivre",
+    "copyLink": "Copier le lien",
+    "linkCopied": "Lien copié.",
+    "inTrash": "Cette page est dans la corbeille.",
+    "contentSoon": "Le contenu des pages arrive avec l’éditeur.",
+    "icon": {
+      "add": "Ajouter une icône",
+      "change": "Changer l’icône",
+      "remove": "Retirer l’icône",
+      "choose": "Choisir une icône",
+      "custom": "Ou saisissez un emoji"
+    },
+    "cover": {
+      "add": "Ajouter une couverture",
+      "change": "Changer la couverture",
+      "remove": "Retirer la couverture",
+      "colors": {
+        "gray": "Gris",
+        "brown": "Brun",
+        "orange": "Orange",
+        "yellow": "Jaune",
+        "green": "Vert",
+        "blue": "Bleu",
+        "purple": "Violet",
+        "pink": "Rose",
+        "red": "Rouge"
+      },
+      "gradients": {
+        "dawn": "Dégradé aube",
+        "dusk": "Dégradé crépuscule",
+        "ocean": "Dégradé océan",
+        "forest": "Dégradé forêt"
+      }
+    }
+  },
+  "trash": {
+    "title": "Corbeille",
+    "description": "Les pages supprimées restent ici jusqu’à la fin de la durée de conservation.",
+    "search": "Rechercher dans la corbeille",
+    "empty": "La corbeille est vide.",
+    "deletedAt": "Supprimée le {{date}}",
+    "restore": "Restaurer",
+    "purge": "Supprimer définitivement",
+    "purgeTitle": "Supprimer définitivement ?",
+    "purgeDescription": "« {{title}} » et les pages qu’elle contient seront supprimées. Cette action est irréversible."
+  },
+  "share": {
+    "button": "Partager",
+    "title": "Partager",
+    "yourAccess": "Votre accès : {{level}}",
+    "add": "Ajouter des personnes, des espaces d’équipe ou tout le monde",
+    "addPlaceholder": "Nom, e-mail ou espace d’équipe…",
+    "suggestions": "Suggestions",
+    "teamspace": "Espace d’équipe",
+    "everyone": "Tout le monde dans {{name}}",
+    "whoHasAccess": "Qui a accès",
+    "teamspaceMembers": "Membres de {{name}}",
+    "privateOwner": "{{name}} (propriétaire)",
+    "inheritedFrom": "Hérité de {{title}}",
+    "grantedHere": "Accordé sur cette page",
+    "levelFor": "Niveau d’accès pour {{name}}",
+    "remove": "Retirer l’accès de {{name}}",
+    "restrict": "Restreindre l’accès à cette page",
+    "restrictHint": "Seules les personnes listées ici gardent l’accès ; l’accès hérité des pages parentes et de l’espace d’équipe s’arrête.",
+    "restrictedAbove": "L’accès est restreint à « {{title}} » : l’accès hérité s’arrête là.",
+    "publicLink": "Partager sur le web",
+    "publicLinkHint": "Toute personne disposant du lien peut voir cette page. Elle n’est pas indexée par les moteurs de recherche.",
+    "includeSubpages": "Inclure les sous-pages",
+    "recover": "Récupérer l’accès",
+    "recoverHint": "En tant que propriétaire de l’espace de travail, vous pouvez vous donner un accès complet. Cette action est enregistrée.",
+    "publicUnavailable": "Ce lien n’est pas disponible",
+    "publicUnavailableHint": "Le propriétaire de la page l’a peut-être désactivé.",
+    "publicFooter": "Partagé avec Ardoise"
   }
 }

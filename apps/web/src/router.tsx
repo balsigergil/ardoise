@@ -31,6 +31,8 @@ import { NewWorkspacePage, NoWorkspacePage } from '@/routes/workspace/new-worksp
 import { WorkspaceSettingsPage } from '@/routes/workspace/settings';
 import { workspaceSettingsTabs } from '@/routes/workspace/tabs';
 import { TeamspacePage } from '@/routes/workspace/teamspace';
+import { PageView } from '@/routes/workspace/page';
+import { SharedPage } from '@/routes/public/shared-page';
 
 export interface RouterContext {
   queryClient: QueryClient;
@@ -81,6 +83,18 @@ const resetRoute = createRoute({
   path: '/reset-password',
   component: ResetPasswordPage,
 });
+/** Public link pages (PRODUCT §5): no session needed. */
+const shareRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/share/$token',
+  validateSearch: z.object({ page: z.uuid().optional().catch(undefined) }),
+  component: function Share() {
+    const { token } = shareRoute.useParams();
+    const { page } = shareRoute.useSearch();
+    return <SharedPage token={token} pageId={page} />;
+  },
+});
+
 const inviteRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/invite',
@@ -227,18 +241,33 @@ const teamspaceRoute = createRoute({
   },
 });
 
+const pageRoute = createRoute({
+  getParentRoute: () => workspaceRoute,
+  path: '/p/$pageId',
+  component: function Page() {
+    const { workspaceId, pageId } = pageRoute.useParams();
+    return <PageView key={pageId} workspaceId={workspaceId} pageId={pageId} />;
+  },
+});
+
 const routeTree = rootRoute.addChildren([
   setupRoute,
   loginRoute,
   forgotRoute,
   resetRoute,
   inviteRoute,
+  shareRoute,
   authedRoute.addChildren([
     indexRoute,
     newWorkspaceRoute,
     accountRoute,
     adminRoute,
-    workspaceRoute.addChildren([workspaceHomeRoute, workspaceSettingsRoute, teamspaceRoute]),
+    workspaceRoute.addChildren([
+      workspaceHomeRoute,
+      workspaceSettingsRoute,
+      teamspaceRoute,
+      pageRoute,
+    ]),
   ]),
 ]);
 

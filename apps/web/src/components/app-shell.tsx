@@ -4,8 +4,9 @@ import { AppSidebar } from '@/components/app-sidebar';
 import { LanguageMenu, ThemeMenu } from '@/components/preferences-menu';
 import { Separator } from '@/components/ui/separator';
 import { SidebarInset, SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
+import { SyncProvider } from '@/sync/sync-provider';
 
-/** App shell: sidebar + main area. */
+/** App shell: sidebar + main area, inside the workspace's sync store when there is one. */
 export function AppShell({
   workspaceId,
   children,
@@ -13,7 +14,7 @@ export function AppShell({
   workspaceId?: string | undefined;
   children: ReactNode;
 }) {
-  return (
+  const shell = (
     <SidebarProvider>
       <AppSidebar workspaceId={workspaceId} />
       <SidebarInset>
@@ -31,6 +32,7 @@ export function AppShell({
       </SidebarInset>
     </SidebarProvider>
   );
+  return workspaceId ? <SyncProvider workspaceId={workspaceId}>{shell}</SyncProvider> : shell;
 }
 
 /** Standard page body with a title. */

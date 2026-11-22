@@ -1,15 +1,13 @@
 // SPDX-License-Identifier: AGPL-3.0-only
-import { useQuery } from '@tanstack/react-query';
 import { Link } from '@tanstack/react-router';
 import { FileStack, Import, Settings, Trash2, type LucideIcon } from 'lucide-react';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { SidebarTree } from '@/components/page-tree/sidebar-tree';
+import { TrashDialog } from '@/components/trash-dialog';
 import {
   Sidebar,
-  SidebarContent,
   SidebarFooter,
-  SidebarGroup,
-  SidebarGroupContent,
-  SidebarGroupLabel,
   SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
@@ -17,77 +15,22 @@ import {
   SidebarRail,
 } from '@/components/ui/sidebar';
 import { UserMenu } from '@/components/user-menu';
-import { WorkspaceIcon, WorkspaceSwitcher } from '@/components/workspace-switcher';
-import { myTeamspacesQuery } from '@/lib/queries';
+import { WorkspaceSwitcher } from '@/components/workspace-switcher';
 
-/** Sidebar sections, in the order of PRODUCT §4. Page trees arrive in M2. */
-type PageSection = 'favorites' | 'shared' | 'private';
-
-const comingSoon: { key: 'templates' | 'import' | 'trash'; icon: LucideIcon }[] = [
+const comingSoon: { key: 'templates' | 'import'; icon: LucideIcon }[] = [
   { key: 'templates', icon: FileStack },
   { key: 'import', icon: Import },
-  { key: 'trash', icon: Trash2 },
 ];
-
-function EmptySection({ section }: { section: PageSection | 'teamspaces' }) {
-  const { t } = useTranslation();
-  return <p className="px-2 text-xs text-muted-foreground">{t(`sidebar.empty.${section}`)}</p>;
-}
-
-function TeamspacesSection({ workspaceId }: { workspaceId: string }) {
-  const { t } = useTranslation();
-  const teamspaces = useQuery(myTeamspacesQuery(workspaceId)).data?.items ?? [];
-  return (
-    <SidebarGroup data-testid="sidebar-section-teamspaces">
-      <SidebarGroupLabel>{t('sidebar.sections.teamspaces')}</SidebarGroupLabel>
-      <SidebarGroupContent>
-        {teamspaces.length === 0 ? (
-          <EmptySection section="teamspaces" />
-        ) : (
-          <SidebarMenu>
-            {teamspaces.map((ts) => (
-              <SidebarMenuItem key={ts.id}>
-                <SidebarMenuButton asChild>
-                  <Link
-                    to="/w/$workspaceId/teamspaces/$teamspaceId"
-                    params={{ workspaceId, teamspaceId: ts.id }}
-                  >
-                    <WorkspaceIcon icon={ts.icon} name={ts.name} />
-                    <span className="truncate">{ts.name}</span>
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-            ))}
-          </SidebarMenu>
-        )}
-      </SidebarGroupContent>
-    </SidebarGroup>
-  );
-}
 
 export function AppSidebar({ workspaceId }: { workspaceId?: string | undefined }) {
   const { t } = useTranslation();
-  const section = (key: PageSection) => (
-    <SidebarGroup key={key} data-testid={`sidebar-section-${key}`}>
-      <SidebarGroupLabel>{t(`sidebar.sections.${key}`)}</SidebarGroupLabel>
-      <SidebarGroupContent>
-        <EmptySection section={key} />
-      </SidebarGroupContent>
-    </SidebarGroup>
-  );
+  const [trashOpen, setTrashOpen] = useState(false);
   return (
     <Sidebar aria-label={t('ui.sidebarTitle')}>
       <SidebarHeader>
         <WorkspaceSwitcher currentId={workspaceId} />
       </SidebarHeader>
-      {workspaceId && (
-        <SidebarContent>
-          {section('favorites')}
-          <TeamspacesSection workspaceId={workspaceId} />
-          {section('shared')}
-          {section('private')}
-        </SidebarContent>
-      )}
+      {workspaceId && <SidebarTree workspaceId={workspaceId} />}
       <SidebarFooter className={workspaceId ? undefined : 'mt-auto'}>
         <SidebarMenu>
           {workspaceId &&
@@ -103,6 +46,14 @@ export function AppSidebar({ workspaceId }: { workspaceId?: string | undefined }
                 </SidebarMenuButton>
               </SidebarMenuItem>
             ))}
+          {workspaceId && (
+            <SidebarMenuItem>
+              <SidebarMenuButton onClick={() => setTrashOpen(true)} data-testid="trash-button">
+                <Trash2 />
+                <span>{t('sidebar.footer.trash')}</span>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          )}
           {workspaceId && (
             <SidebarMenuItem>
               <SidebarMenuButton asChild>
@@ -122,6 +73,7 @@ export function AppSidebar({ workspaceId }: { workspaceId?: string | undefined }
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarFooter>
+      {workspaceId && trashOpen && <TrashDialog open onOpenChange={setTrashOpen} />}
       <SidebarRail />
     </Sidebar>
   );

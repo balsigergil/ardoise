@@ -14,7 +14,7 @@ import type { Config } from './config/config.js';
 import { createS3Client, ensureBucket } from './infra/s3.js';
 import { securityHeaders } from './http/security-headers.js';
 import { featuresForRole } from './roles/roles.js';
-import { cacheControlFor, isSpaRoute } from './spa/spa.js';
+import { cacheControlFor, isNoIndexRoute, isSpaRoute } from './spa/spa.js';
 import { SyncGateway } from './sync/sync.gateway.js';
 
 /** Built SPA location: `ARDOISE_WEB_DIST`, or `web/` next to the server's `dist/`. */
@@ -102,6 +102,7 @@ function serveSpa(app: NestExpressApplication, webDist: string, logger: Logger):
   app.use((req: Request, res: Response, next: NextFunction) => {
     if ((req.method === 'GET' || req.method === 'HEAD') && isSpaRoute(req.path)) {
       res.setHeader('Cache-Control', 'no-cache');
+      if (isNoIndexRoute(req.path)) res.setHeader('X-Robots-Tag', 'noindex, nofollow');
       res.sendFile(indexHtml);
       return;
     }

@@ -13,6 +13,8 @@ allowBuilds:
   cpu-features: false
   protobufjs: false
   ssh2: false
+  # Optional native MessagePack accelerator pulled by BullMQ; the JS fallback is used.
+  msgpackr-extract: false
 
 minimumReleaseAgeExclude:
   - i18next@27.2.4

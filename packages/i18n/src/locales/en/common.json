@@ -92,7 +92,8 @@
     }
   },
   "status": {
-    "comingSoon": "Coming soon"
+    "comingSoon": "Coming soon",
+    "loading": "Loading…"
   },
   "ui": {
     "close": "Close",
@@ -328,5 +329,122 @@
         "super_admins": "Super-admins only"
       }
     }
+  },
+  "pages": {
+    "untitled": "Untitled",
+    "title": "Page title",
+    "tree": "Pages",
+    "newPrivate": "New private page",
+    "newIn": "New page in {{name}}",
+    "newSubpage": "Add a subpage",
+    "addSubpage": "Add a subpage to {{title}}",
+    "actionsFor": "Actions for {{title}}",
+    "collapse": "Collapse",
+    "expand": "Expand",
+    "noSubpages": "No pages inside",
+    "noPages": "No pages yet",
+    "loadFailed": "Could not load. Retry",
+    "loadMore": "Load more",
+    "loadMoreShared": "Show more shared pages",
+    "addFavorite": "Add to favorites",
+    "removeFavorite": "Remove from favorites",
+    "duplicate": "Duplicate",
+    "moveTo": "Move to…",
+    "delete": "Move to trash",
+    "trashed": "Moved to trash.",
+    "moveTitle": "Move “{{title}}”",
+    "moveHint": "Choose a teamspace, your private pages or another page.",
+    "destinations": "Destinations",
+    "moveHere": "Move to {{name}}",
+    "breadcrumb": "Page location",
+    "subpages": "Pages inside",
+    "notFound": "This page is not available",
+    "notFoundHint": "It may have been deleted, or you do not have access to it.",
+    "locked": "Locked",
+    "lockedHint": "This page is locked. Unlock it from the page menu to edit it.",
+    "options": "Page options",
+    "style": "Style",
+    "fonts": {
+      "default": "Default",
+      "serif": "Serif",
+      "mono": "Mono"
+    },
+    "fullWidth": "Full width",
+    "lock": "Lock page",
+    "unlock": "Unlock page",
+    "follow": "Follow",
+    "unfollow": "Stop following",
+    "copyLink": "Copy link",
+    "linkCopied": "Link copied.",
+    "inTrash": "This page is in the trash.",
+    "contentSoon": "Page content arrives with the editor.",
+    "icon": {
+      "add": "Add icon",
+      "change": "Change icon",
+      "remove": "Remove icon",
+      "choose": "Choose an icon",
+      "custom": "Or type an emoji"
+    },
+    "cover": {
+      "add": "Add cover",
+      "change": "Change cover",
+      "remove": "Remove cover",
+      "colors": {
+        "gray": "Gray",
+        "brown": "Brown",
+        "orange": "Orange",
+        "yellow": "Yellow",
+        "green": "Green",
+        "blue": "Blue",
+        "purple": "Purple",
+        "pink": "Pink",
+        "red": "Red"
+      },
+      "gradients": {
+        "dawn": "Dawn gradient",
+        "dusk": "Dusk gradient",
+        "ocean": "Ocean gradient",
+        "forest": "Forest gradient"
+      }
+    }
+  },
+  "trash": {
+    "title": "Trash",
+    "description": "Deleted pages stay here until the retention period ends.",
+    "search": "Search the trash",
+    "empty": "The trash is empty.",
+    "deletedAt": "Deleted {{date}}",
+    "restore": "Restore",
+    "purge": "Delete permanently",
+    "purgeTitle": "Delete permanently?",
+    "purgeDescription": "“{{title}}” and the pages inside it will be deleted. This cannot be undone."
+  },
+  "share": {
+    "button": "Share",
+    "title": "Share",
+    "yourAccess": "Your access: {{level}}",
+    "add": "Add people, teamspaces or everyone",
+    "addPlaceholder": "Name, email or teamspace…",
+    "suggestions": "Suggestions",
+    "teamspace": "Teamspace",
+    "everyone": "Everyone at {{name}}",
+    "whoHasAccess": "Who has access",
+    "teamspaceMembers": "Members of {{name}}",
+    "privateOwner": "{{name}} (owner)",
+    "inheritedFrom": "Inherited from {{title}}",
+    "grantedHere": "Granted on this page",
+    "levelFor": "Access level for {{name}}",
+    "remove": "Remove access for {{name}}",
+    "restrict": "Restrict access to this page",
+    "restrictHint": "Only the people listed here keep access; access inherited from parent pages and the teamspace stops.",
+    "restrictedAbove": "Access is restricted at “{{title}}”: inherited access stops there.",
+    "publicLink": "Share to web",
+    "publicLinkHint": "Anyone with the link can view this page. It is not indexed by search engines.",
+    "includeSubpages": "Include subpages",
+    "recover": "Recover access",
+    "recoverHint": "As a workspace owner, you can give yourself full access. This is recorded.",
+    "publicUnavailable": "This link is not available",
+    "publicUnavailableHint": "It may have been turned off by the page owner.",
+    "publicFooter": "Shared with Ardoise"
   }
 }

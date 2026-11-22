@@ -211,6 +211,37 @@ describe('SyncStore: optimistic writes', () => {
     expect(server.pushes.flat().map((m) => m.name)).toEqual(['page.create', 'page.create']);
   });
 
+  it('resolves settled() with the server answer', async () => {
+    const { server, store } = await setup();
+    server.rejectNames.add('page.update');
+    const p = page();
+    server.external([upsert(p)]);
+    await store.pull();
+    const created = store.mutate('page.create', {
+      id: newId(),
+      parent: TEAMSPACE,
+      position: positionBetween(null, null),
+    });
+    const updated = store.mutate('page.update', { id: p.id, title: 'x' });
+    if (!created.ok || !updated.ok) throw new Error('local rejection');
+    const [a, b] = await Promise.all([
+      store.settled(created.id),
+      store.settled(updated.id),
+      settle(store),
+    ]);
+    expect(a.status).toBe('applied');
+    expect(b).toMatchObject({ status: 'rejected', code: 'forbidden' });
+  });
+
+  it('queues mutations on entities it does not hold (partial cache)', async () => {
+    const { server, store } = await setup();
+    const p = page();
+    server.entities.set(`page/${p.id}`, p);
+    expect(store.mutate('page.update', { id: p.id, title: 'Remote' }).ok).toBe(true);
+    await settle(store);
+    expect((server.entities.get(`page/${p.id}`) as PageDto).title).toBe('Remote');
+  });
+
   it('rolls back and reports server rejections', async () => {
     const { server, store, events } = await setup();
     const p = page({ title: 'Original' });
@@ -440,7 +471,7 @@ describe('SyncStore: persistence', () => {
     store.mutate('page.update', { id: fav.id, title: 'Renamed offline' });
     await store.flush();
     await vi.advanceTimersByTimeAsync(300);
-    store.dispose();
+    store.stop();
 
     const reloaded = new SyncStore({
       workspaceId: WS,
@@ -457,7 +488,7 @@ describe('SyncStore: persistence', () => {
     expect(reloaded.get('page', other.id)).toBeUndefined();
     await settle(reloaded);
     expect((server.entities.get(`page/${fav.id}`) as PageDto).title).toBe('Renamed offline');
-    reloaded.dispose();
+    reloaded.stop();
     await persistence.clear();
     persistence.close();
   });

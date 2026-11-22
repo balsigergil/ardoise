@@ -70,7 +70,9 @@ export type SyncEvent =
   | { type: 'rejected'; mutation: AnyMutation; code: ErrorCode }
   | { type: 'access'; access: AccessEntityDto }
   | { type: 'resync' }
-  | { type: 'status'; status: SyncStatus };
+  | { type: 'status'; status: SyncStatus }
+  /** Entity types changed by pulled entries (for caches outside the store). */
+  | { type: 'changed'; types: ReadonlySet<EntityType> };
 
 export type SyncStatus = 'idle' | 'syncing' | 'offline';
 
@@ -102,8 +104,11 @@ export class SyncStore {
   private pending: PendingMutation[] = [];
   private view = new Map<string, unknown>();
   private childIndex = new Map<string, PageDto[]>();
-  /** Parents whose children list was fetched completely. */
-  private readonly loadedParents = new Set<string>();
+  /** Parents with at least one fetched page of children: their new children are kept. */
+  private readonly listedParents = new Set<string>();
+  /** Parents whose children were fetched completely. */
+  private readonly completeParents = new Set<string>();
+  private readonly settlers = new Map<string, ((result: MutationResult) => void)[]>();
   private cursor: number | null = null;
   private readonly listeners = new Set<() => void>();
   private readonly eventListeners = new Set<(event: SyncEvent) => void>();
@@ -128,10 +133,22 @@ export class SyncStore {
 
   // --- lifecycle ------------------------------------------------------------------
 
-  /** Restores the persisted state, then pushes leftovers and pulls. */
+  private restored = false;
+
+  /**
+   * Restores the persisted state (first start only), then pushes leftovers and pulls.
+   * `stop()` then `start()` again resumes (React strict mode mounts effects twice).
+   */
   async start(): Promise<void> {
+    this.disposed = false;
+    if (this.restored) {
+      void this.flush();
+      if (this.cursor !== null) void this.pull();
+      return;
+    }
+    this.restored = true;
     const state = await this.persistence?.load().catch(() => undefined);
-    if (state) {
+    if (state && this.cursor === null && this.confirmed.size === 0) {
       this.cursor = state.cursor;
       for (const e of state.entities)
         this.confirmed.set(key(e.type, e.id), { data: e.data, seq: e.seq });
@@ -142,12 +159,18 @@ export class SyncStore {
     if (this.cursor !== null) void this.pull();
   }
 
-  dispose(): void {
+  /** Stops background work (retries, saves); listeners are left to their owners. */
+  stop(): void {
     this.disposed = true;
-    if (this.saveTimer) clearTimeout(this.saveTimer);
-    if (this.retryTimer) clearTimeout(this.retryTimer);
-    this.listeners.clear();
-    this.eventListeners.clear();
+    if (this.saveTimer) {
+      clearTimeout(this.saveTimer);
+      this.saveTimer = undefined;
+      void this.persistence?.save(this.snapshot()).catch(() => undefined);
+    }
+    if (this.retryTimer) {
+      clearTimeout(this.retryTimer);
+      this.retryTimer = undefined;
+    }
   }
 
   get status(): SyncStatus {
@@ -203,15 +226,15 @@ export class SyncStore {
     return this.childIndex.get(parentKey(parent)) ?? [];
   }
 
-  isLoaded(parent: PageParent): boolean {
-    return this.loadedParents.has(parentKey(parent));
+  isListed(parent: PageParent): boolean {
+    return this.listedParents.has(parentKey(parent));
   }
 
   /** True when the page has live children (known locally or reported by the server). */
   hasChildren(page: PageDto): boolean {
     const known = this.childIndex.get(parentKey({ kind: 'page', id: page.id }));
     if (known && known.length > 0) return true;
-    if (this.loadedParents.has(parentKey({ kind: 'page', id: page.id }))) return false;
+    if (this.completeParents.has(parentKey({ kind: 'page', id: page.id }))) return false;
     return page.hasChildren;
   }
 
@@ -262,12 +285,30 @@ export class SyncStore {
       clientTime: this.now().toISOString(),
     } as AnyMutation;
     const result = applyMutation(this.reader(this.view), mutation, this.context());
-    if (!result.ok) return { ok: false, code: result.code };
+    // The cache is partial: an entity it does not hold may well exist on the server,
+    // so `not_found` is the server's call. The mutation is queued without local effect.
+    if (!result.ok && result.code !== 'not_found') return { ok: false, code: result.code };
     this.pending.push({ mutation });
     this.recompute();
     this.scheduleSave();
     void this.flush();
     return { ok: true, id: mutation.id };
+  }
+
+  /** Resolves with the server's answer for a mutation queued by `mutate`. */
+  settled(id: string): Promise<MutationResult> {
+    return new Promise((resolve) => {
+      const list = this.settlers.get(id) ?? [];
+      list.push(resolve);
+      this.settlers.set(id, list);
+    });
+  }
+
+  private settle(result: MutationResult): void {
+    const list = this.settlers.get(result.id);
+    if (!list) return;
+    this.settlers.delete(result.id);
+    for (const resolve of list) resolve(result);
   }
 
   /** Pushes pending mutations in order, one batch in flight at a time. */
@@ -298,6 +339,7 @@ export class SyncStore {
         const index = this.pending.findIndex((p) => p.mutation.id === result.id);
         if (index < 0) continue;
         const entry = this.pending[index]!;
+        this.settle(result);
         if (result.status === 'rejected') {
           this.pending.splice(index, 1);
           const code = result.code && isErrorCode(result.code) ? result.code : 'internal_error';
@@ -378,7 +420,8 @@ export class SyncStore {
   /** Drops the cache (pending mutations survive) and asks the UI to reload its scopes. */
   private resync(): void {
     this.confirmed.clear();
-    this.loadedParents.clear();
+    this.listedParents.clear();
+    this.completeParents.clear();
     this.cursor = null;
     for (const p of this.pending) delete p.appliedSeq;
     this.recompute();
@@ -396,7 +439,7 @@ export class SyncStore {
     if (change.type === 'page') {
       const page = change.data;
       return (
-        this.loadedParents.has(parentKey({ kind: page.parentKind, id: page.parentId })) ||
+        this.listedParents.has(parentKey({ kind: page.parentKind, id: page.parentId })) ||
         this.confirmed.has(key('favorite', page.id))
       );
     }
@@ -405,6 +448,9 @@ export class SyncStore {
 
   /** Applies pulled entries to the confirmed state (older-than-held data is ignored). */
   applyEntries(entries: readonly ChangeEntry[]): void {
+    const types = new Set<EntityType>();
+    for (const entry of entries) types.add(entry.type);
+    if (types.size > 0) this.emit({ type: 'changed', types });
     for (const entry of entries) {
       if (entry.type === 'access') {
         if (entry.op === 'upsert') this.emit({ type: 'access', access: entry.data });
@@ -466,7 +512,9 @@ export class SyncStore {
           this.confirmed.delete(k);
       }
     }
-    if (options.complete) this.loadedParents.add(pk);
+    this.listedParents.add(pk);
+    if (options.first && options.complete) this.completeParents.add(pk);
+    else if (options.first) this.completeParents.delete(pk);
     this.ingest(
       pages.map((p) => ({ type: 'page', id: p.id, op: 'upsert', data: p })),
       seq,
@@ -490,7 +538,8 @@ export class SyncStore {
     }
     for (const id of drop) {
       this.confirmed.delete(key('page', id));
-      this.loadedParents.delete(parentKey({ kind: 'page', id }));
+      this.listedParents.delete(parentKey({ kind: 'page', id }));
+      this.completeParents.delete(parentKey({ kind: 'page', id }));
     }
     this.recompute();
     this.scheduleSave();
