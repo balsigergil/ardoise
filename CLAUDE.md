@@ -124,7 +124,8 @@ docs/            PRODUCT, ARCHITECTURE, ROADMAP, decisions/ (ADRs)
 - **Multi-tenancy**: every workspace-scoped table has `workspace_id` as the first
   column of its primary key and of its main indexes (see ARCHITECTURE §4).
 - **Structured writes** go through the mutation pipeline (ARCHITECTURE §6), never
-  through ad-hoc REST updates. Page content goes through Yjs only.
+  through ad-hoc REST updates (M1 workspace writes are a temporary
+  exception until M2, ADR 0005). Page content goes through Yjs only.
 - **Ordering**: use fractional indexing (string keys) for siblings, never integer positions.
 - **Backend structure**: NestJS modules by domain (`auth`, `admin`, `workspaces`,
   `pages`, `permissions`, `sync`, `collab`, `databases`, `files`, `projection`, `search`,

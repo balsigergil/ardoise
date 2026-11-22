@@ -65,7 +65,8 @@ reference for the clean-room implementation (see `CLAUDE.md` §1.1). Scope marke
   - Guests see only pages explicitly shared with them.
 - **Teamspaces**: name, icon, description and members (teamspace owner or member).
   Visibility is *open* (any workspace member can join), *closed* (visible, join on
-  request or invite) or *private* (hidden from non-members). A default access level
+  request or invite; requests ship with notifications in M6) or *private* (hidden from
+  non-members). A default access level
   applies to teamspace pages.
 - **Sidebar sections**, in order: Favorites, Teamspaces (each with its page tree),
   Shared (pages shared with me outside teamspaces) and Private (my private pages).

@@ -96,11 +96,14 @@ Conventions:
 ### 4.1 Instance level
 - `users` (id, email unique, name, avatar_file_id, password_hash, locale, theme,
   is_super_admin, disabled_at, created_at)
-- `sessions` (id, user_id, created_at, last_seen_at, user_agent, ip, revoked_at), with
-  hot session lookup cached in Valkey
-- `invitations` (id, email, token_hash, inviter_id, workspace_id nullable, role,
-  expires_at, accepted_at)
-- `instance_settings` (key, value jsonb), with secrets stored encrypted
+- `sessions` (id, user_id, token_hash, created_at, last_seen_at, expires_at, user_agent,
+  ip, revoked_at), with hot session lookup cached in Valkey (ADR 0005)
+- `password_resets` (id, user_id, token_hash, created_at, expires_at, used_at)
+- `invitations` (id, email, token_hash, inviter_id, workspace_id nullable, role nullable
+  for instance invitations, created_at, expires_at, accepted_at, revoked_at)
+- `instance_settings` (key, value jsonb), with secrets stored encrypted; the first-run
+  setup token is stored there encrypted until setup completes (ADR 0005)
+- Emails are stored trimmed and lowercased.
 - `api_tokens` (id, user_id, workspace_id nullable, kind personal|integration, name,
   token_hash, scopes, last_used_at, revoked_at)
 - `ai_providers` (id, kind openai|anthropic|openrouter|openai_compatible, base_url,
@@ -108,10 +111,12 @@ Conventions:
 
 ### 4.2 Workspace level
 - `workspaces` (id, name, icon, settings jsonb, created_at)
-- `workspace_members` (workspace_id, user_id, role owner|admin|member|guest)
+- `workspace_members` (workspace_id, user_id, role owner|admin|member|guest, created_at),
+  plus an index on `(user_id, workspace_id)` to list a user's workspaces: the one index
+  that does not start with `workspace_id` (ADR 0005)
 - `teamspaces` (workspace_id, id, name, icon, description, visibility
-  open|closed|private, default_level)
-- `teamspace_members` (workspace_id, teamspace_id, user_id, role owner|member)
+  open|closed|private, default_level, created_at)
+- `teamspace_members` (workspace_id, teamspace_id, user_id, role owner|member, created_at)
 - `workspace_counters` (workspace_id, change_seq bigint, perm_epoch bigint,
   unique_id counters jsonb)
 
@@ -476,7 +481,9 @@ Editor (packages/editor) ── Yjs docs ── HocuspocusProvider + y-indexeddb
 ## 13. Security checklist
 
 - Hash passwords with argon2id.
-- Rate-limit login, password reset and invitation acceptance.
+- Rate-limit login, password reset, setup and invitation acceptance (Valkey counters).
+- One-time tokens (setup, invitation, reset) travel in the URL fragment, so they never
+  reach server or proxy logs.
 - Sessions use httpOnly, Secure, SameSite=Lax cookies with a CSRF token on
   state-changing requests.
 - Set a strict CSP and security headers, and sanitize pasted HTML and imported
