@@ -112,6 +112,18 @@ describe('loadConfig', () => {
     expect(config.bootstrapAdmin?.email).toBe('admin@example.org');
   });
 
+  it('treats empty strings as unset', () => {
+    const config = loadConfig({
+      ...valid,
+      ARDOISE_ADMIN_EMAIL: '',
+      ARDOISE_ADMIN_PASSWORD: '',
+      PORT: '',
+    });
+    expect(config.bootstrapAdmin).toBeUndefined();
+    expect(config.port).toBe(3000);
+    expect(issuesOf({ ...valid, DATABASE_URL: '' })).toEqual(['DATABASE_URL: is required']);
+  });
+
   it('builds SMTP settings only when a host is set', () => {
     expect(loadConfig({ ...valid, SMTP_HOST: '' }).smtp).toBeUndefined();
     expect(loadConfig({ ...valid, SMTP_HOST: 'mail', SMTP_SECURE: 'true' }).smtp).toMatchObject({

@@ -107,7 +107,9 @@ export class ConfigError extends Error {
 
 /** Validates the environment. Error messages name variables, never their values. */
 export function loadConfig(env: Record<string, string | undefined>): Config {
-  const result = envSchema.safeParse(env);
+  // Compose and shells pass unset optional variables as empty strings: treat them as unset.
+  const defined = Object.fromEntries(Object.entries(env).filter(([, value]) => value !== ''));
+  const result = envSchema.safeParse(defined);
   if (!result.success) {
     throw new ConfigError(
       result.error.issues.map((issue) => {
