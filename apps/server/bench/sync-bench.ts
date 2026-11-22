@@ -67,11 +67,11 @@ const pick = <T>(items: readonly T[]): T => items[Math.floor(Math.random() * ite
 const fmt = (ms: number) => `${ms.toFixed(1)} ms`;
 
 async function main() {
-  const session = await call<{ session: { csrfToken: string } }>('POST', '/api/auth/login', {
+  const session = await call<{ csrfToken: string }>('POST', '/api/auth/login', {
     email: EMAIL,
     password: PASSWORD,
   });
-  csrf = session.session.csrfToken;
+  csrf = session.csrfToken;
   const workspaces = await call<WorkspaceDto[]>('GET', '/api/workspaces');
   const large = workspaces.filter((w) => w.name.startsWith('Large')).at(-1);
   const other = workspaces.find((w) => w !== large);
