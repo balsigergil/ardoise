@@ -48,22 +48,22 @@ login, invite → accept, reset). E2E: *setup → invite → accept → login*.
 
 ## M2 — Sync engine, page tree, permissions
 
-- [ ] `packages/shared`: mutation catalog (zod args) + pure apply functions
-- [ ] `sync` module: `POST /sync/mutations` (idempotent, per-mutation transaction),
+- [x] `packages/shared`: mutation catalog (zod args) + pure apply functions
+- [x] `sync` module: `POST /sync/mutations` (idempotent, per-mutation transaction),
       `change_log` with per-workspace gap-free `seq`, `GET /sync/pull`, `/sync/ws` pokes via Valkey
-- [ ] `packages/sync` client store: normalized entities, optimistic apply, pending
+- [x] `packages/sync` client store: normalized entities, optimistic apply, pending
       queue, rebase, IndexedDB persistence (Dexie), rejection handling
-- [ ] Pages: create, rename, icon, cover, width, font, lock, duplicate (job for large
+- [x] Pages: create, rename, icon, cover, width, font, lock, duplicate (job for large
       subtrees), move/reorder (fractional index, `ltree` subtree rewrite, cycle prevention)
-- [ ] Sidebar: Favorites / Teamspaces / Shared / Private, lazy tree, drag & drop, virtualization
-- [ ] Trash: delete subtree, restore, purge, retention job
-- [ ] Favorites, recents, follows
-- [ ] Permissions: grants, restrict inheritance, pure evaluator, Valkey cache with
+- [x] Sidebar: Favorites / Teamspaces / Shared / Private, lazy tree, drag & drop, virtualization
+- [x] Trash: delete subtree, restore, purge, retention job
+- [x] Favorites, recents, follows
+- [x] Permissions: grants, restrict inheritance, pure evaluator, Valkey cache with
       `perm_epoch`, share menu showing the source of each access
-- [ ] Public links (share to web, read-only, `noindex`, revocable)
-- [ ] Move the M1 workspace-scoped REST writes (`workspace.update`, `teamspace.*`,
+- [x] Public links (share to web, read-only, `noindex`, revocable)
+- [x] Move the M1 workspace-scoped REST writes (`workspace.update`, `teamspace.*`,
       `member.*`) to mutations (ADR 0005)
-- [ ] `db:seed:large` (1M pages, deep trees) + benchmark of tree loading and mutation throughput
+- [x] `db:seed:large` (1M pages, deep trees) + benchmark of tree loading and mutation throughput
 
 **Tests**: unit (permission evaluator, exhaustive matrix; every apply function;
 rebase scenarios; fractional indexing). Integration (mutations + pull + pokes across

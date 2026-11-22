@@ -109,3 +109,128 @@ Decisions approved at the start of M2: ADR 0006. Decided during M2: ADR 0007 (ne
   workspace counter lock. They are benchmarked; a chunked job like moves is the fallback.
 - **The 100k-row database** of `db:seed:large` needs databases (M4). M2 seeds pages,
   trees and grants only.
+
+## Summary (2026-11-22)
+
+**Status: done, pending review.** All M2 boxes are ticked in `docs/ROADMAP.md`.
+
+### What was built
+- **Shared** (`packages/shared`): fractional positions (`fractional-indexing`, CC0), the
+  page model, the permission evaluator (pure, exhaustive oracle test over 3,600
+  combinations), the mutation catalog (zod) with one pure apply function per mutation,
+  the sync protocol types.
+- **Data model** (migration `0002`): pages, page_permissions, favorites, recents,
+  page_follows, public_links, change_log, applied_mutations (ADR 0006).
+- **Server**:
+  - `sync`: `POST /sync/mutations` runs one transaction per mutation. It is idempotent
+    (rejections included) and gives gap-free seqs, with the counter locked last (or first
+    for structural and membership mutations). `GET /sync/pull` applies the ADR 0006
+    delivery rules and answers `resync_required` when the cursor is too old. `/sync/ws`
+    pokes go through Valkey and are coalesced per client (100 ms); kicks close sockets.
+  - `permissions`: chains loaded through `path` and evaluated by the shared evaluator,
+    cached in Valkey under `perm_epoch`. A large move keeps pre-move ancestry until the
+    job ends.
+  - `pages`: tree reads (children, teamspace roots, private, shared), page detail with
+    breadcrumb, sharing (who and why), trash, favorites, recents (direct upsert), public
+    links.
+  - Mutation handlers for pages, favorites, follows, grants, restrict, owner recovery
+    (logged), public links, and the workspace/teamspace/member writes. Their REST write
+    routes are removed (ADR 0005). Each new workspace gets a default teamspace.
+  - BullMQ jobs: large subtree move (chunked path rewrite), large duplicate, daily trash
+    retention and change-log purge.
+- **Client** (`packages/sync`): normalized store, optimistic apply with the shared
+  functions, pending queue, rebase on pull, per-entity seq and tombstones, scope rules
+  (known entities, listed parents, favorites), rejection and access events, Dexie
+  persistence of pending writes, cursor and favorites, HTTP transport and a reconnecting
+  poke socket.
+- **Web**:
+  - **Sidebar:** Favorites, Teamspaces, Shared and Private in one virtualized list, with
+    lazy trees, native drag and drop, and "Move to".
+  - **Page view:** title, icon, cover, width, font, lock, follow, duplicate, move, trash
+    and restore, subpages, and recovery of access for owners.
+  - **Share dialog:** who has access and why, grants, restrict, public link.
+  - **Other screens:** the trash, the public page `/share/:token` (`noindex`), and the
+    settings, which now write through mutations.
+- **Seeds and bench:** `db:seed`, `db:seed:large` (1,111,040 pages, 22,220 grants, a
+  40-deep chain, 83 s), and `apps/server/bench`.
+
+### Tests
+- 461 unit tests: 110 shared, 188 server, 22 sync, 63 web, plus i18n, db and scripts.
+- 37 integration tests:
+  - mutations, pull and pokes across 2 api nodes;
+  - gap-free seqs under concurrent writers on both nodes;
+  - WebSocket upgrade refusals;
+  - permission filtering of pull;
+  - small and large (job) subtree moves;
+  - public links;
+  - seeds.
+- 14 e2e tests: *create nested pages, move them by drag and drop, share with another user
+  who sees them live*, live renames both ways, trash and restore, plus the M1 journeys.
+
+### Acceptance verification
+- Full pipeline from `pnpm install --frozen-lockfile`: licenses (676), SPDX (288), lint,
+  typecheck, unit, integration.
+- `pnpm test:e2e` (Testcontainers stack): 14/14. The Docker image under
+  `docker compose up` is healthy, and the same 14 e2e tests pass against it.
+  `/share/*` sends `X-Robots-Tag: noindex`.
+- **Benchmarks on the large seed**, run over HTTP against the production build with
+  role=all.
+  - Host: 32 vCPU Ryzen 9 5950X, 31 GB, WSL2. It is faster than the reference hardware
+    (4 vCPU, 8 GB), so re-run on reference hardware before treating the margins as final.
+
+| Operation | p50 | p95 | Budget (p95) |
+|---|---|---|---|
+| Sidebar level load, ≤100 children, cold permission cache | 7.4 ms | 8.6 ms | 100 ms |
+| Sidebar level load, warm | 5.4 ms | 6.1 ms | 100 ms |
+| Page metadata (open a page) | 6.7 ms | 7.6 ms | 300 ms |
+| Mutation round-trip (`page.update`) | 11.6 ms | 14.0 ms | 150 ms |
+
+- **Seq serialization** (renames, one workspace):
+
+| Concurrent writers | Throughput | p50 | p95 |
+|---|---|---|---|
+| 1 | 77/s | 12.8 ms | 14.3 ms |
+| 4 | 184/s | 21.0 ms | 26.1 ms |
+| 16 | 184/s | 72.1 ms | 163.0 ms |
+| 32 | 190/s | 155.3 ms | 254.6 ms |
+| 32, split over 2 workspaces | 292/s | 106.0 ms | 138.2 ms |
+
+  - Structured writes in one workspace level off at about 190/s, which is the expected
+    cost of the per-workspace counter lock. Different workspaces do not contend.
+  - Under 16+ concurrent writers to one workspace, single-mutation p95 goes above the
+    150 ms budget.
+
+### Deviations and decisions
+- **ADRs:**
+  - ADR 0006 (approved at the start): page roots, members-only teamspace access, strict
+    maximum, delivery rules, lock placement, pull format, `/sync/ws`, catalog additions;
+  - ADR 0007 (decided during M2): the ltree GiST index fails past about 51 levels, so
+    nesting is capped at 40 (`too_deep`). PRODUCT now says "up to 40 levels".
+- **Behaviour choices:**
+  - Restricting a page grants Full access to the person restricting it, if they would
+    otherwise lose it.
+  - Guests do not receive `member` entries.
+  - Membership mutations lock the counter first.
+- **Bug fixed during e2e:** `hasChildren` was always false, because the subquery bound
+  to the wrong table. Also, a just-created page is now shown from the store until the
+  server has it.
+- **Dependency pinning:** `@tanstack/react-virtual` is pinned to 3.14.26 to respect the
+  minimum release age, and the optional native `msgpackr-extract` build is disabled.
+
+### Known limitations
+- **Not verified on Windows**, and **CI not run on GitHub**.
+- **Benchmarks** come from a fast dev host, not reference hardware.
+- **Trash and purge of very large subtrees** run in one statement under the counter lock.
+  They were not benchmarked at 100k pages; the fallback is the chunked job used for
+  moves.
+- **Duplicate copies the tree, options and grants, not content.** Content duplication
+  arrives with Yjs documents in M3.
+- **The client store keeps loaded pages in memory** without LRU eviction. Only pending
+  writes, the cursor, favorites and their ancestors persist (M5 extends the cached
+  scope).
+- **The "Shared" section** only shows the topmost pages within each fetched page of
+  results.
+- **Drag and drop** uses native HTML5 events, so it does not work on touch screens;
+  "Move to" covers touch and keyboard.
+- **Page content** (blocks) arrives with the editor in M3; the page view says so.
+- **The Notion import (M8)** must handle trees deeper than 40 levels (ADR 0007).
