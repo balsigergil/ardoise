@@ -9,3 +9,7 @@ injectWorkspacePackages: true
 # Dependencies allowed to run install scripts (pnpm blocks them by default).
 allowBuilds:
   esbuild: true
+  # Optional native accelerators / post-install notices pulled by Testcontainers: not needed.
+  cpu-features: false
+  protobufjs: false
+  ssh2: false

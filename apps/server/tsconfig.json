@@ -1,0 +1,9 @@
+{
+  "extends": "@ardoise/config/tsconfig.node.json",
+  "compilerOptions": {
+    "rootDir": ".",
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": false
+  },
+  "include": ["src", "test", "*.config.ts"]
+}
