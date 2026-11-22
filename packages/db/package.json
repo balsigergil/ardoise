@@ -1,0 +1,34 @@
+{
+  "name": "@ardoise/db",
+  "version": "0.0.0",
+  "private": true,
+  "license": "AGPL-3.0-only",
+  "type": "module",
+  "files": [
+    "dist",
+    "migrations"
+  ],
+  "exports": {
+    ".": {
+      "development": "./src/index.ts",
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "generate": "drizzle-kit generate",
+    "migrate": "tsx --conditions=development src/cli/migrate.ts"
+  },
+  "dependencies": {
+    "drizzle-orm": "0.45.4",
+    "pg": "8.23.1"
+  },
+  "devDependencies": {
+    "@ardoise/config": "workspace:*",
+    "@types/pg": "8.23.1",
+    "drizzle-kit": "0.31.11",
+    "tsx": "4.23.15"
+  }
+}
