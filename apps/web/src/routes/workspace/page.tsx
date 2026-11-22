@@ -52,6 +52,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useMe } from '@/auth/session';
 import { ApiError } from '@/lib/api';
 import { loadChildren, pageDetailQuery, pageTitle, touchRecent } from '@/lib/pages';
 import { workspaceQuery } from '@/lib/queries';
@@ -272,7 +273,18 @@ export function PageView({ workspaceId, pageId }: { workspaceId: string; pageId:
   const mutate = useMutate();
   const queryClient = useQueryClient();
   const workspace = useQuery(workspaceQuery(workspaceId)).data;
-  const detail = useQuery(pageDetailQuery(workspaceId, pageId));
+  const me = useMe();
+  const detail = useQuery({
+    ...pageDetailQuery(workspaceId, pageId),
+    // A page just created here may not have reached the server yet: retry while the
+    // store holds it (the create mutation is ahead in the queue).
+    retry: (count, error) =>
+      count < 8 &&
+      error instanceof ApiError &&
+      error.status === 404 &&
+      store.get('page', pageId) !== undefined,
+    retryDelay: 250,
+  });
   const [sharing, setSharing] = useState(false);
   const [moving, setMoving] = useState(false);
 
@@ -314,7 +326,24 @@ export function PageView({ workspaceId, pageId }: { workspaceId: string; pageId:
       />
     );
   }
-  if (!detail.data || !page) {
+  // Until the server answers, a page created by this user is shown from the store.
+  const data: PageDetailDto | undefined =
+    detail.data ??
+    (page && page.createdBy === me.id && store.pendingCount > 0
+      ? {
+          seq: 0,
+          page,
+          ancestors: store
+            .ancestors(page.id)
+            .reverse()
+            .map((a) => ({ id: a.id, title: a.title, icon: a.icon, accessible: true })),
+          section: null,
+          level: 'full_access',
+          isFavorite: false,
+          isFollowing: false,
+        }
+      : undefined);
+  if (!data || !page) {
     return (
       <div className="mx-auto max-w-3xl px-4 py-10">
         <Skeleton className="mb-4 h-10 w-2/3" />
@@ -323,7 +352,7 @@ export function PageView({ workspaceId, pageId }: { workspaceId: string; pageId:
     );
   }
 
-  const level = detail.data.level;
+  const level = data.level;
   const canEdit = level === 'full_access' || level === 'can_edit';
   const canShare = level === 'full_access';
   const editable = canEdit && !page.isLocked && !trashed;
@@ -338,7 +367,7 @@ export function PageView({ workspaceId, pageId }: { workspaceId: string; pageId:
   return (
     <article className={cn('pb-16', FONT_CLASSES[page.font])} data-testid="page-view">
       <div className="flex items-center gap-2 border-b px-4 py-2">
-        <Breadcrumb workspaceId={workspaceId} detail={detail.data} page={page} />
+        <Breadcrumb workspaceId={workspaceId} detail={data} page={page} />
         <div className="ml-auto flex shrink-0 items-center gap-1">
           {page.isLocked && (
             <span className="flex items-center gap-1 text-xs text-muted-foreground">
