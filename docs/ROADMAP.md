@@ -31,15 +31,15 @@ themes. CI is green. `pnpm dev` works on Windows and Linux.
 
 ## M1 — Instance, authentication, workspaces
 
-- [ ] First-run setup: logged one-time setup URL; env bootstrap alternative
-- [ ] Email + password auth with argon2id; sessions with CSRF; logout; session list/revoke
-- [ ] Password reset by email; `mail` module (SMTP via nodemailer, i18n templates)
-- [ ] Invitations: instance-level (super-admin) and workspace-level (owner/admin) with
+- [x] First-run setup: logged one-time setup URL; env bootstrap alternative
+- [x] Email + password auth with argon2id; sessions with CSRF; logout; session list/revoke
+- [x] Password reset by email; `mail` module (SMTP via nodemailer, i18n templates)
+- [x] Invitations: instance-level (super-admin) and workspace-level (owner/admin) with
       expiry; accept flow creates the account. **No sign-up route.**
-- [ ] Workspaces: create, rename, icon, switch; members and roles (owner, admin, member, guest)
-- [ ] Teamspaces: create, visibility (open/closed/private), members, default access level
-- [ ] Admin panel: users, workspaces, SMTP (with test email), limits, invitation settings
-- [ ] User settings: profile, language, theme, password
+- [x] Workspaces: create, rename, icon, switch; members and roles (owner, admin, member, guest)
+- [x] Teamspaces: create, visibility (open/closed/private), members, default access level
+- [x] Admin panel: users, workspaces, SMTP (with test email), limits, invitation settings
+- [x] User settings: profile, language, theme, password
 
 **Tests**: unit (auth rules, invitation lifecycle, role checks). Integration (setup,
 login, invite → accept, reset). E2E: *setup → invite → accept → login*.
@@ -61,6 +61,8 @@ login, invite → accept, reset). E2E: *setup → invite → accept → login*.
 - [ ] Permissions: grants, restrict inheritance, pure evaluator, Valkey cache with
       `perm_epoch`, share menu showing the source of each access
 - [ ] Public links (share to web, read-only, `noindex`, revocable)
+- [ ] Move the M1 workspace-scoped REST writes (`workspace.update`, `teamspace.*`,
+      `member.*`) to mutations (ADR 0005)
 - [ ] `db:seed:large` (1M pages, deep trees) + benchmark of tree loading and mutation throughput
 
 **Tests**: unit (permission evaluator, exhaustive matrix; every apply function;

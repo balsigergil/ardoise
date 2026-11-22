@@ -17,8 +17,23 @@ cp docker/.env.example docker/.env   # then set the secrets in docker/.env
 docker compose -f docker/docker-compose.yml up -d --wait
 ```
 
-Open <http://localhost:3000>. The stack runs one Ardoise container (`ARDOISE_ROLE=all`),
-PostgreSQL, Valkey and RustFS (S3 storage). Migrations run automatically at startup.
+The stack runs one Ardoise container (`ARDOISE_ROLE=all`), PostgreSQL, Valkey and
+RustFS (S3 storage). Migrations run automatically at startup.
+
+**First run**: the server prints a one-time setup link in its logs. Open it to create the
+first super-admin account and the first workspace:
+
+```sh
+docker compose -f docker/docker-compose.yml logs ardoise | grep "first-run setup"
+```
+
+For automated deployments, set `ARDOISE_ADMIN_EMAIL` and `ARDOISE_ADMIN_PASSWORD` instead.
+There is no public sign-up: people join through invitations (admin panel or workspace
+settings). Configure SMTP (`SMTP_*` in `docker/.env`, or the admin panel) so that
+invitations and password reset links are sent by email.
+
+`ARDOISE_PUBLIC_URL` must be the address users open (it is used in links and for the
+same-origin checks). Use HTTPS in production: session cookies are then marked `Secure`.
 
 - Liveness: `GET /healthz`. Readiness (database, Valkey, S3): `GET /readyz`.
 - Run migrations explicitly: `docker compose -f docker/docker-compose.yml exec ardoise ardoise migrate`.
@@ -35,6 +50,8 @@ pnpm dev          # Postgres/Valkey/RustFS in Docker, server on :3100, web on :5
 pnpm dev:down     # stop the dev dependencies
 ```
 
+On first start, the dev server logs a setup link (`http://localhost:5173/setup#token=…`).
+
 Dev ports avoid the usual defaults so Ardoise can run next to other stacks; override them
 with `ARDOISE_DEV_SERVER_PORT`, `ARDOISE_DEV_WEB_PORT`, `ARDOISE_DEV_POSTGRES_PORT`,
 `ARDOISE_DEV_VALKEY_PORT` and `ARDOISE_DEV_S3_PORT`.
@@ -43,7 +60,7 @@ with `ARDOISE_DEV_SERVER_PORT`, `ARDOISE_DEV_WEB_PORT`, `ARDOISE_DEV_POSTGRES_PO
 |---|---|
 | `pnpm typecheck` / `pnpm lint` / `pnpm test` | TypeScript, ESLint + Prettier, unit tests |
 | `pnpm test:integration` | Testcontainers (Postgres, Valkey, RustFS) + the server in-process |
-| `pnpm test:e2e` | Playwright (needs `pnpm --filter @ardoise/e2e exec playwright install chromium`) |
+| `pnpm test:e2e` | Playwright against a fresh stack started with Testcontainers (needs Docker and `pnpm --filter @ardoise/e2e exec playwright install chromium`); or set `E2E_BASE_URL` and `E2E_SETUP_URL` to target a fresh running stack |
 | `pnpm check:licenses` / `pnpm check:spdx` | Dependency license allowlist, SPDX headers |
 | `pnpm build` | Build every package and app |
 
