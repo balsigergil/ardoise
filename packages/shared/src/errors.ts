@@ -37,6 +37,14 @@ export const errorCodes = [
   'workspace_creation_disabled',
   'mail_not_configured',
   'mail_failed',
+  'page_locked',
+  'page_moving',
+  'page_in_trash',
+  'page_not_in_trash',
+  'move_cycle',
+  'invalid_parent',
+  'too_deep',
+  'resync_required',
 ] as const;
 
 export type ErrorCode = (typeof errorCodes)[number];
@@ -76,6 +84,7 @@ export function httpStatusFor(code: ErrorCode): number {
     case 'invitation_expired':
     case 'invitation_revoked':
     case 'invitation_used':
+    case 'resync_required':
       return 410;
     case 'rate_limited':
       return 429;

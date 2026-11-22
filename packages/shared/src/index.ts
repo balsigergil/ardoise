@@ -7,3 +7,8 @@ export * from './roles.js';
 export * from './invitations.js';
 export * from './settings.js';
 export * from './api/index.js';
+export * from './position.js';
+export * from './pages.js';
+export * from './permissions.js';
+export * from './sync.js';
+export * from './mutations/index.js';

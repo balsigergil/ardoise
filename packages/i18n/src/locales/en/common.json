@@ -80,7 +80,15 @@
       "sole_workspace_owner": "This person is the only owner of a workspace. Make someone else owner first.",
       "workspace_creation_disabled": "Only super-admins can create workspaces on this instance.",
       "mail_not_configured": "Email is not configured on this instance.",
-      "mail_failed": "The email could not be sent. Check the SMTP settings."
+      "mail_failed": "The email could not be sent. Check the SMTP settings.",
+      "page_locked": "This page is locked. Unlock it to make changes.",
+      "page_moving": "This page is being moved. Try again in a moment.",
+      "page_in_trash": "This page is in the trash.",
+      "page_not_in_trash": "This page is not in the trash.",
+      "move_cycle": "A page cannot be moved inside itself.",
+      "invalid_parent": "Pages cannot be placed there.",
+      "too_deep": "Pages cannot be nested this deep.",
+      "resync_required": "Your local copy is out of date and is being reloaded."
     }
   },
   "status": {

@@ -80,7 +80,15 @@
       "sole_workspace_owner": "Cette personne est la seule propriétaire d’un espace de travail. Nommez d’abord un autre propriétaire.",
       "workspace_creation_disabled": "Seuls les super-admins peuvent créer des espaces de travail sur cette instance.",
       "mail_not_configured": "L’e-mail n’est pas configuré sur cette instance.",
-      "mail_failed": "L’e-mail n’a pas pu être envoyé. Vérifiez les réglages SMTP."
+      "mail_failed": "L’e-mail n’a pas pu être envoyé. Vérifiez les réglages SMTP.",
+      "page_locked": "Cette page est verrouillée. Déverrouillez-la pour la modifier.",
+      "page_moving": "Cette page est en cours de déplacement. Réessayez dans un instant.",
+      "page_in_trash": "Cette page est dans la corbeille.",
+      "page_not_in_trash": "Cette page n’est pas dans la corbeille.",
+      "move_cycle": "Une page ne peut pas être déplacée dans elle-même.",
+      "invalid_parent": "Les pages ne peuvent pas être placées ici.",
+      "too_deep": "Les pages ne peuvent pas être imbriquées aussi profondément.",
+      "resync_required": "Votre copie locale n’est plus à jour et est en cours de rechargement."
     }
   },
   "status": {
