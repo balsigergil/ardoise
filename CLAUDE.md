@@ -183,9 +183,12 @@ docs/            PRODUCT, ARCHITECTURE, ROADMAP, decisions/ (ADRs)
 ## 8. Commands (keep this section up to date)
 
 ```
-pnpm install
-pnpm dev                 # docker compose deps + server (role=all) + web
+pnpm install                     # Node 26 + pnpm 12 (ADR 0002)
+pnpm dev                         # docker compose deps + server (role=all, :3100) + web (:5173)
+pnpm dev:down                    # stop the dev dependencies
 pnpm typecheck | lint | test | test:integration | test:e2e
-pnpm db:migrate | db:generate | db:seed | db:seed:large
-docker compose -f docker/docker-compose.yml up
+pnpm check:licenses | check:spdx
+pnpm build
+pnpm db:migrate | db:generate    # db:seed and db:seed:large arrive in M2
+docker compose -f docker/docker-compose.yml up   # needs docker/.env (see .env.example)
 ```

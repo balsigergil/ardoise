@@ -9,20 +9,20 @@ always required**. Integration and e2e tests are listed when a milestone needs t
 
 ## M0 — Foundations
 
-- [ ] pnpm + Turborepo monorepo with the layout from CLAUDE.md §3, strict TS, ESLint, Prettier
-- [ ] `apps/server`: NestJS skeleton with `ARDOISE_ROLE` (api/collab/worker/all), config
+- [x] pnpm + Turborepo monorepo with the layout from CLAUDE.md §3, strict TS, ESLint, Prettier
+- [x] `apps/server`: NestJS skeleton with `ARDOISE_ROLE` (api/collab/worker/all), config
       validation (zod), pino logging, `/healthz`, `/readyz`
-- [ ] `packages/db`: Drizzle setup, first migration (extensions `ltree`, `pg_trgm`,
+- [x] `packages/db`: Drizzle setup, first migration (extensions `ltree`, `pg_trgm`,
       `unaccent`), migration-on-boot with advisory lock
-- [ ] `apps/web`: Vite + React + TanStack Router + Tailwind + shadcn/ui, app shell
+- [x] `apps/web`: Vite + React + TanStack Router + Tailwind + shadcn/ui, app shell
       (sidebar + main), light/dark/system theme, i18next with `fr`/`en`
-- [ ] `packages/i18n` with a key-completeness unit test
-- [ ] `docker/Dockerfile` (single multi-stage image) and `docker-compose.yml` (ardoise,
+- [x] `packages/i18n` with a key-completeness unit test
+- [x] `docker/Dockerfile` (single multi-stage image) and `docker-compose.yml` (ardoise,
       postgres, valkey, rustfs) with health checks
-- [ ] Test infrastructure: Vitest workspace, Testcontainers helpers, Playwright project
-- [ ] GitHub Actions CI: lint, typecheck, unit, integration, license allowlist check,
+- [x] Test infrastructure: Vitest workspace, Testcontainers helpers, Playwright project
+- [x] GitHub Actions CI: lint, typecheck, unit, integration, license allowlist check,
       SPDX header check, image build
-- [ ] `README.md` (quick start), `LICENSE` (AGPL-3.0), `CONTRIBUTING.md`, ADR template
+- [x] `README.md` (quick start), `LICENSE` (AGPL-3.0), `CONTRIBUTING.md`, ADR template
 
 **Acceptance**: `docker compose up` serves the app shell in both languages and both
 themes. CI is green. `pnpm dev` works on Windows and Linux.
