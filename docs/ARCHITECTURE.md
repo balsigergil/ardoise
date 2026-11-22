@@ -123,7 +123,9 @@ Conventions:
 ### 4.3 Pages and tree
 - `pages`:
   - workspace_id, id, kind `page|database|row`;
-  - parent_kind `workspace|teamspace|private|page|database`, parent_id;
+  - parent_kind `teamspace|private|page|database`, parent_id. Top-level pages hang off a
+    teamspace or a user's private section (`parent_id` = the user id); there are no
+    workspace-root pages (ADR 0006);
   - `path ltree`: materialized ancestry of page ids, for subtree queries and
     permission resolution. Labels are ids as 32 hex characters, without hyphens
     (ADR 0002). `path` is server-only: clients derive ancestry from `parent_id`;
@@ -147,14 +149,16 @@ Conventions:
   "moving" (`move_state`) until it completes. Only the moved root gets a change-log entry.
 - Child pages: the tree is authoritative for their existence; a child-page block in the
   content is a view of it. Deleting the block trashes the page (ADR 0003).
-- `page_permissions` (workspace_id, page_id, principal_kind, principal_id, level), see §9.
+- `page_permissions` (workspace_id, page_id, principal_kind, principal_id, level,
+  created_by, created_at), see §9.
 - `favorites` (workspace_id, user_id, page_id, position)
 - `recents` (workspace_id, user_id, page_id, visited_at), capped at 50 per user. Written
   by direct upsert, outside the change log and the workspace sequence (ADR 0003).
 - `page_follows` (workspace_id, user_id, page_id)
-- `public_links` (workspace_id, page_id, token_hash, token_encrypted, include_subpages,
-  created_by, revoked_at). `token_hash` is an HMAC for lookup; `token_encrypted` lets the
-  share menu show the link again (ADR 0004).
+- `public_links` (workspace_id, id, page_id, token_hash, token_encrypted,
+  include_subpages, created_by, created_at, revoked_at), at most one non-revoked link per
+  page (ADR 0006). `token_hash` is an HMAC for lookup; `token_encrypted` lets the share
+  menu show the link again (ADR 0004).
 
 ### 4.4 Content (Yjs)
 - `page_documents` (workspace_id, page_id, doc_name, state bytea, state_vector bytea,
@@ -229,7 +233,10 @@ Conventions:
   - `data` holds the **post-change state of the entity** (small entities) so clients
     simply upsert.
 - `seq` is allocated by `UPDATE workspace_counters SET change_seq = change_seq + 1
-  ... RETURNING` inside the mutation transaction.
+  ... RETURNING` inside the mutation transaction, as its last step, so the serialized
+  section is short. Structural page mutations (create, move, trash, restore, purge,
+  duplicate) lock the counter row first, so tree invariants are checked on a stable tree
+  (ADR 0006).
   - This guarantees gap-free, commit-ordered sequences per workspace, at the cost of
     serializing structured writes within one workspace.
   - That is acceptable because content edits go through Yjs. Benchmark it in M2 and
@@ -294,7 +301,9 @@ type Mutation<N extends MutationName = MutationName> = {
   - favorites and recents: `favorite.add/remove/move`, `recent.touch`;
   - databases: `database.updateSchema`, `row.setProperty`, `row.move`,
     `view.create/update/delete/move`;
-  - permissions: `permission.grant/revoke/setRestrict`;
+  - follows: `follow.add/remove` (user-private entries);
+  - permissions: `permission.grant/revoke/setRestrict`, `permission.recover` (explicit,
+    logged owner recovery), `publicLink.set` (ADR 0006);
   - comments: `comment.create/update/delete`, `thread.resolve/reopen`;
   - templates and teamspaces: `template.setFlag`, `teamspace.*`, `member.*`.
 - **Offline whitelist** (§8): `page.create`, `page.update` (title and icon only),
@@ -309,8 +318,14 @@ type Mutation<N extends MutationName = MutationName> = {
 
 ## 7. Structured data: change log, pull and pokes
 
-- **Pull**: `GET /sync/pull?workspace=…&since=<seq>&limit=…` returns change-log entries
-  after `since` that the user is allowed to see, and the new cursor.
+- **Pull**: `GET /sync/pull?workspace=…&since=<seq>&limit=…` returns
+  `{ entries, cursor, hasMore }` (at most 1000 entries): change-log entries after `since`
+  that the user is allowed to see, and the new cursor, which also advances past filtered
+  entries. A `since` older than the retained log fails with `resync_required`.
+  - Delivery rules (ADR 0006): `user_id` entries go to that user only; page-governed
+    entries to users who can view the page (page `delete` entries are not filtered);
+    `workspace` and `member` entries to every member; `teamspace` entries to members who
+    can see the teamspace; `access` entries (ids only) to every member.
   - Permission filtering is batched by `page_id` using the effective-permission cache (§9).
   - The client keeps entries only for entities in its cached scope (plus tree children
     of loaded nodes).
@@ -320,7 +335,9 @@ type Mutation<N extends MutationName = MutationName> = {
 - **Scoped reads** (not via the log): the tree (`GET /pages/:id/children`, paginated),
   page metadata, database view queries (§10), search, comments of a page and history.
   These responses carry the `seq` at which they were read, so the client can reconcile
-  with the log.
+  with the log: it keeps a per-entity seq and ignores data older than what it holds.
+- `/sync/ws` authenticates the upgrade with the session cookie and an `Origin` check,
+  and only sends pokes. Sockets close when the session ends or the membership goes.
 
 ## 8. Client architecture (SPA / PWA)
 
@@ -373,8 +390,10 @@ Editor (packages/editor) ── Yjs docs ── HocuspocusProvider + y-indexeddb
 
 - **Grants**: `page_permissions` (workspace_id, page_id, principal_kind
   user|teamspace|workspace|integration|public_link, principal_id, level). The roots
-  (teamspace, private section, workspace) define base access through membership and
-  teamspace `default_level`.
+  define base access (ADR 0006): teamspace members get the teamspace `default_level`
+  and teamspace owners Full access; the private section gives Full access to its owner
+  only. Workspace owners and admins get no implicit page access. `no_access` is not a
+  grantable level.
 - **Effective permission** for (user, page): walk ancestors from `pages.path`, nearest
   first.
   1. Union the grants matching the user (directly or through teamspace or workspace

@@ -64,6 +64,9 @@ reference for the clean-room implementation (see `CLAUDE.md` §1.1). Scope marke
   - Members see teamspaces they can join.
   - Guests see only pages explicitly shared with them.
 - **Teamspaces**: name, icon, description and members (teamspace owner or member).
+  Every new workspace starts with one open teamspace named after it. Teamspace pages
+  are accessible to the teamspace's members (at its default level; owners get full
+  access), not to other workspace members unless shared with them.
   Visibility is *open* (any workspace member can join), *closed* (visible, join on
   request or invite; requests ship with notifications in M6) or *private* (hidden from
   non-members). A default access level
@@ -87,8 +90,8 @@ reference for the clean-room implementation (see `CLAUDE.md` §1.1). Scope marke
   - make available offline;
   - version history, export, delete (to trash).
 - **Trash**: deleted pages and their subtrees go to the trash. From there they can be
-  restored to their original location (or to the workspace root if the parent no longer
-  exists) or permanently deleted. Pages are purged automatically after the retention period.
+  restored to their original location (or to the root of their teamspace, or the
+  restorer's private pages, if the parent no longer exists) or permanently deleted. Pages are purged automatically after the retention period.
 - **Recents**: per user, the pages visited most recently.
 - **Backlinks**: every page lists the pages that link to or mention it.
 - **Public link** [v1]: "Share to web" gives a read-only public URL for a page and
@@ -221,6 +224,8 @@ players, breadcrumb block, buttons, forms.
 - **Levels**, from highest to lowest: **Full access** (edit and share), **Can edit**, **Can
   edit content** (databases only: edit rows but not schema or views), **Can comment**,
   **Can view**, **No access**.
+- "No access" is the absence of a grant: removing someone from the share menu deletes
+  their grant. To keep people out of a subpage, restrict its inheritance.
 - **Grants** target a user, a teamspace (all its members), the whole workspace or, for
   pages shared to web, "anyone with the link" (view only).
 - **Inheritance**: a page inherits its parent's access. A page can add grants on top of
