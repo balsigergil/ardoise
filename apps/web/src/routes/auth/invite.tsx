@@ -14,14 +14,15 @@ import { PublicLayout } from '@/components/public-layout';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { applySession, useSession } from '@/auth/session';
-import { api, tokenFromHash } from '@/lib/api';
+import { useHashToken } from '@/hooks/use-hash-token';
+import { api } from '@/lib/api';
 
 export function InvitePage() {
   const { t, i18n } = useTranslation();
   const router = useRouter();
   const queryClient = useQueryClient();
   const session = useSession();
-  const [token] = useState(() => tokenFromHash(globalThis.location?.hash ?? ''));
+  const token = useHashToken();
   const [mismatch, setMismatch] = useState(false);
 
   const preview = useQuery({

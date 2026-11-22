@@ -71,6 +71,11 @@ jobs:
         run: docker compose -f docker/docker-compose.yml up --build --detach --wait
       - name: Readiness
         run: curl --fail --silent --show-error http://localhost:3000/readyz
+      - name: First-run setup URL from the logs
+        run: |
+          url=$(docker compose -f docker/docker-compose.yml logs ardoise | grep -o 'http://localhost:3000/setup#token=[A-Za-z0-9_-]*' | head -1)
+          test -n "$url"
+          echo "E2E_SETUP_URL=$url" >> "$GITHUB_ENV"
       - run: pnpm --filter @ardoise/e2e exec playwright install --with-deps chromium
       - run: pnpm test:e2e
         env:

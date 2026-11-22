@@ -277,3 +277,14 @@ describe('option labels', () => {
           ).toBeTruthy();
   });
 });
+
+describe('one-time links', () => {
+  it('picks up a token added to the fragment after the page opened', async () => {
+    mockApi({ ...signedOut, 'GET /api/setup': { body: { required: true } } });
+    await renderApp('/setup');
+    expect(await screen.findByText(/setup link printed in the server logs/)).toBeTruthy();
+    window.location.hash = `#token=${TOKEN}`;
+    window.dispatchEvent(new HashChangeEvent('hashchange'));
+    expect(await screen.findByLabelText('Workspace name')).toBeTruthy();
+  });
+});

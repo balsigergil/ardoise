@@ -10,6 +10,8 @@
   },
   "devDependencies": {
     "@ardoise/config": "workspace:*",
-    "@playwright/test": "1.65.1"
+    "@playwright/test": "1.65.1",
+    "@testcontainers/postgresql": "12.2.2",
+    "testcontainers": "12.2.2"
   }
 }

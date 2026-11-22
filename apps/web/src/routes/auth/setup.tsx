@@ -2,19 +2,19 @@
 import { PASSWORD_MIN_LENGTH, type SessionDto } from '@ardoise/shared';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from '@tanstack/react-router';
-import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Field, FormError, FormNotice, SubmitButton } from '@/components/forms/form';
 import { formValues } from '@/lib/form';
 import { PublicLayout } from '@/components/public-layout';
 import { applySession, setupStatusQuery } from '@/auth/session';
-import { api, tokenFromHash } from '@/lib/api';
+import { useHashToken } from '@/hooks/use-hash-token';
+import { api } from '@/lib/api';
 
 export function SetupPage() {
   const { t, i18n } = useTranslation();
   const router = useRouter();
   const queryClient = useQueryClient();
-  const [token] = useState(() => tokenFromHash(globalThis.location?.hash ?? ''));
+  const token = useHashToken();
   const setup = useMutation({
     mutationFn: (body: Record<string, string>) =>
       api.post<{ session: SessionDto; workspaceId: string }>('/api/setup', {

@@ -8,7 +8,8 @@ import { Field, FormError, FormNotice, SubmitButton } from '@/components/forms/f
 import { formValues } from '@/lib/form';
 import { PublicLayout } from '@/components/public-layout';
 import { Button } from '@/components/ui/button';
-import { api, tokenFromHash } from '@/lib/api';
+import { useHashToken } from '@/hooks/use-hash-token';
+import { api } from '@/lib/api';
 
 export function ForgotPasswordPage() {
   const { t, i18n } = useTranslation();
@@ -57,7 +58,7 @@ export function ForgotPasswordPage() {
 
 export function ResetPasswordPage() {
   const { t } = useTranslation();
-  const [token] = useState(() => tokenFromHash(globalThis.location?.hash ?? ''));
+  const token = useHashToken();
   const [mismatch, setMismatch] = useState(false);
   const confirm = useMutation({
     mutationFn: (password: string) =>

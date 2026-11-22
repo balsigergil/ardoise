@@ -379,6 +379,12 @@ importers:
       '@playwright/test':
         specifier: 1.65.1
         version: 1.65.1
+      '@testcontainers/postgresql':
+        specifier: 12.2.2
+        version: 12.2.2(bare-buffer@3.7.3)
+      testcontainers:
+        specifier: 12.2.2
+        version: 12.2.2(bare-buffer@3.7.3)
 
   packages/config:
     dependencies:
