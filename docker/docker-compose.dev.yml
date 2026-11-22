@@ -1,0 +1,12 @@
+# Development overlay used by `pnpm dev`: exposes the dependencies on localhost so the
+# server and web app can run on the host with hot reload.
+services:
+  postgres:
+    ports:
+      - '127.0.0.1:${ARDOISE_DEV_POSTGRES_PORT:-5432}:5432'
+  valkey:
+    ports:
+      - '127.0.0.1:${ARDOISE_DEV_VALKEY_PORT:-6379}:6379'
+  rustfs:
+    ports:
+      - '127.0.0.1:${ARDOISE_DEV_S3_PORT:-9000}:9000'

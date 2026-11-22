@@ -1,0 +1,86 @@
+# Reference deployment: Ardoise (role=all) + PostgreSQL + Valkey + RustFS.
+# Copy docker/.env.example to docker/.env and set the secrets before the first start.
+# Image versions are pinned; keep them in sync with apps/server/test/images.ts.
+name: ardoise
+
+x-s3-credentials: &s3-credentials
+  S3_ACCESS_KEY: ${S3_ACCESS_KEY:-ardoise}
+  S3_SECRET_KEY: ${S3_SECRET_KEY:?set S3_SECRET_KEY in docker/.env}
+
+services:
+  ardoise:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    image: ${ARDOISE_IMAGE:-ardoise:local}
+    init: true
+    restart: unless-stopped
+    environment:
+      <<: *s3-credentials
+      ARDOISE_ROLE: all
+      ARDOISE_PUBLIC_URL: ${ARDOISE_PUBLIC_URL:-http://localhost:3000}
+      ARDOISE_SECRET_KEY: ${ARDOISE_SECRET_KEY:?set ARDOISE_SECRET_KEY in docker/.env}
+      DATABASE_URL: postgres://ardoise:${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in docker/.env}@postgres:5432/ardoise
+      VALKEY_URL: redis://valkey:6379
+      S3_ENDPOINT: http://rustfs:9000
+      S3_REGION: us-east-1
+      S3_BUCKET: ardoise
+      S3_FORCE_PATH_STYLE: 'true'
+      ARDOISE_ADMIN_EMAIL: ${ARDOISE_ADMIN_EMAIL:-}
+      ARDOISE_ADMIN_PASSWORD: ${ARDOISE_ADMIN_PASSWORD:-}
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+    ports:
+      - '${ARDOISE_PORT:-3000}:3000'
+    depends_on:
+      postgres:
+        condition: service_healthy
+      valkey:
+        condition: service_healthy
+      rustfs:
+        condition: service_healthy
+
+  postgres:
+    image: postgres:17.12-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ardoise
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in docker/.env}
+      POSTGRES_DB: ardoise
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U ardoise -d ardoise']
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  valkey:
+    image: valkey/valkey:9.2.0-alpine
+    restart: unless-stopped
+    command: ['valkey-server', '--appendonly', 'yes']
+    volumes:
+      - valkey-data:/data
+    healthcheck:
+      test: ['CMD', 'valkey-cli', 'ping']
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  rustfs:
+    image: rustfs/rustfs:1.0.6
+    restart: unless-stopped
+    environment:
+      RUSTFS_ACCESS_KEY: ${S3_ACCESS_KEY:-ardoise}
+      RUSTFS_SECRET_KEY: ${S3_SECRET_KEY:?set S3_SECRET_KEY in docker/.env}
+    volumes:
+      - rustfs-data:/data
+    healthcheck:
+      test: ['CMD', 'curl', '-fs', 'http://localhost:9000/health']
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+volumes:
+  postgres-data:
+  valkey-data:
+  rustfs-data:
