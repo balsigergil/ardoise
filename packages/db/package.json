@@ -19,9 +19,12 @@
     "build": "tsc -p tsconfig.build.json",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "generate": "drizzle-kit generate",
-    "migrate": "tsx --conditions=development src/cli/migrate.ts"
+    "migrate": "tsx --conditions=development src/cli/migrate.ts",
+    "seed": "tsx --conditions=development src/cli/seed.ts",
+    "seed:large": "tsx --conditions=development src/cli/seed.ts --large"
   },
   "dependencies": {
+    "@ardoise/shared": "workspace:*",
     "drizzle-orm": "0.45.4",
     "pg": "8.23.1"
   },

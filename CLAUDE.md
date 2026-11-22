@@ -190,6 +190,8 @@ pnpm dev:down                    # stop the dev dependencies
 pnpm typecheck | lint | test | test:integration | test:e2e   # e2e starts its own stack (Docker)
 pnpm check:licenses | check:spdx
 pnpm build
-pnpm db:migrate | db:generate    # db:seed and db:seed:large arrive in M2
+pnpm db:migrate | db:generate
+pnpm db:seed | db:seed:large     # demo / 1M-page workspace for the first super-admin (--owner <email>)
+pnpm --filter @ardoise/server bench   # M2 benchmarks against a running server (BENCH_URL, BENCH_EMAIL, BENCH_PASSWORD)
 docker compose -f docker/docker-compose.yml up   # needs docker/.env (see .env.example)
 ```

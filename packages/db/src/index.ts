@@ -9,3 +9,10 @@ export {
   type LockClient,
   type RunMigrationsOptions,
 } from './migrate.js';
+export {
+  seedDemo,
+  seedLarge,
+  LARGE_DEFAULTS,
+  type LargeSeedOptions,
+  type SeedReport,
+} from './seed/seed.js';

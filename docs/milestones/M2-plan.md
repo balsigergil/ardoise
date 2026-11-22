@@ -86,6 +86,15 @@ Decisions approved at the start of M2: ADR 0006. It covers:
   `/sync/ws`. It shares the server with `/collab` in M3 (ADR 0004).
 - **Drag and drop** uses native HTML5 events on the flattened, virtualized tree (no
   dependency). "Move to" covers keyboard and touch.
+- **Restricting a page keeps the restrictor's access**: when the person restricting
+  would otherwise lose Full access, they get an explicit Full access grant on the page.
+- **Member directory**: `member` entries are not delivered to guests (they cannot list
+  members in M1 either), except their own entry.
+- **Membership mutations** (`teamspace.*`, `member.*`) also lock the counter row first;
+  that serializes them and replaces the M1 advisory locks for the "last owner" rules.
+- **Partial client cache**: a mutation on an entity the client does not hold is queued
+  without local effect; the server decides. A page just created is shown from the store
+  until the server's read returns it.
 - **Scoped reads** stay under `/api/workspaces/:id/...` and carry `seq`. Mutations and
   pull are under `/sync/` and use the same session guard and CSRF rules.
 - **New dependencies** (licenses checked): `fractional-indexing` (CC0-1.0), `bullmq`

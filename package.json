@@ -21,7 +21,9 @@
     "check:licenses": "node scripts/check-licenses.mjs",
     "check:spdx": "node scripts/check-spdx.mjs",
     "db:migrate": "pnpm --filter @ardoise/db run migrate",
-    "db:generate": "pnpm --filter @ardoise/db run generate"
+    "db:generate": "pnpm --filter @ardoise/db run generate",
+    "db:seed": "pnpm --filter @ardoise/db run seed",
+    "db:seed:large": "pnpm --filter @ardoise/db run seed:large"
   },
   "devDependencies": {
     "@ardoise/config": "workspace:*",
