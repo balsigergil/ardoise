@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: AGPL-3.0-only
-import { newId, positionBetween, uuidToLabel } from '@ardoise/shared';
+import { MAX_PAGE_DEPTH, newId, positionBetween, uuidToLabel } from '@ardoise/shared';
 import { describe, expect, it } from 'vitest';
 import type { PageRecord } from '../store/store.js';
 import { createHarness, type Harness } from '../testing/harness.js';
@@ -85,6 +85,41 @@ describe('page.create', () => {
       position: pos,
     });
     expect(result).toMatchObject({ code: 'forbidden' });
+  });
+});
+
+describe('depth limit (ADR 0007)', () => {
+  it('refuses pages deeper than MAX_PAGE_DEPTH, and moves that would push a subtree past it', async () => {
+    const { h, owner, ws, ts } = await setup();
+    let parent: { kind: 'teamspace' | 'page'; id: string } = { kind: 'teamspace', id: ts };
+    const chain: string[] = [];
+    for (let i = 0; i < MAX_PAGE_DEPTH; i++) {
+      const id = await h.createPage(owner, ws, parent, `d${i + 1}`);
+      chain.push(id);
+      parent = { kind: 'page', id };
+    }
+    expect(
+      await h.tryMutate(owner, ws, 'page.create', { id: newId(), parent, position: pos }),
+    ).toMatchObject({ code: 'too_deep' });
+    // A two-level subtree fits under depth 38, not under depth 39.
+    const top = await h.createPage(owner, ws, { kind: 'teamspace', id: ts }, 'top');
+    await h.createPage(owner, ws, { kind: 'page', id: top }, 'kid');
+    expect(
+      await h.tryMutate(owner, ws, 'page.move', {
+        id: top,
+        parent: { kind: 'page', id: chain[38]! },
+        position: pos,
+      }),
+    ).toMatchObject({ code: 'too_deep' });
+    expect(
+      (
+        await h.tryMutate(owner, ws, 'page.move', {
+          id: top,
+          parent: { kind: 'page', id: chain[37]! },
+          position: pos,
+        })
+      ).status,
+    ).toBe('applied');
   });
 });
 

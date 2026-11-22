@@ -22,7 +22,7 @@ reference for the clean-room implementation (see `CLAUDE.md` §1.1). Scope marke
 | Instance | One Ardoise deployment. Managed by super-admins. |
 | Workspace | Top-level container of members, teamspaces and pages. An instance hosts many workspaces. |
 | Teamspace | A group of members inside a workspace with its own page tree and default access. |
-| Page | A document made of blocks. Pages nest without limit. |
+| Page | A document made of blocks. Pages nest up to 40 levels deep (ADR 0007). |
 | Block | A unit of content inside a page (paragraph, heading, image, database…). Blocks can contain child blocks. |
 | Database | A page that holds a collection of rows with a typed schema and one or more views. |
 | Row | An entry of a database. **A row is a page**: it has properties *and* its own content. |

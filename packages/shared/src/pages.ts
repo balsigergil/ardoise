@@ -47,7 +47,11 @@ export type PageCover = z.infer<typeof pageCoverSchema>;
 
 export const pageTitleSchema = z.string().max(2000);
 
-export const MAX_PAGE_DEPTH = 1000;
+/**
+ * Deepest nesting allowed (ADR 0007): the GiST index on `pages.path` fails beyond about
+ * 50 levels of 32-hex labels, so 40 leaves a margin.
+ */
+export const MAX_PAGE_DEPTH = 40;
 
 export interface PageParent {
   kind: ParentKind;

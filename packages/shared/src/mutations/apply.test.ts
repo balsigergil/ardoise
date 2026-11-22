@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 import { describe, expect, it } from 'vitest';
 import { newId } from '../ids.js';
-import type { PageDto, PageParent } from '../pages.js';
+import { MAX_PAGE_DEPTH, type PageDto, type PageParent } from '../pages.js';
 import { positionBetween } from '../position.js';
 import type { Change, EntityMap, EntityType } from '../sync.js';
 import { applyMutation, knownAncestors, type ApplyContext, type EntityReader } from './apply.js';
@@ -174,6 +174,24 @@ describe('page.create', () => {
         position: pos,
       }),
     ).toEqual({ ok: false, code: 'validation_failed' });
+  });
+
+  it('refuses a child beyond the depth limit when the chain is known', () => {
+    const reader = new MapReader();
+    let parent = page();
+    reader.set('page', parent.id, parent);
+    for (let i = 1; i < MAX_PAGE_DEPTH; i++) {
+      const child = page({ parentKind: 'page', parentId: parent.id });
+      reader.set('page', child.id, child);
+      parent = child;
+    }
+    expect(
+      run(reader, 'page.create', {
+        id: newId(),
+        parent: { kind: 'page', id: parent.id },
+        position: pos,
+      }),
+    ).toEqual({ ok: false, code: 'too_deep' });
   });
 
   it('accepts unknown teamspaces on the client (partial cache)', () => {

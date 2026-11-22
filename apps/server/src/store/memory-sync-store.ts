@@ -86,6 +86,13 @@ export function memoryPagesRepo(d: MemorySyncData): PagesRepo {
         .slice(0, limit + 1)
         .map((p) => ({ ...p, hasChildren: liveChildren(ws, p.id).length > 0 })),
     withChildren: async (ws, ids) => new Set(ids.filter((id) => liveChildren(ws, id).length > 0)),
+    subtreeHeight: async (ws, path) =>
+      Math.max(
+        0,
+        ...all(ws)
+          .filter((p) => under(p.path, path))
+          .map((p) => depthOf(p.path)),
+      ) - depthOf(path),
     subtreeSize: async (ws, path, cap) =>
       Math.min(all(ws).filter((p) => under(p.path, path)).length, cap + 1),
     rewritePaths: async (ws, oldPath, newPath, options) => {

@@ -3,6 +3,7 @@
 import {
   atLeast,
   DomainError,
+  MAX_PAGE_DEPTH,
   idsFromPath,
   type Change,
   type MutationParent,
@@ -132,6 +133,9 @@ async function relocate(
 ): Promise<PageDto> {
   const newPath = childPath(newParent, page.id);
   if (newPath === page.path) return dto;
+  // The whole subtree must still fit under the depth limit (ADR 0007).
+  const height = await ctx.store.pages.subtreeHeight(ctx.workspaceId, page.path);
+  if (newPath.split('.').length + height > MAX_PAGE_DEPTH) throw new DomainError('too_deep');
   ctx.access('page', page.id);
   const size = await ctx.store.pages.subtreeSize(ctx.workspaceId, page.path, SUBTREE_INLINE_LIMIT);
   if (size <= SUBTREE_INLINE_LIMIT) {

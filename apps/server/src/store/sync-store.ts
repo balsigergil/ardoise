@@ -72,6 +72,8 @@ export interface PagesRepo {
   ): Promise<PageWithChildren[]>;
   /** Ids among `ids` that have at least one live child. */
   withChildren(workspaceId: string, ids: readonly string[]): Promise<Set<string>>;
+  /** Levels below the subtree root (0 for a leaf). */
+  subtreeHeight(workspaceId: string, path: string): Promise<number>;
   /** Up to `cap` + 1: enough to compare with a threshold without counting everything. */
   subtreeSize(workspaceId: string, path: string, cap: number): Promise<number>;
   /**

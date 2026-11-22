@@ -213,14 +213,15 @@ export const LARGE_DEFAULTS: LargeSeedOptions = {
   teamspaces: 10,
   roots: 100,
   fanout: [10, 10, 10],
-  deepChain: 200,
+  // The deepest nesting allowed (MAX_PAGE_DEPTH, ADR 0007).
+  deepChain: 40,
   grantEvery: 50,
   members: 20,
 };
 
 /**
  * The benchmark workspace (ARCHITECTURE §12): by default 10 teamspaces × 100 roots with
- * fan-out 10/10/10 (1,111,000 pages), a 200-deep chain and ~22k grants. Members are
+ * fan-out 10/10/10 (1,111,000 pages), a 40-deep chain and ~22k grants. Members are
  * created without a usable password (they only receive grants).
  */
 export async function seedLarge(

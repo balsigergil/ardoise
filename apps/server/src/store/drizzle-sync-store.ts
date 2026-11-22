@@ -137,6 +137,12 @@ export function pagesRepo(db: Executor): PagesRepo {
         );
       return new Set(rows.map((r) => r.id));
     },
+    async subtreeHeight(workspaceId, path) {
+      const result = await db.execute<{ h: number }>(sql`
+        SELECT coalesce(max(nlevel(path)), 0)::int - nlevel(${path}::ltree) AS h FROM ${pages}
+        WHERE workspace_id = ${workspaceId} AND path <@ ${path}::ltree`);
+      return Math.max(0, result.rows[0]?.h ?? 0);
+    },
     async subtreeSize(workspaceId, path, cap) {
       const result = await db.execute<{ n: number }>(sql`
         SELECT count(*)::int AS n FROM (

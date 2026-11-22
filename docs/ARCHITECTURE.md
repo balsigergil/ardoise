@@ -128,7 +128,8 @@ Conventions:
     workspace-root pages (ADR 0006);
   - `path ltree`: materialized ancestry of page ids, for subtree queries and
     permission resolution. Labels are ids as 32 hex characters, without hyphens
-    (ADR 0002). `path` is server-only: clients derive ancestry from `parent_id`;
+    (ADR 0002). `path` is server-only: clients derive ancestry from `parent_id`.
+    The GiST index limits nesting, so pages nest at most 40 levels deep (ADR 0007);
   - `is_inline` (databases embedded as a block, hidden from the sidebar; ADR 0003);
   - `move_state` nullable (`moving` while a large subtree move job runs; ADR 0003);
   - position (fractional index; siblings sort by `(position, id)` so concurrent inserts

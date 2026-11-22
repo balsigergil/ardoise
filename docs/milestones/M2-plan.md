@@ -5,7 +5,7 @@ store, the page tree with its sidebar, trash, favorites, recents and follows,
 permissions with sharing and public links, the M1 workspace writes moved to mutations,
 and the large-workspace seed with benchmarks.
 
-Decisions approved at the start of M2: ADR 0006. It covers:
+Decisions approved at the start of M2: ADR 0006. Decided during M2: ADR 0007 (nesting capped at 40 levels). It covers:
 - page roots (teamspace or private, plus a default teamspace per workspace);
 - teamspace base access for members only;
 - the strict-maximum permission rule;
