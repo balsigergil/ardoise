@@ -13,3 +13,6 @@ allowBuilds:
   cpu-features: false
   protobufjs: false
   ssh2: false
+
+minimumReleaseAgeExclude:
+  - i18next@27.2.4

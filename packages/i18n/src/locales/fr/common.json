@@ -50,5 +50,10 @@
   },
   "status": {
     "comingSoon": "Bientôt disponible"
+  },
+  "ui": {
+    "close": "Fermer",
+    "sidebarTitle": "Barre latérale",
+    "sidebarDescription": "Navigation dans l’espace de travail"
   }
 }

@@ -55,7 +55,7 @@ export function ardoiseEslint({ tsconfigRootDir }) {
     {
       // shadcn/ui components are used as they are (PRODUCT §19).
       files: ['apps/web/src/components/ui/**'],
-      rules: { 'react-refresh/only-export-components': 'off' },
+      rules: { 'react-refresh/only-export-components': 'off', 'react-hooks/purity': 'off' },
     },
     prettier,
   );

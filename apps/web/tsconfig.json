@@ -1,0 +1,8 @@
+{
+  "extends": "@ardoise/config/tsconfig.react.json",
+  "compilerOptions": {
+    "paths": { "@/*": ["./src/*"] },
+    "types": ["vite/client", "node"]
+  },
+  "include": ["src", "*.config.ts"]
+}

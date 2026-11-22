@@ -50,5 +50,10 @@
   },
   "status": {
     "comingSoon": "Coming soon"
+  },
+  "ui": {
+    "close": "Close",
+    "sidebarTitle": "Sidebar",
+    "sidebarDescription": "Workspace navigation"
   }
 }
