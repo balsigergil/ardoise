@@ -57,6 +57,8 @@ output instead of proceeding.
   non-commercial and "source-available" licenses.
 - **Tiptap**: only the MIT-licensed open-source packages. Never use Tiptap Pro or
   paid extensions, Tiptap Cloud, or any package that needs a private registry or token.
+- The full allowlist (including `0BSD`, `BlueOak-1.0.0`, `Zlib`, `Python-2.0` and
+  data-only `CC-BY-*`) and the SPDX header scope are defined in ADR 0001.
 - CI runs a license check against an allowlist. Adding a dependency that fails the
   check is a blocking error.
 
@@ -124,9 +126,10 @@ docs/            PRODUCT, ARCHITECTURE, ROADMAP, decisions/ (ADRs)
 - **Structured writes** go through the mutation pipeline (ARCHITECTURE §6), never
   through ad-hoc REST updates. Page content goes through Yjs only.
 - **Ordering**: use fractional indexing (string keys) for siblings, never integer positions.
-- **Backend structure**: NestJS modules by domain (`auth`, `workspaces`, `pages`,
-  `databases`, `sync`, `collab`, `files`, `search`, `comments`, `notifications`,
-  `history`, `ai`, `api-public`, `mcp`, `import-export`, `admin`). Keep domain logic
+- **Backend structure**: NestJS modules by domain (`auth`, `admin`, `workspaces`,
+  `pages`, `permissions`, `sync`, `collab`, `databases`, `files`, `projection`, `search`,
+  `comments`, `notifications`, `history`, `templates`, `import-export`, `ai`,
+  `api-public`, `mcp`, `mail`), as listed in ARCHITECTURE §3. Keep domain logic
   in plain TypeScript services that can be unit tested without NestJS or a database. Put
   persistence behind repository interfaces.
 - **Errors**: typed domain errors that map to stable API error codes. Never leak stack

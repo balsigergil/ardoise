@@ -49,8 +49,8 @@ reference for the clean-room implementation (see `CLAUDE.md` §1.1). Scope marke
   - SMTP settings and a test email;
   - AI providers;
   - limits: max upload size (default 100 MB), trash retention (default 30 days),
-    version history retention (default unlimited), rows cached per database view for
-    offline use (default 50), invitation expiry;
+    version history retention (default unlimited), rows cached for the default view
+    of each cached database for offline use (default 50), invitation expiry;
   - storage usage;
   - instance-wide toggles.
 - User settings: name, avatar, email, password, language (`fr`/`en`), theme
@@ -226,7 +226,10 @@ players, breadcrumb block, buttons, forms.
   inherited access or **restrict** inheritance so that only its own grants apply.
   Moving a page keeps its explicit grants. Inherited access then comes from the new parent.
 - Private pages are visible only to their creator unless shared.
-- Workspace owners can always recover access to any non-private page of the workspace.
+- Workspace owners can always recover access to any non-private page of the workspace,
+  through an explicit "Recover access" action that is recorded.
+- Restricting inheritance on a page also cuts the teamspace and workspace default access:
+  only grants set on that page, or on pages between it and the page being opened, apply.
 - The share menu shows who has access and why (inherited from X / granted here).
 
 ## 14. Search [v1]
@@ -262,7 +265,8 @@ players, breadcrumb block, buttons, forms.
   - import/export.
 - **Reconnect**: changes sync automatically.
   - Text merges without loss.
-  - For a property edited by several people, the last write wins.
+  - For a property edited by several people, the last write received by the server
+    wins (device clocks are not used).
   - Any offline change the user is no longer allowed to make (for example, access was
     revoked meanwhile) is **rejected**: the change is discarded and the user sees a list
     of the rejected changes.
