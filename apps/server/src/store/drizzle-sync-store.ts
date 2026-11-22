@@ -59,9 +59,11 @@ const fromPage = (p: PageRecord): typeof pages.$inferInsert => ({ ...p, properti
 
 const inSubtree = (path: string): SQL => sql`${pages.path} <@ ${path}::ltree`;
 
+// Drizzle renders column references unqualified inside `sql`, which would bind them to
+// the inner table: the outer row is named explicitly.
 const hasLiveChild = sql<boolean>`EXISTS (
   SELECT 1 FROM ${pages} c
-  WHERE c.workspace_id = ${pages.workspaceId} AND c.parent_id = ${pages.id}
+  WHERE c.workspace_id = "pages"."workspace_id" AND c.parent_id = "pages"."id"
     AND c.deleted_at IS NULL AND NOT c.is_inline
 )`;
 

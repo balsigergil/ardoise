@@ -271,6 +271,10 @@ describe('subtree moves', () => {
     } finally {
       await db.end();
     }
+    const list = await admin.get<PageListDto>(
+      `/api/workspaces/${workspaceId}/pages/${target}/children`,
+    );
+    expect(list.body.items.map((p) => [p.id, p.hasChildren])).toEqual([[parent, true]]);
     expect(
       await admin.mutate(workspaceId, 'page.move', {
         id: target,
