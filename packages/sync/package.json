@@ -18,8 +18,12 @@
     "build": "tsc -p tsconfig.build.json",
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
-  "dependencies": {},
+  "dependencies": {
+    "@ardoise/shared": "workspace:*",
+    "dexie": "4.4.7"
+  },
   "devDependencies": {
-    "@ardoise/config": "workspace:*"
+    "@ardoise/config": "workspace:*",
+    "fake-indexeddb": "6.2.8"
   }
 }
