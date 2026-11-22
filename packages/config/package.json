@@ -1,0 +1,31 @@
+{
+  "name": "@ardoise/config",
+  "version": "0.0.0",
+  "private": true,
+  "license": "AGPL-3.0-only",
+  "type": "module",
+  "exports": {
+    "./eslint": "./eslint.shared.mjs",
+    "./prettier": "./prettier.config.mjs",
+    "./vitest": {
+      "types": "./vitest.shared.d.mts",
+      "default": "./vitest.shared.mjs"
+    },
+    "./tsconfig.base.json": "./tsconfig.base.json",
+    "./tsconfig.node.json": "./tsconfig.node.json",
+    "./tsconfig.react.json": "./tsconfig.react.json"
+  },
+  "dependencies": {
+    "@eslint/js": "10.0.1",
+    "eslint-config-prettier": "10.1.8",
+    "eslint-plugin-react-hooks": "7.1.1",
+    "eslint-plugin-react-refresh": "0.5.8",
+    "globals": "17.14.0",
+    "typescript-eslint": "8.73.0"
+  },
+  "peerDependencies": {
+    "eslint": "*",
+    "typescript": "*",
+    "vitest": "*"
+  }
+}

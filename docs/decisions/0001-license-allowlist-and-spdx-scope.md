@@ -13,6 +13,8 @@ permissive and AGPL-compatible, so a strict check would fail on the first instal
 - `0BSD` (tslib), `BlueOak-1.0.0` (glob, lru-cache, minimatch, ...),
   `CC-BY-4.0` (caniuse-lite, data only, pulled by browserslist / Vite / Tailwind),
   `CC-BY-3.0` (spdx-exceptions, data only), `Python-2.0` (argparse), `Zlib`.
+- Canonical variants that permit the listed GPL family: `MIT-0` (MIT without attribution),
+  `GPL-2.0-or-later` (may be used under GPL-3.0).
 
 CLAUDE.md also requires an SPDX header in "every source file", which is not possible
 for JSON and is ambiguous for generated files and for vendored MIT code (shadcn/ui).
@@ -23,11 +25,12 @@ for JSON and is ambiguous for generated files and for vendored MIT code (shadcn/
 2. Extend the allowlist with clearly permissive licenses: simple, legally sound.
 
 ## Decision
-- The allowlist is extended with: `0BSD`, `BlueOak-1.0.0`, `CC-BY-3.0`, `CC-BY-4.0`,
+- The allowlist is extended with: `0BSD`, `BlueOak-1.0.0`, `CC-BY-3.0`, `CC-BY-4.0`, `MIT-0`,
+  `GPL-2.0-or-later`, `LGPL-*-or-later`,
   `Python-2.0`, `Zlib`. `CC-BY-*` is accepted for data packages only.
 - SPDX expressions: `A OR B` passes if any branch is allowed; `A AND B` passes if every
   part is allowed. Packages without a recognizable license fail.
-- The check (`scripts/check-licenses.mjs`) reads `pnpm licenses list --json --prod=false`
+- The check (`scripts/check-licenses.mjs`) reads `pnpm licenses list --json --recursive`
   (no extra dependency) and covers production and development dependencies alike.
   Explicit per-package exceptions live in `scripts/license-policy.json` with a reason.
 - SPDX header scope (`scripts/check-spdx.mjs`): `.ts .tsx .js .mjs .cjs .css .sql`,

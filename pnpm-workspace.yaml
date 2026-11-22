@@ -1,0 +1,11 @@
+packages:
+  - apps/*
+  - packages/*
+  - e2e
+
+# Required by `pnpm deploy` to produce a self-contained server bundle for the image.
+injectWorkspacePackages: true
+
+# Dependencies allowed to run install scripts (pnpm blocks them by default).
+allowBuilds:
+  esbuild: true
