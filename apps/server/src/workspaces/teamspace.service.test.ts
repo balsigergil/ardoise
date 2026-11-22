@@ -46,6 +46,10 @@ describe('TeamspaceService', () => {
     expect(await names(owner)).toEqual(['Closed', 'Open', 'Private']);
     expect(await names(member)).toEqual(['Closed', 'Open']);
     expect(await names(guest)).toEqual([]);
+    const mine = async (u: typeof owner) =>
+      (await h.teamspaces.list(u, ws.id, { limit: 10, mine: true })).items.map((t) => t.name);
+    expect(await mine(owner)).toEqual(['Closed', 'Open', 'Private']);
+    expect(await mine(member)).toEqual([]);
     await expect(h.teamspaces.get(member, ws.id, priv.id)).rejects.toMatchObject({
       code: 'not_found',
     });

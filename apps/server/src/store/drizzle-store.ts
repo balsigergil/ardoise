@@ -485,7 +485,7 @@ function teamspacesRepo(db: Executor): TeamspacesRepo {
       if (Object.keys(patch).length === 0) return;
       await db.update(teamspaces).set(patch).where(tsKey(workspaceId, id));
     },
-    async listVisible(workspaceId, userId, includeAll, { cursor, limit }) {
+    async listVisible(workspaceId, userId, scope, { cursor, limit }) {
       const after = decodeCursor(cursor, 2);
       const myRole = sql<'owner' | 'member' | null>`(
         SELECT ${teamspaceMembers.role} FROM ${teamspaceMembers}
@@ -513,9 +513,11 @@ function teamspacesRepo(db: Executor): TeamspacesRepo {
         .where(
           and(
             eq(teamspaces.workspaceId, workspaceId),
-            includeAll
+            scope === 'all'
               ? undefined
-              : sql`(${teamspaces.visibility} <> 'private' OR ${myRole} IS NOT NULL)`,
+              : scope === 'mine'
+                ? sql`${myRole} IS NOT NULL`
+                : sql`(${teamspaces.visibility} <> 'private' OR ${myRole} IS NOT NULL)`,
             after
               ? sql`(${teamspaces.name}, ${teamspaces.id}) > (${after[0]}, ${after[1]}::uuid)`
               : undefined,

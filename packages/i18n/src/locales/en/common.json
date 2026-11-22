@@ -46,6 +46,41 @@
     "notFound": {
       "title": "Page not found",
       "back": "Back to home"
+    },
+    "codes": {
+      "validation_failed": "Some fields are not valid. Check them and try again.",
+      "unauthenticated": "Your session has ended. Sign in again.",
+      "csrf_invalid": "Your session is out of date. Reload the page and try again.",
+      "origin_invalid": "This request was blocked because it did not come from Ardoise.",
+      "forbidden": "You are not allowed to do this.",
+      "not_found": "This item does not exist or you cannot access it.",
+      "rate_limited": "Too many attempts. Wait a few minutes and try again.",
+      "internal_error": "Something went wrong. Try again in a moment.",
+      "invalid_credentials": "Incorrect email or password.",
+      "account_disabled": "This account is disabled. Contact your administrator.",
+      "password_incorrect": "The current password is incorrect.",
+      "email_taken": "An account already exists for this email.",
+      "setup_unavailable": "This instance is already set up.",
+      "setup_token_invalid": "This setup link is not valid. Use the link printed in the server logs.",
+      "reset_token_invalid": "This reset link is not valid or has expired. Ask for a new one.",
+      "invitation_not_found": "This invitation link is not valid.",
+      "invitation_expired": "This invitation has expired. Ask for a new one.",
+      "invitation_revoked": "This invitation was cancelled.",
+      "invitation_used": "This invitation was already used.",
+      "invitation_email_mismatch": "Sign in with the invited email to accept this invitation.",
+      "invitations_disabled": "Inviting new people is disabled on this instance.",
+      "already_member": "This person is already a member.",
+      "role_not_assignable": "You cannot give this role.",
+      "owner_protected": "Only an owner can change another owner.",
+      "last_owner": "A workspace needs at least one owner.",
+      "last_teamspace_owner": "A teamspace needs at least one owner.",
+      "teamspace_join_forbidden": "This teamspace cannot be joined directly. Ask one of its owners.",
+      "self_action": "You cannot do this to your own account.",
+      "last_super_admin": "The instance needs at least one active super-admin.",
+      "sole_workspace_owner": "This person is the only owner of a workspace. Make someone else owner first.",
+      "workspace_creation_disabled": "Only super-admins can create workspaces on this instance.",
+      "mail_not_configured": "Email is not configured on this instance.",
+      "mail_failed": "The email could not be sent. Check the SMTP settings."
     }
   },
   "status": {
@@ -55,5 +90,235 @@
     "close": "Close",
     "sidebarTitle": "Sidebar",
     "sidebarDescription": "Workspace navigation"
+  },
+  "common": {
+    "actions": "Actions",
+    "add": "Add",
+    "cancel": "Cancel",
+    "copy": "Copy",
+    "delete": "Delete",
+    "edit": "Edit",
+    "loadMore": "Load more",
+    "noResults": "Nothing to show",
+    "save": "Save",
+    "saved": "Changes saved.",
+    "search": "Search"
+  },
+  "auth": {
+    "logout": "Sign out",
+    "backToLogin": "Back to sign in",
+    "fields": {
+      "email": "Email",
+      "password": "Password",
+      "newPassword": "New password",
+      "confirmPassword": "Confirm password",
+      "name": "Name",
+      "passwordHint": "At least {{count}} characters.",
+      "passwordMismatch": "The two passwords do not match."
+    },
+    "login": {
+      "title": "Sign in",
+      "description": "Use the email and password of your account.",
+      "submit": "Sign in",
+      "forgot": "Forgot your password?"
+    },
+    "setup": {
+      "title": "Set up Ardoise",
+      "description": "Create the first administrator account and your first workspace.",
+      "missingToken": "Open the setup link printed in the server logs to continue. It contains a one-time code.",
+      "workspaceName": "Workspace name",
+      "submit": "Create account and workspace"
+    },
+    "forgot": {
+      "title": "Reset your password",
+      "description": "Enter the email of your account. We will send you a link to choose a new password.",
+      "submit": "Send the link",
+      "sent": "If an account uses this email, a reset link is on its way. It is valid for one hour. If nothing arrives, ask your administrator."
+    },
+    "reset": {
+      "title": "Choose a new password",
+      "submit": "Set the new password",
+      "done": "Your password was changed. You can now sign in."
+    },
+    "invite": {
+      "title": "Join Ardoise",
+      "titleWorkspace": "Join {{workspace}}",
+      "invitedBy": "{{inviter}} invited {{email}}.",
+      "invitedAs": "This invitation is for {{email}}.",
+      "createAccount": "Create my account",
+      "join": "Join the workspace",
+      "signInFirst": "An account already exists for {{email}}. Sign in with it to accept the invitation."
+    }
+  },
+  "workspace": {
+    "switch": "Switch workspace",
+    "list": "Workspaces",
+    "create": "Create a workspace",
+    "fields": {
+      "name": "Name",
+      "icon": "Icon",
+      "iconHint": "An emoji, optional."
+    },
+    "none": {
+      "title": "No workspace yet",
+      "body": "You are not a member of any workspace. Create one, or ask someone to invite you."
+    },
+    "settings": {
+      "title": "Workspace settings",
+      "tabs": {
+        "general": "General",
+        "members": "Members",
+        "invitations": "Invitations",
+        "teamspaces": "Teamspaces"
+      }
+    },
+    "members": {
+      "role": "Role",
+      "remove": "Remove",
+      "leave": "Leave"
+    }
+  },
+  "roles": {
+    "workspace": {
+      "owner": "Owner",
+      "admin": "Admin",
+      "member": "Member",
+      "guest": "Guest"
+    },
+    "teamspace": {
+      "owner": "Teamspace owner",
+      "member": "Member"
+    }
+  },
+  "permissions": {
+    "full_access": "Full access",
+    "can_edit": "Can edit",
+    "can_edit_content": "Can edit content",
+    "can_comment": "Can comment",
+    "can_view": "Can view",
+    "no_access": "No access"
+  },
+  "invitations": {
+    "send": "Invite",
+    "sent": "Invitation sent to {{email}}. You can also share this link:",
+    "notSent": "The email to {{email}} could not be sent. Share this link with them:",
+    "link": "Invitation link",
+    "pending": "Pending invitations",
+    "none": "No pending invitations",
+    "expires": "Expires",
+    "revoke": "Revoke",
+    "mailDisabled": "Email is not configured on this instance: copy the invitation link and send it yourself."
+  },
+  "teamspaces": {
+    "create": "Create a teamspace",
+    "settings": "Teamspace settings",
+    "members": "Members",
+    "join": "Join",
+    "leave": "Leave",
+    "memberCount": "Members: {{count}}",
+    "defaultAccess": "Default access: {{level}}",
+    "addMember": "Add a member",
+    "addMemberHint": "Type at least two letters of a name or email.",
+    "fields": {
+      "name": "Name",
+      "description": "Description",
+      "visibility": "Visibility",
+      "defaultLevel": "Default access for members"
+    },
+    "visibility": {
+      "open": "Open",
+      "closed": "Closed",
+      "private": "Private"
+    },
+    "visibilityHint": {
+      "open": "Every workspace member can see and join it.",
+      "closed": "Visible to workspace members; owners add members.",
+      "private": "Only its members can see it."
+    }
+  },
+  "account": {
+    "title": "My account",
+    "profile": "Profile",
+    "emailHint": "Ask an administrator to change your email.",
+    "preferences": "Preferences",
+    "password": "Password",
+    "passwordHint": "Changing your password signs you out everywhere else.",
+    "currentPassword": "Current password",
+    "changePassword": "Change password",
+    "passwordChanged": "Password changed. Your other sessions were signed out.",
+    "sessions": "Sessions",
+    "sessionsHint": "Devices where you are signed in.",
+    "currentSession": "This device",
+    "revoke": "Sign out",
+    "revokeOthers": "Sign out other sessions",
+    "unknownDevice": "Unknown device",
+    "lastSeen": "Last active {{date}}"
+  },
+  "admin": {
+    "title": "Administration",
+    "tabs": {
+      "users": "Users",
+      "invitations": "Invitations",
+      "workspaces": "Workspaces",
+      "email": "Email",
+      "settings": "Settings"
+    },
+    "users": {
+      "status": "Status",
+      "superAdmin": "Super-admin",
+      "active": "Active",
+      "disabled": "Disabled",
+      "promote": "Make super-admin",
+      "demote": "Remove super-admin",
+      "disable": "Disable",
+      "enable": "Enable",
+      "deleteTitle": "Delete {{name}}?",
+      "deleteBody": "The account and its sessions and memberships are deleted. This cannot be undone."
+    },
+    "invitations": {
+      "description": "Invite someone to create an account on this instance, without adding them to a workspace."
+    },
+    "workspaces": {
+      "members": "Members",
+      "created": "Created"
+    },
+    "email": {
+      "smtp": "SMTP server",
+      "host": "Host",
+      "port": "Port",
+      "secure": "Use TLS from the start (port 465)",
+      "user": "Username",
+      "password": "Password",
+      "passwordKept": "Leave empty to keep the saved password.",
+      "from": "Sender",
+      "fromHint": "For example: Ardoise <no-reply@example.org>",
+      "reset": "Use environment settings",
+      "test": "Test email",
+      "testHint": "Send a test email to check the settings.",
+      "recipient": "Recipient",
+      "sendTest": "Send a test email",
+      "testSent": "Test email sent.",
+      "source": {
+        "admin": "These settings were saved here and override the environment.",
+        "env": "These settings come from the SMTP_* environment variables. Saving here overrides them.",
+        "none": "Email is not configured. Invitations then show a link to copy, and password reset by email is unavailable."
+      }
+    },
+    "settings": {
+      "limits": "Limits",
+      "maxUploadSizeMb": "Maximum upload size (MB)",
+      "trashRetentionDays": "Trash retention (days)",
+      "historyRetentionDays": "Version history retention (days)",
+      "unlimitedHint": "Leave empty for unlimited.",
+      "offlineRowsPerDatabase": "Rows kept offline per database",
+      "invitationExpiryDays": "Invitation expiry (days)",
+      "toggles": "Instance options",
+      "workspaceInvitationsEnabled": "Workspace owners and admins can invite new people",
+      "workspaceCreation": "Who can create workspaces",
+      "workspaceCreationOptions": {
+        "all_users": "Every user",
+        "super_admins": "Super-admins only"
+      }
+    }
   }
 }

@@ -186,6 +186,8 @@ export interface WorkspacesRepo {
   bumpPermEpoch(workspaceId: string): Promise<void>;
 }
 
+export type TeamspaceScope = 'visible' | 'all' | 'mine';
+
 export interface TeamspaceWithStats extends TeamspaceRecord {
   myRole: TeamspaceRole | null;
   memberCount: number;
@@ -207,13 +209,13 @@ export interface TeamspacesRepo {
     >,
   ): Promise<void>;
   /**
-   * Teamspaces visible to the user, ordered by name then id. With `includeAll`,
-   * private teamspaces the user is not in are listed too (workspace owners/admins).
+   * Teamspaces ordered by name then id. `visible`: non-private ones plus the user's;
+   * `all`: every teamspace (workspace owners/admins); `mine`: the user's only.
    */
   listVisible(
     workspaceId: string,
     userId: string,
-    includeAll: boolean,
+    scope: TeamspaceScope,
     options: ListOptions,
   ): Promise<Page<TeamspaceWithStats>>;
   membership(

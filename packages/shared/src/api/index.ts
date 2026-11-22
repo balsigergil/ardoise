@@ -27,6 +27,15 @@ export const paginationQuerySchema = z.object({
 });
 export type PaginationQuery = z.infer<typeof paginationQuerySchema>;
 
+export const teamspaceListQuerySchema = paginationQuerySchema.extend({
+  /** Only teamspaces the caller is a member of (sidebar). */
+  mine: z
+    .enum(['true', 'false'])
+    .optional()
+    .transform((v) => v === 'true'),
+});
+export type TeamspaceListQuery = z.infer<typeof teamspaceListQuerySchema>;
+
 export interface Page<T> {
   items: T[];
   nextCursor: string | null;

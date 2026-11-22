@@ -66,12 +66,16 @@ export class TeamspaceService {
   async list(
     actor: UserRecord,
     workspaceId: string,
-    query: PaginationQuery,
+    query: PaginationQuery & { mine?: boolean },
   ): Promise<Page<TeamspaceDto>> {
     const member = await this.workspaces.requireMember(workspaceId, actor.id);
     if (member.role === 'guest') return { items: [], nextCursor: null };
-    const includeAll = member.role === 'owner' || member.role === 'admin';
-    const page = await this.store.teamspaces.listVisible(workspaceId, actor.id, includeAll, query);
+    const scope = query.mine
+      ? 'mine'
+      : member.role === 'owner' || member.role === 'admin'
+        ? 'all'
+        : 'visible';
+    const page = await this.store.teamspaces.listVisible(workspaceId, actor.id, scope, query);
     return {
       items: page.items.map((t) =>
         toDto(t, {

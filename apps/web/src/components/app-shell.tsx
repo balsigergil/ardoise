@@ -5,11 +5,17 @@ import { LanguageMenu, ThemeMenu } from '@/components/preferences-menu';
 import { Separator } from '@/components/ui/separator';
 import { SidebarInset, SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
 
-/** App shell: sidebar + main area (ROADMAP M0). */
-export function AppShell({ children }: { children: ReactNode }) {
+/** App shell: sidebar + main area. */
+export function AppShell({
+  workspaceId,
+  children,
+}: {
+  workspaceId?: string | undefined;
+  children: ReactNode;
+}) {
   return (
     <SidebarProvider>
-      <AppSidebar />
+      <AppSidebar workspaceId={workspaceId} />
       <SidebarInset>
         <header className="flex h-12 shrink-0 items-center gap-2 border-b px-3">
           <SidebarTrigger />
@@ -24,5 +30,26 @@ export function AppShell({ children }: { children: ReactNode }) {
         </main>
       </SidebarInset>
     </SidebarProvider>
+  );
+}
+
+/** Standard page body with a title. */
+export function PageContainer({
+  title,
+  actions,
+  children,
+}: {
+  title: string;
+  actions?: ReactNode;
+  children: ReactNode;
+}) {
+  return (
+    <div className="mx-auto w-full max-w-4xl px-4 py-8 sm:px-6">
+      <div className="mb-6 flex flex-wrap items-center gap-3">
+        <h1 className="text-2xl font-bold tracking-tight">{title}</h1>
+        {actions && <div className="ml-auto flex items-center gap-2">{actions}</div>}
+      </div>
+      {children}
+    </div>
   );
 }

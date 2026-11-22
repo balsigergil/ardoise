@@ -271,7 +271,7 @@ export class MemoryStore implements Store {
       const t = this.data.teamspaces.find((x) => x.workspaceId === workspaceId && x.id === id);
       if (t) Object.assign(t, patch);
     },
-    listVisible: async (workspaceId, userId, includeAll, { cursor, limit }) => {
+    listVisible: async (workspaceId, userId, scope, { cursor, limit }) => {
       const after = decodeCursor(cursor, 2);
       const rows = this.data.teamspaces
         .filter((t) => t.workspaceId === workspaceId)
@@ -285,7 +285,13 @@ export class MemoryStore implements Store {
             memberCount: members.length,
           };
         })
-        .filter((t) => includeAll || t.visibility !== 'private' || t.myRole !== null)
+        .filter((t) =>
+          scope === 'all'
+            ? true
+            : scope === 'mine'
+              ? t.myRole !== null
+              : t.visibility !== 'private' || t.myRole !== null,
+        )
         .filter(
           (t) =>
             !after || byKey(t.name, after[0]!) > 0 || (t.name === after[0] && t.id > after[1]!),

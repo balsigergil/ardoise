@@ -2,6 +2,7 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { App } from '@/app';
+import { createQueryClient } from '@/lib/query-client';
 import { browserI18n } from '@/i18n/i18n';
 import { createAppRouter } from '@/router';
 import { applyTheme, parseThemePreference, resolveTheme, THEME_STORAGE_KEY } from '@/theme/theme';
@@ -20,8 +21,10 @@ applyTheme(
 const root = document.getElementById('root');
 if (!root) throw new Error('missing #root element');
 
+const queryClient = createQueryClient();
+
 createRoot(root).render(
   <StrictMode>
-    <App i18n={browserI18n()} router={createAppRouter()} />
+    <App i18n={browserI18n()} router={createAppRouter(queryClient)} queryClient={queryClient} />
   </StrictMode>,
 );

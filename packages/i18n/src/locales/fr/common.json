@@ -46,6 +46,41 @@
     "notFound": {
       "title": "Page introuvable",
       "back": "Retour à l’accueil"
+    },
+    "codes": {
+      "validation_failed": "Certains champs ne sont pas valides. Vérifiez-les et réessayez.",
+      "unauthenticated": "Votre session a expiré. Reconnectez-vous.",
+      "csrf_invalid": "Votre session n’est plus à jour. Rechargez la page et réessayez.",
+      "origin_invalid": "Cette requête a été bloquée car elle ne provient pas d’Ardoise.",
+      "forbidden": "Vous n’êtes pas autorisé·e à faire cela.",
+      "not_found": "Cet élément n’existe pas ou vous n’y avez pas accès.",
+      "rate_limited": "Trop de tentatives. Patientez quelques minutes et réessayez.",
+      "internal_error": "Une erreur est survenue. Réessayez dans un instant.",
+      "invalid_credentials": "E-mail ou mot de passe incorrect.",
+      "account_disabled": "Ce compte est désactivé. Contactez votre administrateur.",
+      "password_incorrect": "Le mot de passe actuel est incorrect.",
+      "email_taken": "Un compte existe déjà pour cet e-mail.",
+      "setup_unavailable": "Cette instance est déjà configurée.",
+      "setup_token_invalid": "Ce lien de configuration n’est pas valide. Utilisez le lien affiché dans les journaux du serveur.",
+      "reset_token_invalid": "Ce lien de réinitialisation n’est pas valide ou a expiré. Demandez-en un nouveau.",
+      "invitation_not_found": "Ce lien d’invitation n’est pas valide.",
+      "invitation_expired": "Cette invitation a expiré. Demandez-en une nouvelle.",
+      "invitation_revoked": "Cette invitation a été annulée.",
+      "invitation_used": "Cette invitation a déjà été utilisée.",
+      "invitation_email_mismatch": "Connectez-vous avec l’e-mail invité pour accepter cette invitation.",
+      "invitations_disabled": "L’invitation de nouvelles personnes est désactivée sur cette instance.",
+      "already_member": "Cette personne est déjà membre.",
+      "role_not_assignable": "Vous ne pouvez pas attribuer ce rôle.",
+      "owner_protected": "Seul un propriétaire peut modifier un autre propriétaire.",
+      "last_owner": "Un espace de travail doit garder au moins un propriétaire.",
+      "last_teamspace_owner": "Un espace d’équipe doit garder au moins un propriétaire.",
+      "teamspace_join_forbidden": "Cet espace d’équipe ne peut pas être rejoint directement. Demandez à l’un de ses propriétaires.",
+      "self_action": "Vous ne pouvez pas faire cela sur votre propre compte.",
+      "last_super_admin": "L’instance doit garder au moins un super-admin actif.",
+      "sole_workspace_owner": "Cette personne est la seule propriétaire d’un espace de travail. Nommez d’abord un autre propriétaire.",
+      "workspace_creation_disabled": "Seuls les super-admins peuvent créer des espaces de travail sur cette instance.",
+      "mail_not_configured": "L’e-mail n’est pas configuré sur cette instance.",
+      "mail_failed": "L’e-mail n’a pas pu être envoyé. Vérifiez les réglages SMTP."
     }
   },
   "status": {
@@ -55,5 +90,235 @@
     "close": "Fermer",
     "sidebarTitle": "Barre latérale",
     "sidebarDescription": "Navigation dans l’espace de travail"
+  },
+  "common": {
+    "actions": "Actions",
+    "add": "Ajouter",
+    "cancel": "Annuler",
+    "copy": "Copier",
+    "delete": "Supprimer",
+    "edit": "Modifier",
+    "loadMore": "Afficher plus",
+    "noResults": "Rien à afficher",
+    "save": "Enregistrer",
+    "saved": "Modifications enregistrées.",
+    "search": "Rechercher"
+  },
+  "auth": {
+    "logout": "Se déconnecter",
+    "backToLogin": "Retour à la connexion",
+    "fields": {
+      "email": "E-mail",
+      "password": "Mot de passe",
+      "newPassword": "Nouveau mot de passe",
+      "confirmPassword": "Confirmer le mot de passe",
+      "name": "Nom",
+      "passwordHint": "Au moins {{count}} caractères.",
+      "passwordMismatch": "Les deux mots de passe ne correspondent pas."
+    },
+    "login": {
+      "title": "Connexion",
+      "description": "Utilisez l’e-mail et le mot de passe de votre compte.",
+      "submit": "Se connecter",
+      "forgot": "Mot de passe oublié ?"
+    },
+    "setup": {
+      "title": "Configurer Ardoise",
+      "description": "Créez le premier compte administrateur et votre premier espace de travail.",
+      "missingToken": "Ouvrez le lien de configuration affiché dans les journaux du serveur pour continuer. Il contient un code à usage unique.",
+      "workspaceName": "Nom de l’espace de travail",
+      "submit": "Créer le compte et l’espace"
+    },
+    "forgot": {
+      "title": "Réinitialiser le mot de passe",
+      "description": "Saisissez l’e-mail de votre compte. Nous vous enverrons un lien pour choisir un nouveau mot de passe.",
+      "submit": "Envoyer le lien",
+      "sent": "Si un compte utilise cet e-mail, un lien de réinitialisation est en route. Il est valable une heure. Si rien n’arrive, contactez votre administrateur."
+    },
+    "reset": {
+      "title": "Choisir un nouveau mot de passe",
+      "submit": "Enregistrer le mot de passe",
+      "done": "Votre mot de passe a été modifié. Vous pouvez maintenant vous connecter."
+    },
+    "invite": {
+      "title": "Rejoindre Ardoise",
+      "titleWorkspace": "Rejoindre {{workspace}}",
+      "invitedBy": "{{inviter}} a invité {{email}}.",
+      "invitedAs": "Cette invitation est destinée à {{email}}.",
+      "createAccount": "Créer mon compte",
+      "join": "Rejoindre l’espace de travail",
+      "signInFirst": "Un compte existe déjà pour {{email}}. Connectez-vous avec ce compte pour accepter l’invitation."
+    }
+  },
+  "workspace": {
+    "switch": "Changer d’espace de travail",
+    "list": "Espaces de travail",
+    "create": "Créer un espace de travail",
+    "fields": {
+      "name": "Nom",
+      "icon": "Icône",
+      "iconHint": "Un emoji, facultatif."
+    },
+    "none": {
+      "title": "Aucun espace de travail",
+      "body": "Vous n’êtes membre d’aucun espace de travail. Créez-en un, ou demandez à quelqu’un de vous inviter."
+    },
+    "settings": {
+      "title": "Paramètres de l’espace de travail",
+      "tabs": {
+        "general": "Général",
+        "members": "Membres",
+        "invitations": "Invitations",
+        "teamspaces": "Espaces d’équipe"
+      }
+    },
+    "members": {
+      "role": "Rôle",
+      "remove": "Retirer",
+      "leave": "Quitter"
+    }
+  },
+  "roles": {
+    "workspace": {
+      "owner": "Propriétaire",
+      "admin": "Administrateur",
+      "member": "Membre",
+      "guest": "Invité"
+    },
+    "teamspace": {
+      "owner": "Propriétaire de l’espace",
+      "member": "Membre"
+    }
+  },
+  "permissions": {
+    "full_access": "Accès complet",
+    "can_edit": "Peut modifier",
+    "can_edit_content": "Peut modifier le contenu",
+    "can_comment": "Peut commenter",
+    "can_view": "Peut consulter",
+    "no_access": "Aucun accès"
+  },
+  "invitations": {
+    "send": "Inviter",
+    "sent": "Invitation envoyée à {{email}}. Vous pouvez aussi partager ce lien :",
+    "notSent": "L’e-mail à {{email}} n’a pas pu être envoyé. Partagez-lui ce lien :",
+    "link": "Lien d’invitation",
+    "pending": "Invitations en attente",
+    "none": "Aucune invitation en attente",
+    "expires": "Expire le",
+    "revoke": "Annuler",
+    "mailDisabled": "L’e-mail n’est pas configuré sur cette instance : copiez le lien d’invitation et envoyez-le vous-même."
+  },
+  "teamspaces": {
+    "create": "Créer un espace d’équipe",
+    "settings": "Paramètres de l’espace d’équipe",
+    "members": "Membres",
+    "join": "Rejoindre",
+    "leave": "Quitter",
+    "memberCount": "Membres : {{count}}",
+    "defaultAccess": "Accès par défaut : {{level}}",
+    "addMember": "Ajouter un membre",
+    "addMemberHint": "Saisissez au moins deux lettres d’un nom ou d’un e-mail.",
+    "fields": {
+      "name": "Nom",
+      "description": "Description",
+      "visibility": "Visibilité",
+      "defaultLevel": "Accès par défaut des membres"
+    },
+    "visibility": {
+      "open": "Ouvert",
+      "closed": "Fermé",
+      "private": "Privé"
+    },
+    "visibilityHint": {
+      "open": "Tous les membres de l’espace de travail peuvent le voir et le rejoindre.",
+      "closed": "Visible par les membres de l’espace de travail ; les propriétaires ajoutent les membres.",
+      "private": "Seuls ses membres peuvent le voir."
+    }
+  },
+  "account": {
+    "title": "Mon compte",
+    "profile": "Profil",
+    "emailHint": "Demandez à un administrateur de modifier votre e-mail.",
+    "preferences": "Préférences",
+    "password": "Mot de passe",
+    "passwordHint": "Changer de mot de passe vous déconnecte partout ailleurs.",
+    "currentPassword": "Mot de passe actuel",
+    "changePassword": "Changer le mot de passe",
+    "passwordChanged": "Mot de passe modifié. Vos autres sessions ont été déconnectées.",
+    "sessions": "Sessions",
+    "sessionsHint": "Appareils sur lesquels vous êtes connecté·e.",
+    "currentSession": "Cet appareil",
+    "revoke": "Déconnecter",
+    "revokeOthers": "Déconnecter les autres sessions",
+    "unknownDevice": "Appareil inconnu",
+    "lastSeen": "Dernière activité : {{date}}"
+  },
+  "admin": {
+    "title": "Administration",
+    "tabs": {
+      "users": "Utilisateurs",
+      "invitations": "Invitations",
+      "workspaces": "Espaces de travail",
+      "email": "E-mail",
+      "settings": "Paramètres"
+    },
+    "users": {
+      "status": "Statut",
+      "superAdmin": "Super-admin",
+      "active": "Actif",
+      "disabled": "Désactivé",
+      "promote": "Nommer super-admin",
+      "demote": "Retirer super-admin",
+      "disable": "Désactiver",
+      "enable": "Réactiver",
+      "deleteTitle": "Supprimer {{name}} ?",
+      "deleteBody": "Le compte, ses sessions et ses adhésions sont supprimés. Cette action est définitive."
+    },
+    "invitations": {
+      "description": "Invitez quelqu’un à créer un compte sur cette instance, sans l’ajouter à un espace de travail."
+    },
+    "workspaces": {
+      "members": "Membres",
+      "created": "Créé le"
+    },
+    "email": {
+      "smtp": "Serveur SMTP",
+      "host": "Hôte",
+      "port": "Port",
+      "secure": "Utiliser TLS dès la connexion (port 465)",
+      "user": "Identifiant",
+      "password": "Mot de passe",
+      "passwordKept": "Laissez vide pour conserver le mot de passe enregistré.",
+      "from": "Expéditeur",
+      "fromHint": "Par exemple : Ardoise <no-reply@example.org>",
+      "reset": "Utiliser les réglages de l’environnement",
+      "test": "E-mail de test",
+      "testHint": "Envoyez un e-mail de test pour vérifier les réglages.",
+      "recipient": "Destinataire",
+      "sendTest": "Envoyer un e-mail de test",
+      "testSent": "E-mail de test envoyé.",
+      "source": {
+        "admin": "Ces réglages ont été enregistrés ici et remplacent ceux de l’environnement.",
+        "env": "Ces réglages viennent des variables d’environnement SMTP_*. Enregistrer ici les remplace.",
+        "none": "L’e-mail n’est pas configuré. Les invitations affichent alors un lien à copier, et la réinitialisation du mot de passe par e-mail est indisponible."
+      }
+    },
+    "settings": {
+      "limits": "Limites",
+      "maxUploadSizeMb": "Taille maximale des fichiers (Mo)",
+      "trashRetentionDays": "Conservation de la corbeille (jours)",
+      "historyRetentionDays": "Conservation de l’historique des versions (jours)",
+      "unlimitedHint": "Laissez vide pour ne pas limiter.",
+      "offlineRowsPerDatabase": "Lignes conservées hors ligne par base de données",
+      "invitationExpiryDays": "Expiration des invitations (jours)",
+      "toggles": "Options de l’instance",
+      "workspaceInvitationsEnabled": "Les propriétaires et administrateurs d’espaces peuvent inviter de nouvelles personnes",
+      "workspaceCreation": "Qui peut créer des espaces de travail",
+      "workspaceCreationOptions": {
+        "all_users": "Tous les utilisateurs",
+        "super_admins": "Seulement les super-admins"
+      }
+    }
   }
 }

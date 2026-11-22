@@ -11,6 +11,7 @@ import {
   DropdownMenuRadioItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { useSavePreference } from '@/auth/preferences';
 import { changeLanguage } from '@/i18n/i18n';
 import { isThemePreference, themePreferences } from '@/theme/theme';
 import { useTheme } from '@/theme/theme-context';
@@ -20,6 +21,7 @@ const themeIcons = { light: Sun, dark: Moon, system: Monitor } as const;
 export function ThemeMenu() {
   const { t } = useTranslation();
   const { preference, resolved, setPreference } = useTheme();
+  const save = useSavePreference();
   const Icon = resolved === 'dark' ? Moon : Sun;
   return (
     <DropdownMenu>
@@ -38,7 +40,9 @@ export function ThemeMenu() {
         <DropdownMenuRadioGroup
           value={preference}
           onValueChange={(value) => {
-            if (isThemePreference(value)) setPreference(value);
+            if (!isThemePreference(value)) return;
+            setPreference(value);
+            save({ theme: value });
           }}
         >
           {themePreferences.map((option) => {
@@ -58,6 +62,7 @@ export function ThemeMenu() {
 
 export function LanguageMenu() {
   const { t, i18n } = useTranslation();
+  const save = useSavePreference();
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -74,7 +79,10 @@ export function LanguageMenu() {
         <DropdownMenuLabel>{t('preferences.language.label')}</DropdownMenuLabel>
         <DropdownMenuRadioGroup
           value={i18n.language}
-          onValueChange={(value) => void changeLanguage(i18n, value as Language)}
+          onValueChange={(value) => {
+            void changeLanguage(i18n, value as Language);
+            save({ locale: value as Language });
+          }}
         >
           {supportedLanguages.map((language) => (
             <DropdownMenuRadioItem key={language} value={language} lang={language}>

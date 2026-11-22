@@ -7,6 +7,7 @@ import {
   createWorkspaceSchema,
   invitationTokenSchema,
   paginationQuerySchema,
+  teamspaceListQuerySchema,
   updateMemberSchema,
   updateTeamspaceMemberSchema,
   updateTeamspaceSchema,
@@ -23,6 +24,7 @@ import {
   type Page,
   type PaginationQuery,
   type TeamspaceDto,
+  type TeamspaceListQuery,
   type TeamspaceMemberDto,
   type TeamspaceRole,
   type UpdateTeamspaceInput,
@@ -166,7 +168,7 @@ export class TeamspacesController {
   list(
     @Auth() auth: AuthContext,
     @Param('ws', id()) ws: string,
-    @Query(page) query: PaginationQuery,
+    @Query(new ZodPipe(teamspaceListQuerySchema)) query: TeamspaceListQuery,
   ): Promise<Page<TeamspaceDto>> {
     return this.teamspaces.list(auth.user, ws, query);
   }
