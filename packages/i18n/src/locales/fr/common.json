@@ -1,0 +1,54 @@
+{
+  "app": {
+    "name": "Ardoise",
+    "tagline": "Votre espace de travail collaboratif"
+  },
+  "sidebar": {
+    "toggle": "Afficher ou masquer la barre latérale",
+    "workspace": "Espace de travail",
+    "sections": {
+      "favorites": "Favoris",
+      "teamspaces": "Espaces d’équipe",
+      "shared": "Partagé",
+      "private": "Privé"
+    },
+    "empty": {
+      "favorites": "Aucun favori pour l’instant",
+      "teamspaces": "Aucun espace d’équipe pour l’instant",
+      "shared": "Rien n’a encore été partagé avec vous",
+      "private": "Aucune page privée pour l’instant"
+    },
+    "footer": {
+      "templates": "Modèles",
+      "import": "Importer",
+      "trash": "Corbeille",
+      "settings": "Paramètres"
+    }
+  },
+  "home": {
+    "title": "Bienvenue dans Ardoise",
+    "body": "Les pages, les bases de données et la collaboration en temps réel apparaîtront ici au fil du développement."
+  },
+  "preferences": {
+    "theme": {
+      "label": "Thème",
+      "light": "Clair",
+      "dark": "Sombre",
+      "system": "Système"
+    },
+    "language": {
+      "label": "Langue",
+      "en": "English",
+      "fr": "Français"
+    }
+  },
+  "errors": {
+    "notFound": {
+      "title": "Page introuvable",
+      "back": "Retour à l’accueil"
+    }
+  },
+  "status": {
+    "comingSoon": "Bientôt disponible"
+  }
+}
