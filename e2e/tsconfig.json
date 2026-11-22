@@ -1,0 +1,5 @@
+{
+  "extends": "@ardoise/config/tsconfig.node.json",
+  "compilerOptions": { "noEmit": true, "lib": ["ES2024", "DOM"] },
+  "include": ["tests", "*.config.ts"]
+}
