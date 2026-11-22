@@ -13,7 +13,7 @@ import { PUBLIC_ROUTE, type ApiRequest } from './request.js';
 export const CSRF_HEADER = 'x-csrf-token';
 
 /**
- * Global guard for `/api`: resolves the session cookie, requires a session unless the
+ * Global guard for `/api` and `/sync`: resolves the session cookie, requires a session unless the
  * route is public, and protects state-changing requests with a same-origin check and,
  * when a session is present, the CSRF token (ARCHITECTURE §13).
  */
@@ -28,7 +28,8 @@ export class SessionGuard implements CanActivate {
   async canActivate(context: ExecutionContext): Promise<boolean> {
     if (context.getType() !== 'http') return true;
     const req = context.switchToHttp().getRequest<ApiRequest>();
-    if (!req.path.startsWith('/api/')) return true; // health checks, static files
+    // Health checks and static files are not guarded; the API and sync endpoints are.
+    if (!req.path.startsWith('/api/') && !req.path.startsWith('/sync/')) return true;
     const isPublic = this.reflector.getAllAndOverride<boolean>(PUBLIC_ROUTE, [
       context.getHandler(),
       context.getClass(),

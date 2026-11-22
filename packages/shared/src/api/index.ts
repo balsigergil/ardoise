@@ -283,3 +283,4 @@ export interface InstanceInfoDto {
   workspaceCreation: 'all_users' | 'super_admins';
   workspaceInvitationsEnabled: boolean;
 }
+export * from './pages.js';

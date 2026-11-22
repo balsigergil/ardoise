@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 /** Minimal browser-like client for integration tests: cookie jar + CSRF header. */
-import type { SessionDto } from '@ardoise/shared';
+import { newId, type MutationResult, type PushResponse, type SessionDto } from '@ardoise/shared';
 
 export interface ApiResponse<T = unknown> {
   status: number;
@@ -16,6 +16,18 @@ export class TestClient {
     readonly baseUrl: string,
     private readonly origin?: string,
   ) {}
+
+  /** The same session, against another node. */
+  on(baseUrl: string): TestClient {
+    const copy = new TestClient(baseUrl, this.origin);
+    copy.cookies = this.cookies;
+    copy.csrfToken = this.csrfToken;
+    return copy;
+  }
+
+  get cookieHeader(): string {
+    return [...this.cookies].map(([k, v]) => `${k}=${v}`).join('; ');
+  }
 
   get cookieNames(): string[] {
     return [...this.cookies.keys()];
@@ -75,5 +87,20 @@ export class TestClient {
   }
   delete<T = unknown>(path: string) {
     return this.request<T>('DELETE', path);
+  }
+
+  /** Pushes one mutation through `/sync/mutations` and returns its result. */
+  async mutate(
+    workspaceId: string,
+    name: string,
+    args: unknown,
+    id = newId(),
+  ): Promise<MutationResult> {
+    const res = await this.post<PushResponse>('/sync/mutations', {
+      mutations: [{ id, workspaceId, name, args, clientTime: new Date().toISOString() }],
+    });
+    if (res.status !== 200)
+      throw new Error(`push failed: ${res.status} ${JSON.stringify(res.body)}`);
+    return res.body.results[0]!;
   }
 }

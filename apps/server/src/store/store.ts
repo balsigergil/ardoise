@@ -11,6 +11,16 @@ import type {
   TeamspaceVisibility,
   WorkspaceRole,
 } from '@ardoise/shared';
+import type {
+  AppliedMutationsRepo,
+  ChangeLogRepo,
+  GrantsRepo,
+  PagesRepo,
+  PublicLinksRepo,
+  UserPagesRepo,
+} from './sync-store.js';
+
+export type * from './sync-store.js';
 
 export interface UserRecord {
   id: string;
@@ -240,6 +250,13 @@ export interface TeamspacesRepo {
   countMembers(workspaceId: string, teamspaceId: string): Promise<number>;
   /** Removes the user from every teamspace of the workspace. */
   removeUserEverywhere(workspaceId: string, userId: string): Promise<void>;
+  findMany(workspaceId: string, ids: readonly string[]): Promise<TeamspaceRecord[]>;
+  /** The user's teamspace roles in the workspace (bounded by `limit`). */
+  rolesForUser(
+    workspaceId: string,
+    userId: string,
+    limit: number,
+  ): Promise<Map<string, TeamspaceRole>>;
 }
 
 export interface Store {
@@ -250,6 +267,12 @@ export interface Store {
   settings: SettingsRepo;
   workspaces: WorkspacesRepo;
   teamspaces: TeamspacesRepo;
+  pages: PagesRepo;
+  grants: GrantsRepo;
+  userPages: UserPagesRepo;
+  publicLinks: PublicLinksRepo;
+  changeLog: ChangeLogRepo;
+  appliedMutations: AppliedMutationsRepo;
   /** Runs `fn` in one database transaction. */
   transaction<T>(fn: (store: Store) => Promise<T>): Promise<T>;
   /** Serializes `fn` across processes with a transaction-scoped advisory lock. */

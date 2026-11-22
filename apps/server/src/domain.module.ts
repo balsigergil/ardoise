@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 import type { DatabaseHandle } from '@ardoise/db';
-import { Global, Logger, Module } from '@nestjs/common';
+import { Global, Inject, Logger, Module, type OnApplicationShutdown } from '@nestjs/common';
 import type { Redis } from 'ioredis';
 import { AdminService } from './admin/admin.service.js';
 import { SetupService } from './admin/setup.service.js';
@@ -15,13 +15,36 @@ import { MailService, nodemailerTransport } from './mail/mail.service.js';
 import { InstanceSettingsService } from './settings/instance-settings.service.js';
 import { DrizzleStore } from './store/drizzle-store.js';
 import type { Store } from './store/store.js';
-import { CONFIG, DATABASE, STORE, VALKEY } from './tokens.js';
+import { CONFIG, DATABASE, JOB_QUEUE, STORE, SYNC_BUS, VALKEY } from './tokens.js';
+import { BullJobQueue } from './jobs/bullmq-queue.js';
+import type { JobQueue } from './jobs/jobs.js';
+import { JobProcessors } from './jobs/processors.js';
+import { pageHandlers } from './pages/page-mutations.js';
+import { PageService } from './pages/page.service.js';
+import { PublicPageService } from './pages/public.service.js';
+import { sharingHandlers } from './pages/sharing-mutations.js';
+import { PermissionService, ValkeyPermissionCache } from './permissions/permission.service.js';
+import { MutationService } from './sync/mutation.service.js';
+import { ValkeySyncEventBus, type SyncEventBus } from './sync/pokes.js';
+import { PullService } from './sync/pull.service.js';
+import { workspaceHandlers } from './workspaces/workspace-mutations.js';
 import { InvitationService } from './workspaces/invitation.service.js';
 import { TeamspaceService } from './workspaces/teamspace.service.js';
 import { WorkspaceService } from './workspaces/workspace.service.js';
 
 const clock = systemClock;
 const hasher = argon2Hasher;
+
+class SyncLifecycle implements OnApplicationShutdown {
+  constructor(
+    @Inject(SYNC_BUS) private readonly bus: SyncEventBus,
+    @Inject(JOB_QUEUE) private readonly jobs: JobQueue,
+  ) {}
+  async onApplicationShutdown(): Promise<void> {
+    if (this.bus instanceof ValkeySyncEventBus) this.bus.close();
+    if (this.jobs instanceof BullJobQueue) await this.jobs.close();
+  }
+}
 
 /** Framework-free services, wired once per process. */
 @Global()
@@ -93,8 +116,75 @@ const hasher = argon2Hasher;
         c: Config,
       ) => new InvitationService(s, settings, mail, auth, hasher, clock, c.publicUrl),
     },
+    {
+      provide: SYNC_BUS,
+      inject: [VALKEY],
+      useFactory: (v: Redis): SyncEventBus => new ValkeySyncEventBus(v),
+    },
+    {
+      provide: JOB_QUEUE,
+      inject: [CONFIG],
+      useFactory: (c: Config): JobQueue => new BullJobQueue(c.valkeyUrl),
+    },
+    {
+      provide: PermissionService,
+      inject: [STORE, VALKEY],
+      useFactory: (s: Store, v: Redis) => new PermissionService(s, new ValkeyPermissionCache(v)),
+    },
+    {
+      provide: MutationService,
+      inject: [STORE, PermissionService, JOB_QUEUE, SYNC_BUS, SecretKeyring],
+      useFactory: (
+        s: Store,
+        permissions: PermissionService,
+        jobs: JobQueue,
+        bus: SyncEventBus,
+        keyring: SecretKeyring,
+      ) =>
+        new MutationService(
+          s,
+          { ...pageHandlers(), ...sharingHandlers(keyring), ...workspaceHandlers(bus) },
+          permissions,
+          jobs,
+          bus,
+          clock,
+          new Logger('sync'),
+        ),
+    },
+    {
+      provide: PullService,
+      inject: [STORE, PermissionService],
+      useFactory: (s: Store, permissions: PermissionService) => new PullService(s, permissions),
+    },
+    {
+      provide: PageService,
+      inject: [STORE, PermissionService, SecretKeyring, CONFIG],
+      useFactory: (s: Store, p: PermissionService, k: SecretKeyring, c: Config) =>
+        new PageService(s, p, k, clock, c.publicUrl),
+    },
+    {
+      provide: PublicPageService,
+      inject: [STORE, PermissionService, SecretKeyring],
+      useFactory: (s: Store, p: PermissionService, k: SecretKeyring) =>
+        new PublicPageService(s, p, k),
+    },
+    {
+      provide: JobProcessors,
+      inject: [STORE, InstanceSettingsService, SYNC_BUS],
+      useFactory: (s: Store, settings: InstanceSettingsService, bus: SyncEventBus) =>
+        new JobProcessors(s, settings, bus, clock, new Logger('jobs')),
+    },
+    SyncLifecycle,
   ],
   exports: [
+    SYNC_BUS,
+    JOB_QUEUE,
+    PermissionService,
+    MutationService,
+    PullService,
+    PageService,
+    PublicPageService,
+    JobProcessors,
     STORE,
     SecretKeyring,
     RateLimiter,

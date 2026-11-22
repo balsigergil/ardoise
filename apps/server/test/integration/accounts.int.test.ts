@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 /** M1 integration: setup, login, sessions, CSRF, invite → accept, reset, admin, workspaces. */
+import { newId } from '@ardoise/shared';
 import type {
   AcceptedInvitationDto,
   AdminUserDto,
@@ -304,29 +305,37 @@ describe('password reset', () => {
 });
 
 describe('workspaces and teamspaces', () => {
-  it('creates teamspaces and lets members join open ones', async () => {
+  it('creates teamspaces and lets members join open ones (mutations)', async () => {
     const root = await signedIn(ROOT.email, ROOT.password);
     const nina = await signedIn('nina@example.test', 'nina new password 1');
-    const open = await root.post<TeamspaceDto>(`/api/workspaces/${workspaceId}/teamspaces`, {
-      name: 'Engineering',
+    const open = newId();
+    expect(
+      await root.mutate(workspaceId, 'teamspace.create', { id: open, name: 'Engineering' }),
+    ).toMatchObject({
+      status: 'applied',
     });
-    expect(open.status).toBe(201);
-    await root.post(`/api/workspaces/${workspaceId}/teamspaces`, {
+    await root.mutate(workspaceId, 'teamspace.create', {
+      id: newId(),
       name: 'Board',
       visibility: 'private',
     });
     expect(
-      (await nina.post(`/api/workspaces/${workspaceId}/teamspaces`, { name: 'Mine' })).status,
-    ).toBe(403);
+      await nina.mutate(workspaceId, 'teamspace.create', { id: newId(), name: 'Mine' }),
+    ).toMatchObject({
+      status: 'rejected',
+      code: 'forbidden',
+    });
     const visible = await nina.get<Page<TeamspaceDto>>(`/api/workspaces/${workspaceId}/teamspaces`);
-    expect(visible.body.items.map((t) => t.name)).toEqual(['Engineering']);
-    expect(
-      (await nina.post(`/api/workspaces/${workspaceId}/teamspaces/${open.body.id}/join`)).status,
-    ).toBe(204);
-    const after = await nina.get<TeamspaceDto>(
-      `/api/workspaces/${workspaceId}/teamspaces/${open.body.id}`,
-    );
+    expect(visible.body.items.map((t) => t.name)).toEqual(['Acme', 'Engineering']);
+    expect(await nina.mutate(workspaceId, 'teamspace.join', { teamspaceId: open })).toMatchObject({
+      status: 'applied',
+    });
+    const after = await nina.get<TeamspaceDto>(`/api/workspaces/${workspaceId}/teamspaces/${open}`);
     expect(after.body).toMatchObject({ myRole: 'member', memberCount: 2, canManage: false });
+    // The M1 REST write routes are gone (ADR 0005).
+    expect(
+      (await root.post(`/api/workspaces/${workspaceId}/teamspaces`, { name: 'x' })).status,
+    ).toBe(404);
   });
 
   it('bumps the permission epoch on membership changes', async () => {

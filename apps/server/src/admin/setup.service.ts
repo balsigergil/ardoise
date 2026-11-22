@@ -5,6 +5,7 @@ import type { Clock } from '../common/clock.js';
 import { randomToken, safeEqual, type SecretKeyring } from '../common/crypto.js';
 import type { AuthService, IssuedSession, RequestMeta } from '../auth/auth.service.js';
 import type { PasswordHasher } from '../auth/password-hasher.js';
+import { createWorkspaceRecords } from '../workspaces/workspace.service.js';
 import type { Store } from '../store/store.js';
 
 const SETUP_KEY = 'setup';
@@ -99,7 +100,8 @@ export class SetupService {
       };
       await store.users.insert(user);
       const workspaceId = newId();
-      await store.workspaces.create(
+      await createWorkspaceRecords(
+        store,
         { id: workspaceId, name: input.workspaceName.trim(), icon: null, createdAt: now },
         user.id,
       );

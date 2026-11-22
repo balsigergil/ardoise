@@ -28,6 +28,22 @@ import {
   type SQL,
 } from 'drizzle-orm';
 import { decodeCursor, likeContains, toPage } from './cursor.js';
+import {
+  appliedMutationsRepo,
+  changeLogRepo,
+  grantsRepo,
+  pagesRepo,
+  publicLinksRepo,
+  userPagesRepo,
+} from './drizzle-sync-store.js';
+import type {
+  AppliedMutationsRepo,
+  ChangeLogRepo,
+  GrantsRepo,
+  PagesRepo,
+  PublicLinksRepo,
+  UserPagesRepo,
+} from './sync-store.js';
 import type {
   InvitationRecord,
   InvitationsRepo,
@@ -531,6 +547,27 @@ function teamspacesRepo(db: Executor): TeamspacesRepo {
         (t) => [t.name, t.id],
       );
     },
+    async findMany(workspaceId, ids) {
+      if (ids.length === 0) return [];
+      const rows = await db
+        .select()
+        .from(teamspaces)
+        .where(and(eq(teamspaces.workspaceId, workspaceId), inArray(teamspaces.id, [...ids])));
+      return rows.map((row) => ({
+        ...row,
+        defaultLevel: row.defaultLevel as TeamspaceDefaultLevel,
+      }));
+    },
+    async rolesForUser(workspaceId, userId, limit) {
+      const rows = await db
+        .select({ id: teamspaceMembers.teamspaceId, role: teamspaceMembers.role })
+        .from(teamspaceMembers)
+        .where(
+          and(eq(teamspaceMembers.workspaceId, workspaceId), eq(teamspaceMembers.userId, userId)),
+        )
+        .limit(limit);
+      return new Map(rows.map((r) => [r.id, r.role]));
+    },
     async membership(workspaceId, teamspaceId, userId) {
       const [row] = await db
         .select()
@@ -603,6 +640,12 @@ export class DrizzleStore implements Store {
   readonly settings: SettingsRepo;
   readonly workspaces: WorkspacesRepo;
   readonly teamspaces: TeamspacesRepo;
+  readonly pages: PagesRepo;
+  readonly grants: GrantsRepo;
+  readonly userPages: UserPagesRepo;
+  readonly publicLinks: PublicLinksRepo;
+  readonly changeLog: ChangeLogRepo;
+  readonly appliedMutations: AppliedMutationsRepo;
 
   constructor(private readonly db: Executor) {
     this.users = usersRepo(db);
@@ -612,6 +655,12 @@ export class DrizzleStore implements Store {
     this.settings = settingsRepo(db);
     this.workspaces = workspacesRepo(db);
     this.teamspaces = teamspacesRepo(db);
+    this.pages = pagesRepo(db);
+    this.grants = grantsRepo(db);
+    this.userPages = userPagesRepo(db);
+    this.publicLinks = publicLinksRepo(db);
+    this.changeLog = changeLogRepo(db);
+    this.appliedMutations = appliedMutationsRepo(db);
   }
 
   transaction<T>(fn: (store: Store) => Promise<T>): Promise<T> {

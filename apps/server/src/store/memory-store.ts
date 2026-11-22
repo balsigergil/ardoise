@@ -6,6 +6,16 @@
  */
 import { DomainError } from '@ardoise/shared';
 import { decodeCursor, toPage } from './cursor.js';
+import {
+  emptySyncData,
+  memoryAppliedMutationsRepo,
+  memoryChangeLogRepo,
+  memoryGrantsRepo,
+  memoryPagesRepo,
+  memoryPublicLinksRepo,
+  memoryUserPagesRepo,
+  type MemorySyncData,
+} from './memory-sync-store.js';
 import type {
   InvitationRecord,
   MemberRecord,
@@ -35,6 +45,13 @@ export class MemoryStore implements Store {
     teamspaceMembers: [] as TeamspaceMemberRecord[],
     permEpochs: new Map<string, number>(),
   };
+  readonly sync: MemorySyncData = emptySyncData(this.data.permEpochs);
+  readonly pages = memoryPagesRepo(this.sync);
+  readonly grants = memoryGrantsRepo(this.sync);
+  readonly userPages = memoryUserPagesRepo(this.sync);
+  readonly publicLinks = memoryPublicLinksRepo(this.sync);
+  readonly changeLog = memoryChangeLogRepo(this.sync);
+  readonly appliedMutations = memoryAppliedMutationsRepo(this.sync);
 
   readonly users: Store['users'] = {
     findById: async (id) => this.data.users.get(id),
@@ -347,6 +364,15 @@ export class MemoryStore implements Store {
         (m) => !(m.workspaceId === workspaceId && m.userId === userId),
       );
     },
+    findMany: async (workspaceId, ids) =>
+      this.data.teamspaces.filter((t) => t.workspaceId === workspaceId && ids.includes(t.id)),
+    rolesForUser: async (workspaceId, userId, limit) =>
+      new Map(
+        this.data.teamspaceMembers
+          .filter((m) => m.workspaceId === workspaceId && m.userId === userId)
+          .slice(0, limit)
+          .map((m) => [m.teamspaceId, m.role]),
+      ),
   };
 
   transaction<T>(fn: (store: Store) => Promise<T>): Promise<T> {

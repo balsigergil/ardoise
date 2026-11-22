@@ -1,27 +1,49 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 import {
   canManageWorkspace,
-  checkMemberRemoval,
-  checkRoleChange,
   DomainError,
   newId,
   type CreateWorkspaceInput,
   type MemberDto,
   type Page,
   type PaginationQuery,
-  type UpdateWorkspaceInput,
   type WorkspaceDto,
-  type WorkspaceRole,
 } from '@ardoise/shared';
 import type { Clock } from '../common/clock.js';
 import type { InstanceSettingsService } from '../settings/instance-settings.service.js';
-import type { MemberRecord, Store, UserRecord } from '../store/store.js';
+import type { MemberRecord, Store, UserRecord, WorkspaceRecord } from '../store/store.js';
 
 /** A user belongs to a bounded number of workspaces in the switcher. */
 export const MAX_WORKSPACES_PER_USER = 500;
 
 /**
- * `workspaces` module: workspaces and members (REST until M2, ADR 0005).
+ * Creates a workspace with its owner and its default open teamspace, named after it
+ * (ADR 0006). Workspace creation stays REST (ADR 0005).
+ */
+export async function createWorkspaceRecords(
+  store: Store,
+  workspace: WorkspaceRecord,
+  ownerId: string,
+): Promise<void> {
+  await store.workspaces.create(workspace, ownerId);
+  await store.teamspaces.insert(
+    {
+      workspaceId: workspace.id,
+      id: newId(),
+      name: workspace.name,
+      icon: workspace.icon,
+      description: '',
+      visibility: 'open',
+      defaultLevel: 'can_edit',
+      createdAt: workspace.createdAt,
+    },
+    ownerId,
+  );
+}
+
+/**
+ * `workspaces` module: workspace creation and reads. Writes inside a workspace are
+ * mutations (`workspace-mutations.ts`, ADR 0005).
  * Non-members get `not_found`, so workspace ids do not leak.
  */
 export class WorkspaceService {
@@ -66,7 +88,7 @@ export class WorkspaceService {
       icon: input.icon ?? null,
       createdAt: this.clock.now(),
     };
-    await this.store.transaction((store) => store.workspaces.create(workspace, actor.id));
+    await this.store.transaction((store) => createWorkspaceRecords(store, workspace, actor.id));
     return { id: workspace.id, name: workspace.name, icon: workspace.icon, role: 'owner' };
   }
 
@@ -75,19 +97,6 @@ export class WorkspaceService {
     const workspace = await this.store.workspaces.findById(workspaceId);
     if (!workspace) throw new DomainError('not_found');
     return { id: workspace.id, name: workspace.name, icon: workspace.icon, role: member.role };
-  }
-
-  async update(
-    actor: UserRecord,
-    workspaceId: string,
-    input: UpdateWorkspaceInput,
-  ): Promise<WorkspaceDto> {
-    await this.requireManager(workspaceId, actor.id);
-    await this.store.workspaces.update(workspaceId, {
-      ...(input.name !== undefined && { name: input.name.trim() }),
-      ...(input.icon !== undefined && { icon: input.icon }),
-    });
-    return this.get(actor, workspaceId);
   }
 
   /** Guests only see pages shared with them, not the member directory. */
@@ -109,49 +118,5 @@ export class WorkspaceService {
       })),
       nextCursor: page.nextCursor,
     };
-  }
-
-  async changeRole(
-    actor: UserRecord,
-    workspaceId: string,
-    userId: string,
-    role: WorkspaceRole,
-  ): Promise<void> {
-    await this.store.withLock(`workspace-members:${workspaceId}`, async (store) => {
-      const actorMember = await this.requireMember(workspaceId, actor.id, store);
-      const target = await store.workspaces.membership(workspaceId, userId);
-      if (!target) throw new DomainError('not_found');
-      if (target.role === role) return;
-      const error = checkRoleChange({
-        actorRole: actorMember.role,
-        actorIsTarget: actor.id === userId,
-        targetRole: target.role,
-        newRole: role,
-        ownerCount: await store.workspaces.countOwners(workspaceId),
-      });
-      if (error) throw new DomainError(error);
-      await store.workspaces.setMemberRole(workspaceId, userId, role);
-      // Guests cannot be teamspace members.
-      if (role === 'guest') await store.teamspaces.removeUserEverywhere(workspaceId, userId);
-      await store.workspaces.bumpPermEpoch(workspaceId);
-    });
-  }
-
-  /** Removes a member, or leaves the workspace when `userId` is the actor. */
-  async removeMember(actor: UserRecord, workspaceId: string, userId: string): Promise<void> {
-    await this.store.withLock(`workspace-members:${workspaceId}`, async (store) => {
-      const actorMember = await this.requireMember(workspaceId, actor.id, store);
-      const target = await store.workspaces.membership(workspaceId, userId);
-      if (!target) throw new DomainError('not_found');
-      const error = checkMemberRemoval({
-        actorRole: actorMember.role,
-        actorIsTarget: actor.id === userId,
-        targetRole: target.role,
-        ownerCount: await store.workspaces.countOwners(workspaceId),
-      });
-      if (error) throw new DomainError(error);
-      await store.workspaces.removeMember(workspaceId, userId);
-      await store.workspaces.bumpPermEpoch(workspaceId);
-    });
   }
 }

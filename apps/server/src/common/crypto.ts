@@ -33,10 +33,17 @@ function deriveKey(secret: string, purpose: string): Buffer {
 export class SecretKeyring {
   private readonly encryptionKey: Buffer;
   private readonly csrfKey: Buffer;
+  private readonly lookupKey: Buffer;
 
   constructor(secretKey: string) {
     this.encryptionKey = deriveKey(secretKey, 'secrets:v1');
     this.csrfKey = deriveKey(secretKey, 'csrf:v1');
+    this.lookupKey = deriveKey(secretKey, 'lookup:v1');
+  }
+
+  /** Keyed hash for token lookups (public links, ADR 0004). */
+  lookupHash(token: string): string {
+    return createHmac('sha256', this.lookupKey).update(token, 'utf8').digest('hex');
   }
 
   /** AES-256-GCM. Output: `v1.<iv>.<tag>.<ciphertext>` (base64url parts). */

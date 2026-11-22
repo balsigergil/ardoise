@@ -15,6 +15,7 @@ import { createS3Client, ensureBucket } from './infra/s3.js';
 import { securityHeaders } from './http/security-headers.js';
 import { featuresForRole } from './roles/roles.js';
 import { cacheControlFor, isSpaRoute } from './spa/spa.js';
+import { SyncGateway } from './sync/sync.gateway.js';
 
 /** Built SPA location: `ARDOISE_WEB_DIST`, or `web/` next to the server's `dist/`. */
 export function defaultWebDist(): string {
@@ -52,6 +53,7 @@ export async function createApp(
     await bootstrapBucket(config, logger);
     await prepareSetup(app.get(SetupService), config, logger);
     serveSpa(app, options.webDist ?? defaultWebDist(), logger);
+    app.get(SyncGateway).attach(app.getHttpServer());
   }
   return app;
 }

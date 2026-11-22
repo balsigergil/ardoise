@@ -1,22 +1,14 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 import {
   acceptInvitationSchema,
-  addTeamspaceMemberSchema,
-  createTeamspaceSchema,
   createWorkspaceInvitationSchema,
   createWorkspaceSchema,
   invitationTokenSchema,
   paginationQuerySchema,
   teamspaceListQuerySchema,
-  updateMemberSchema,
-  updateTeamspaceMemberSchema,
-  updateTeamspaceSchema,
-  updateWorkspaceSchema,
   type AcceptedInvitationDto,
   type AcceptInvitationInput,
-  type AddTeamspaceMemberInput,
   type CreatedInvitationDto,
-  type CreateTeamspaceInput,
   type CreateWorkspaceInput,
   type InvitationDto,
   type InvitationPreviewDto,
@@ -26,9 +18,6 @@ import {
   type TeamspaceDto,
   type TeamspaceListQuery,
   type TeamspaceMemberDto,
-  type TeamspaceRole,
-  type UpdateTeamspaceInput,
-  type UpdateWorkspaceInput,
   type WorkspaceDto,
   type WorkspaceRole,
 } from '@ardoise/shared';
@@ -40,7 +29,6 @@ import {
   HttpCode,
   Inject,
   Param,
-  Patch,
   Post,
   Query,
   Res,
@@ -86,15 +74,6 @@ export class WorkspacesController {
     return this.workspaces.get(auth.user, ws);
   }
 
-  @Patch(':ws')
-  update(
-    @Auth() auth: AuthContext,
-    @Param('ws', id()) ws: string,
-    @Body(new ZodPipe(updateWorkspaceSchema)) body: UpdateWorkspaceInput,
-  ): Promise<WorkspaceDto> {
-    return this.workspaces.update(auth.user, ws, body);
-  }
-
   @Get(':ws/members')
   members(
     @Auth() auth: AuthContext,
@@ -102,27 +81,6 @@ export class WorkspacesController {
     @Query(page) query: PaginationQuery,
   ): Promise<Page<MemberDto>> {
     return this.workspaces.listMembers(auth.user, ws, query);
-  }
-
-  @Patch(':ws/members/:user')
-  @HttpCode(204)
-  changeRole(
-    @Auth() auth: AuthContext,
-    @Param('ws', id()) ws: string,
-    @Param('user', id()) user: string,
-    @Body(new ZodPipe(updateMemberSchema)) body: { role: WorkspaceRole },
-  ): Promise<void> {
-    return this.workspaces.changeRole(auth.user, ws, user, body.role);
-  }
-
-  @Delete(':ws/members/:user')
-  @HttpCode(204)
-  removeMember(
-    @Auth() auth: AuthContext,
-    @Param('ws', id()) ws: string,
-    @Param('user', id()) user: string,
-  ): Promise<void> {
-    return this.workspaces.removeMember(auth.user, ws, user);
   }
 
   @Get(':ws/invitations')
@@ -173,15 +131,6 @@ export class TeamspacesController {
     return this.teamspaces.list(auth.user, ws, query);
   }
 
-  @Post()
-  create(
-    @Auth() auth: AuthContext,
-    @Param('ws', id()) ws: string,
-    @Body(new ZodPipe(createTeamspaceSchema)) body: CreateTeamspaceInput,
-  ): Promise<TeamspaceDto> {
-    return this.teamspaces.create(auth.user, ws, body);
-  }
-
   @Get(':ts')
   get(
     @Auth() auth: AuthContext,
@@ -189,26 +138,6 @@ export class TeamspacesController {
     @Param('ts', id()) ts: string,
   ): Promise<TeamspaceDto> {
     return this.teamspaces.get(auth.user, ws, ts);
-  }
-
-  @Patch(':ts')
-  update(
-    @Auth() auth: AuthContext,
-    @Param('ws', id()) ws: string,
-    @Param('ts', id()) ts: string,
-    @Body(new ZodPipe(updateTeamspaceSchema)) body: UpdateTeamspaceInput,
-  ): Promise<TeamspaceDto> {
-    return this.teamspaces.update(auth.user, ws, ts, body);
-  }
-
-  @Post(':ts/join')
-  @HttpCode(204)
-  join(
-    @Auth() auth: AuthContext,
-    @Param('ws', id()) ws: string,
-    @Param('ts', id()) ts: string,
-  ): Promise<void> {
-    return this.teamspaces.join(auth.user, ws, ts);
   }
 
   @Get(':ts/members')
@@ -219,40 +148,6 @@ export class TeamspacesController {
     @Query(page) query: PaginationQuery,
   ): Promise<Page<TeamspaceMemberDto>> {
     return this.teamspaces.listMembers(auth.user, ws, ts, query);
-  }
-
-  @Post(':ts/members')
-  @HttpCode(204)
-  addMember(
-    @Auth() auth: AuthContext,
-    @Param('ws', id()) ws: string,
-    @Param('ts', id()) ts: string,
-    @Body(new ZodPipe(addTeamspaceMemberSchema)) body: AddTeamspaceMemberInput,
-  ): Promise<void> {
-    return this.teamspaces.addMember(auth.user, ws, ts, body);
-  }
-
-  @Patch(':ts/members/:user')
-  @HttpCode(204)
-  changeRole(
-    @Auth() auth: AuthContext,
-    @Param('ws', id()) ws: string,
-    @Param('ts', id()) ts: string,
-    @Param('user', id()) user: string,
-    @Body(new ZodPipe(updateTeamspaceMemberSchema)) body: { role: TeamspaceRole },
-  ): Promise<void> {
-    return this.teamspaces.changeRole(auth.user, ws, ts, user, body.role);
-  }
-
-  @Delete(':ts/members/:user')
-  @HttpCode(204)
-  removeMember(
-    @Auth() auth: AuthContext,
-    @Param('ws', id()) ws: string,
-    @Param('ts', id()) ts: string,
-    @Param('user', id()) user: string,
-  ): Promise<void> {
-    return this.teamspaces.removeMember(auth.user, ws, ts, user);
   }
 }
 

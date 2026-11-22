@@ -1,6 +1,26 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 /** Wires the framework-free services over in-memory fakes for unit tests. */
-import { newId } from '@ardoise/shared';
+import {
+  DomainError,
+  newId,
+  positionBetween,
+  type ErrorCode,
+  type MutationInput,
+  type MutationName,
+  type MutationResult,
+} from '@ardoise/shared';
+import type { Logger } from '@nestjs/common';
+import { RecordingJobQueue } from '../jobs/jobs.js';
+import { JobProcessors } from '../jobs/processors.js';
+import { pageHandlers } from '../pages/page-mutations.js';
+import { PageService } from '../pages/page.service.js';
+import { PublicPageService } from '../pages/public.service.js';
+import { sharingHandlers } from '../pages/sharing-mutations.js';
+import { NoPermissionCache, PermissionService } from '../permissions/permission.service.js';
+import { MutationService } from '../sync/mutation.service.js';
+import { MemorySyncEventBus } from '../sync/pokes.js';
+import { PullService } from '../sync/pull.service.js';
+import { workspaceHandlers } from '../workspaces/workspace-mutations.js';
 import { AdminService } from '../admin/admin.service.js';
 import { SetupService } from '../admin/setup.service.js';
 import { AuthService } from '../auth/auth.service.js';
@@ -17,6 +37,14 @@ import { TeamspaceService } from '../workspaces/teamspace.service.js';
 import { WorkspaceService } from '../workspaces/workspace.service.js';
 
 export const PUBLIC_URL = 'https://ardoise.test';
+
+const noop = () => undefined;
+export const silentLogger = {
+  log: noop,
+  warn: noop,
+  error: noop,
+  debug: noop,
+} as unknown as Logger;
 
 /** Cheap, deterministic stand-in for argon2. */
 export const fakeHasher: PasswordHasher = {
@@ -81,6 +109,69 @@ export function createHarness(options: HarnessOptions = {}) {
     PUBLIC_URL,
   );
 
+  const bus = new MemorySyncEventBus();
+  const jobs = new RecordingJobQueue();
+  const permissions = new PermissionService(store, new NoPermissionCache());
+  const mutations = new MutationService(
+    store,
+    { ...pageHandlers(), ...sharingHandlers(keyring), ...workspaceHandlers(bus) },
+    permissions,
+    jobs,
+    bus,
+    clock,
+    silentLogger,
+  );
+  const pull = new PullService(store, permissions);
+  const pages = new PageService(store, permissions, keyring, clock, PUBLIC_URL);
+  const publicPages = new PublicPageService(store, permissions, keyring);
+  const processors = new JobProcessors(store, settings, bus, clock, silentLogger);
+
+  /** Pushes one mutation; returns the result (rejections included). */
+  async function tryMutate<N extends MutationName>(
+    actor: UserRecord,
+    workspaceId: string,
+    name: N,
+    args: MutationInput[N],
+    id: string = newId(),
+  ): Promise<MutationResult> {
+    const [result] = await mutations.push(actor, [
+      { id, workspaceId, name, args, clientTime: clock.now().toISOString() },
+    ]);
+    return result!;
+  }
+
+  /** Pushes one mutation and throws a DomainError when it is rejected. */
+  async function mutate<N extends MutationName>(
+    actor: UserRecord,
+    workspaceId: string,
+    name: N,
+    args: MutationInput[N],
+  ): Promise<MutationResult> {
+    const result = await tryMutate(actor, workspaceId, name, args);
+    if (result.status === 'rejected') throw new DomainError(result.code as ErrorCode);
+    return result;
+  }
+
+  /** Creates a page through `page.create` and returns its id. */
+  async function createPage(
+    actor: UserRecord,
+    workspaceId: string,
+    parent: { kind: 'teamspace' | 'private' | 'page'; id: string },
+    title = 'Page',
+    position = positionBetween(null, null),
+  ): Promise<string> {
+    const id = newId();
+    await mutate(actor, workspaceId, 'page.create', { id, parent, position, title });
+    return id;
+  }
+
+  /** The default teamspace created with a workspace. */
+  function defaultTeamspace(workspaceId: string): Promise<string> {
+    const ts = store.data.teamspaces.find((t) => t.workspaceId === workspaceId);
+    if (!ts) throw new Error('no teamspace');
+    return Promise.resolve(ts.id);
+  }
+
   async function createUser(overrides: Partial<UserRecord> = {}): Promise<UserRecord> {
     const id = newId();
     const user: UserRecord = {
@@ -138,8 +229,22 @@ export function createHarness(options: HarnessOptions = {}) {
     createWorkspace,
     addMember,
     meta,
+    bus,
+    jobs,
+    permissions,
+    mutations,
+    pull,
+    pages,
+    publicPages,
+    processors,
+    mutate,
+    tryMutate,
+    createPage,
+    defaultTeamspace,
   };
 }
+
+export type Harness = ReturnType<typeof createHarness>;
 
 /** Extracts the token from a link of the form `…#token=<token>`. */
 export function tokenFromLink(link: string): string {
