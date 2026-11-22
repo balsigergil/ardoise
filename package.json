@@ -9,6 +9,7 @@
   },
   "scripts": {
     "dev": "node scripts/dev.mjs",
+    "dev:down": "node scripts/dev.mjs --down",
     "build": "turbo run build",
     "typecheck": "turbo run typecheck",
     "lint": "eslint . --max-warnings=0 && prettier --check .",

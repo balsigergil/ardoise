@@ -10,7 +10,17 @@
     },
     "dev": {
       "cache": false,
-      "persistent": true
+      "persistent": true,
+      "passThroughEnv": [
+        "ARDOISE_*",
+        "DATABASE_URL",
+        "VALKEY_URL",
+        "S3_*",
+        "SMTP_*",
+        "PORT",
+        "HOST",
+        "LOG_*"
+      ]
     }
   }
 }

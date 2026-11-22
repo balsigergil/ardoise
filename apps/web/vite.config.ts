@@ -4,7 +4,7 @@ import tailwindcss from '@tailwindcss/vite';
 import react from '@vitejs/plugin-react';
 import { defineConfig } from 'vite';
 
-const serverUrl = process.env.ARDOISE_DEV_SERVER_URL ?? 'http://localhost:3000';
+const serverUrl = process.env.ARDOISE_DEV_SERVER_URL ?? 'http://localhost:3100';
 const proxied = ['/api', '/sync', '/files', '/mcp', '/healthz', '/readyz'];
 
 export default defineConfig({
@@ -13,7 +13,8 @@ export default defineConfig({
     alias: { '@': fileURLToPath(new URL('./src', import.meta.url)) },
   },
   server: {
-    port: 5173,
+    port: Number(process.env.ARDOISE_DEV_WEB_PORT ?? 5173),
+    strictPort: true,
     proxy: {
       ...Object.fromEntries(
         proxied.map((path) => [path, { target: serverUrl, changeOrigin: false }]),
