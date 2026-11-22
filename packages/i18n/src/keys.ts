@@ -26,3 +26,8 @@ export function lookup(tree: Tree, key: string): string | undefined {
 export function placeholders(value: string): string[] {
   return [...value.matchAll(/\{\{\s*([\w.]+)\s*\}\}/g)].map((m) => m[1] ?? '').sort();
 }
+
+/** Replaces `{{name}}` placeholders; unknown placeholders are left as they are. */
+export function interpolate(value: string, vars: Readonly<Record<string, string>>): string {
+  return value.replace(/\{\{\s*([\w.]+)\s*\}\}/g, (match, name: string) => vars[name] ?? match);
+}

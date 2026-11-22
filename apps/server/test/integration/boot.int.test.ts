@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: AGPL-3.0-only
-import { mkdtempSync, writeFileSync } from 'node:fs';
+import { mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { runMigrations } from '@ardoise/db';
+import { migrationsFolder, runMigrations } from '@ardoise/db';
 import type { NestExpressApplication } from '@nestjs/platform-express';
 import pg from 'pg';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
@@ -92,7 +92,12 @@ describe('migrations', () => {
       const { rows } = await client.query<{ count: string }>(
         'SELECT count(*) FROM drizzle.__drizzle_migrations',
       );
-      expect(Number(rows[0]?.count)).toBe(1);
+      const journal = JSON.parse(
+        readFileSync(join(migrationsFolder, 'meta/_journal.json'), 'utf8'),
+      ) as {
+        entries: unknown[];
+      };
+      expect(Number(rows[0]?.count)).toBe(journal.entries.length);
     } finally {
       await client.end();
     }

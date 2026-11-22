@@ -1,0 +1,27 @@
+{
+  "greeting": "Bonjour,",
+  "footer": "Cet e-mail a été envoyé par l’instance Ardoise {{instanceUrl}}.",
+  "ignore": "Si vous n’attendiez pas cet e-mail, vous pouvez l’ignorer.",
+  "invitationWorkspace": {
+    "subject": "{{inviter}} vous invite à rejoindre {{workspace}}",
+    "body": "{{inviter}} vous invite à rejoindre l’espace de travail « {{workspace}} » sur Ardoise.",
+    "action": "Accepter l’invitation",
+    "expiry": "Cette invitation expire le {{date}}."
+  },
+  "invitationInstance": {
+    "subject": "Vous êtes invité·e sur Ardoise",
+    "body": "{{inviter}} vous invite à créer un compte sur cette instance Ardoise.",
+    "action": "Créer mon compte",
+    "expiry": "Cette invitation expire le {{date}}."
+  },
+  "passwordReset": {
+    "subject": "Réinitialiser votre mot de passe Ardoise",
+    "body": "Une réinitialisation du mot de passe de votre compte ({{email}}) a été demandée.",
+    "action": "Choisir un nouveau mot de passe",
+    "expiry": "Ce lien est valable une heure et ne peut servir qu’une fois."
+  },
+  "test": {
+    "subject": "E-mail de test Ardoise",
+    "body": "Vos réglages SMTP fonctionnent : cet e-mail de test a bien été remis."
+  }
+}

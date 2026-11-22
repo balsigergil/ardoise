@@ -55,7 +55,10 @@ export const sessions = pgTable(
     ip: text('ip'),
     revokedAt: timestamps('revoked_at'),
   },
-  (t) => [uniqueIndex('sessions_token_hash_key').on(t.tokenHash), index('sessions_user_idx').on(t.userId)],
+  (t) => [
+    uniqueIndex('sessions_token_hash_key').on(t.tokenHash),
+    index('sessions_user_idx').on(t.userId),
+  ],
 );
 
 export const passwordResets = pgTable(

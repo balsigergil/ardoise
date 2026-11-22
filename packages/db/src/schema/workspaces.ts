@@ -61,8 +61,12 @@ export const workspaceCounters = pgTable('workspace_counters', {
   workspaceId: uuid('workspace_id')
     .primaryKey()
     .references(() => workspaces.id, { onDelete: 'cascade' }),
-  changeSeq: bigint('change_seq', { mode: 'bigint' }).notNull().default(sql`0`),
-  permEpoch: bigint('perm_epoch', { mode: 'bigint' }).notNull().default(sql`0`),
+  changeSeq: bigint('change_seq', { mode: 'bigint' })
+    .notNull()
+    .default(sql`0`),
+  permEpoch: bigint('perm_epoch', { mode: 'bigint' })
+    .notNull()
+    .default(sql`0`),
   uniqueIdCounters: jsonb('unique_id_counters').notNull().default({}),
 });
 

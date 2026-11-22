@@ -8,9 +8,11 @@ import { NestFactory } from '@nestjs/core';
 import type { NestExpressApplication } from '@nestjs/platform-express';
 import type { NextFunction, Request, Response } from 'express';
 import { Logger } from 'nestjs-pino';
+import { SetupService } from './admin/setup.service.js';
 import { AppModule } from './app.module.js';
 import type { Config } from './config/config.js';
 import { createS3Client, ensureBucket } from './infra/s3.js';
+import { securityHeaders } from './http/security-headers.js';
 import { featuresForRole } from './roles/roles.js';
 import { cacheControlFor, isSpaRoute } from './spa/spa.js';
 
@@ -46,10 +48,24 @@ export async function createApp(
 
   const features = featuresForRole(config.role);
   if (features.api) {
+    app.use(securityHeaders(config));
     await bootstrapBucket(config, logger);
+    await prepareSetup(app.get(SetupService), config, logger);
     serveSpa(app, options.webDist ?? defaultWebDist(), logger);
   }
   return app;
+}
+
+/** First-run setup (PRODUCT §3): every api node logs the same one-time URL. */
+async function prepareSetup(setup: SetupService, config: Config, logger: Logger): Promise<void> {
+  const state = await setup.prepare(config.bootstrapAdmin);
+  if (state.kind === 'pending')
+    logger.warn(
+      `first-run setup: open ${state.url} to create the first super-admin account`,
+      'setup',
+    );
+  else if (state.kind === 'bootstrapped')
+    logger.log(`created super-admin ${state.email} from ARDOISE_ADMIN_EMAIL`, 'setup');
 }
 
 async function bootstrapBucket(config: Config, logger: Logger): Promise<void> {

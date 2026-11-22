@@ -1,0 +1,27 @@
+{
+  "greeting": "Hello,",
+  "footer": "This email was sent by the Ardoise instance at {{instanceUrl}}.",
+  "ignore": "If you did not expect this email, you can ignore it.",
+  "invitationWorkspace": {
+    "subject": "{{inviter}} invited you to {{workspace}}",
+    "body": "{{inviter}} invited you to join the workspace “{{workspace}}” on Ardoise.",
+    "action": "Accept the invitation",
+    "expiry": "This invitation expires on {{date}}."
+  },
+  "invitationInstance": {
+    "subject": "You are invited to Ardoise",
+    "body": "{{inviter}} invited you to create an account on this Ardoise instance.",
+    "action": "Create my account",
+    "expiry": "This invitation expires on {{date}}."
+  },
+  "passwordReset": {
+    "subject": "Reset your Ardoise password",
+    "body": "Someone asked to reset the password of your account ({{email}}).",
+    "action": "Choose a new password",
+    "expiry": "This link is valid for one hour and can be used once."
+  },
+  "test": {
+    "subject": "Ardoise test email",
+    "body": "Your SMTP settings work: this test email was delivered."
+  }
+}
