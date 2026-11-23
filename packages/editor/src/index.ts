@@ -4,6 +4,7 @@ export * from './schema/index.js';
 export * from './yjs.js';
 export * from './commands/blocks.js';
 export * from './registry/index.js';
+export * from './projection/projection.js';
 export { BlockKeymap, MarkKeymap } from './behaviors/keymap.js';
 export {
   BLOCK_SHORTCUTS,
