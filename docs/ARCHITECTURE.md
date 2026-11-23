@@ -163,7 +163,13 @@ Conventions:
 
 ### 4.4 Content (Yjs)
 - `page_documents` (workspace_id, page_id, doc_name, state bytea, state_vector bytea,
-  updated_at, size).
+  updated_at, size), PK `(workspace_id, doc_name)`. `page_id` is the page that governs
+  access (ADR 0009).
+  - The Hocuspocus document name is `<workspace_id>/<doc_name>`. Unknown prefixes are
+    rejected; `synced:` is accepted from M6 and `plugin:` from M9.
+  - Documents over the admin size cap (default 10 MB encoded) are not stored.
+  - The body lives in the Yjs `XmlFragment` named `content`; the title stays in
+    `pages.title`.
   - `doc_name` is `page:<id>` or `synced:<id>`. The prefix `plugin:<blockId>` is
     reserved for plugin subdocuments (ADR 0008, M9).
   - It holds the full encoded Yjs state, written by Hocuspocus `onStoreDocument`
@@ -209,8 +215,9 @@ Conventions:
   reason auto|pre_restore|manual, size). The snapshot is a Yjs state blob in S3.
 
 ### 4.7 Files
-- `files` (workspace_id, id, page_id nullable, s3_key, name, mime, size,
-  uploaded_by, created_at, deleted_at).
+- `files` (workspace_id, id, page_id, s3_key, name, mime, size, status pending|ready,
+  thumbnail_key, uploaded_by, created_at, deleted_at). `page_id` governs access; files
+  embedded in a public page are served to its public token (ADR 0009).
   - S3 keys are prefixed `ws/<workspace_id>/files/<file_id>`.
   - Uploads stream through the API (multipart to S3) to enforce the size limit and
     MIME checks.
@@ -261,10 +268,16 @@ Conventions:
   affected connections (pub/sub event). On reconnect, auth fails and the client drops
   its local copy of that document (see §8.5).
 - **Awareness** carries user id, name, color and cursor for presence.
-- **Editor schema** (in `packages/editor`):
-  - Tiptap/ProseMirror nodes for every v1 block.
-  - Nesting uses a block-container pattern: each top-level block node can hold a
-    `children` content group, so indentation works for any block.
+- **Auth details** (ADR 0009): the upgrade carries the session cookie and its `Origin`
+  must match `ARDOISE_PUBLIC_URL`. Locked pages are read-only for everyone. Access and
+  lock changes publish `collab:recheck` on Valkey; each collab node closes connections
+  that lost view access and reconnects those whose read-only state changed.
+- **Editor schema** (in `packages/editor`, ADR 0009 §1):
+  - Tiptap/ProseMirror nodes for every v1 block; the node type is the block type.
+  - Nesting uses a block-container pattern: each block node has content
+    `<text part>? children?`, where the text part is `blockText` (`inline*`) or
+    `codeText`, and `children` is `block+`, so indentation works for any block.
+    Tables and columns have their own content and no `children`.
   - Every block node has a stable `blockId` attribute (for links to blocks,
     comments, synced blocks and the API).
   - Synced block references are an atom node `syncedBlock {syncedId}`. Its node view
@@ -438,7 +451,8 @@ Editor (packages/editor) ── Yjs docs ── HocuspocusProvider + y-indexeddb
   2. extract plain text, links, mentions and synced references;
   3. update `page_search`, `page_links` and `page_mentions_users`;
   4. emit mention notifications for new mentions.
-- **Search**: `SearchPort` with the `PostgresSearchAdapter`. It uses `websearch_to_tsquery` on
+- **Search**: `SearchPort` with the `PostgresSearchAdapter`. Results are filtered by
+  permission in batches after retrieval, with bounded scans (ADR 0009 §8). It uses `websearch_to_tsquery` on
   `simple` + `unaccent`, `ts_headline` snippets and trigram for title prefix/fuzzy.
   The port leaves room for Meilisearch **[later]**.
 - **History**: a job takes a snapshot after 10 min of inactivity by storing

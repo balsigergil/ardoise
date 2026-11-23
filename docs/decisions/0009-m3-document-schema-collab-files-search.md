@@ -1,6 +1,6 @@
 # 0009 — Document schema, collab protocol, files and search details
 
-- Status: proposed (to be approved by the maintainer at the start of M3)
+- Status: accepted (approved by the maintainer at the start of M3)
 - Date: 2026-11-23
 - Milestone: M3
 

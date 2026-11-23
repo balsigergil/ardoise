@@ -193,9 +193,9 @@ or decode them:
 
 | Type | Kind | Content | Attributes |
 |---|---|---|---|
-| `pluginBlock` | block node | none (atom) | `blockId`, `plugin`, `type`, `version` (int), `data` (JSON object, ≤ 16 KB), `text` (string, fallback) |
+| `pluginBlock` | block node | `children?` (no text part) | `blockId`, `plugin`, `type`, `version` (int), `data` (JSON object, ≤ 16 KB), `text` (string, fallback) |
 | `pluginContainer` | block node | `block+` | same as `pluginBlock` |
-| `pluginText` | block node (textblock) | `inline*` | same as `pluginBlock` |
+| `pluginText` | block node | `blockText children?` (text part `inline*`, ADR 0009) | same as `pluginBlock` |
 | `pluginInline` | inline node | none (atom) | `plugin`, `type`, `version`, `data`, `text` |
 | `pluginMark` | mark | — | `plugin`, `type`, `version`, `data` (≤ 4 KB) |
 
