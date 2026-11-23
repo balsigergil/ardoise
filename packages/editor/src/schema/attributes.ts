@@ -49,7 +49,8 @@ export function stringAttr(
 ): Attribute {
   return {
     default: def,
-    parseHTML: (el) => el.getAttribute(html) ?? def,
+    // Missing → null, so a parse rule's own attrs (or the default) apply.
+    parseHTML: (el) => el.getAttribute(html),
     renderHTML: (attrs) => (attrs[name] == null ? {} : { [html]: String(attrs[name]) }),
   };
 }
@@ -61,7 +62,7 @@ export function intAttr(name: string, def: number, min: number, max: number): At
     default: def,
     parseHTML: (el) => {
       const n = Number.parseInt(el.getAttribute(html) ?? '', 10);
-      return Number.isFinite(n) ? Math.min(max, Math.max(min, n)) : def;
+      return Number.isFinite(n) ? Math.min(max, Math.max(min, n)) : null;
     },
     renderHTML: (attrs) => ({ [html]: String(attrs[name]) }),
   };
@@ -86,7 +87,7 @@ export function boolAttr(name: string, def = false): Attribute {
     default: def,
     parseHTML: (el) => {
       const raw = el.getAttribute(html);
-      return raw === null ? def : raw === 'true';
+      return raw === null ? null : raw === 'true';
     },
     renderHTML: (attrs) => ({ [html]: attrs[name] ? 'true' : 'false' }),
   };
@@ -96,7 +97,7 @@ export function boolAttr(name: string, def = false): Attribute {
 export function jsonAttr(name: string, def: unknown, html = dataName(name)): Attribute {
   return {
     default: def,
-    parseHTML: (el) => parseJson(el.getAttribute(html), def),
+    parseHTML: (el) => parseJson(el.getAttribute(html), null),
     renderHTML: (attrs) => (attrs[name] == null ? {} : { [html]: JSON.stringify(attrs[name]) }),
   };
 }

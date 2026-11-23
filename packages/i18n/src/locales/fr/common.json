@@ -446,5 +446,54 @@
     "publicUnavailable": "Ce lien n’est pas disponible",
     "publicUnavailableHint": "Le propriétaire de la page l’a peut-être désactivé.",
     "publicFooter": "Partagé avec Ardoise"
+  },
+  "editor": {
+    "blocks": {
+      "text": "Texte",
+      "heading1": "Titre 1",
+      "heading2": "Titre 2",
+      "heading3": "Titre 3",
+      "toggleHeading1": "Titre 1 dépliable",
+      "toggleHeading2": "Titre 2 dépliable",
+      "toggleHeading3": "Titre 3 dépliable",
+      "bulletedList": "Liste à puces",
+      "numberedList": "Liste numérotée",
+      "todo": "Liste de tâches",
+      "toggle": "Liste dépliable",
+      "quote": "Citation",
+      "callout": "Encadré",
+      "divider": "Séparateur",
+      "page": "Page",
+      "pageLink": "Lien vers une page",
+      "image": "Image",
+      "file": "Fichier",
+      "bookmark": "Signet",
+      "code": "Code",
+      "table": "Tableau",
+      "columns2": "2 colonnes",
+      "columns3": "3 colonnes",
+      "columns4": "4 colonnes",
+      "columns5": "5 colonnes",
+      "equation": "Équation",
+      "tableOfContents": "Table des matières",
+      "mentionUser": "Mentionner une personne",
+      "mentionPage": "Mentionner une page",
+      "mentionDate": "Date",
+      "inlineEquation": "Équation en ligne"
+    },
+    "actions": {
+      "turnInto": "Transformer en",
+      "color": "Couleur",
+      "duplicate": "Dupliquer",
+      "moveTo": "Déplacer vers",
+      "copyLink": "Copier le lien du bloc",
+      "delete": "Supprimer"
+    },
+    "slashGroups": {
+      "basic": "Blocs de base",
+      "media": "Médias",
+      "advanced": "Avancé",
+      "inline": "En ligne"
+    }
   }
 }

@@ -27,6 +27,7 @@
   },
   "devDependencies": {
     "@ardoise/config": "workspace:*",
+    "@ardoise/i18n": "workspace:*",
     "jsdom": "31.0.1"
   }
 }

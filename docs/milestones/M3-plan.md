@@ -74,6 +74,14 @@ collab auth and revocation, files, search, bookmarks, public page content).
   `UniqueBlockIds`, Yjs helpers (`docFromJSON`, `stateToJSON`). Overlapping `pluginMark`
   instances survive `y-prosemirror` (no fallback needed, ADR 0008 updated). Plugin
   attributes use `data-plugin-*` HTML names because `data-type` is the node tag.
+- T3 done: `EditorRegistry` (blocks with slash items, turn-into targets and block actions;
+  inline slash items; behaviors) and `createCoreRegistry`; the editor extension list is
+  `registry.extensions()`. Block commands (indent/outdent, split, join backward/forward,
+  delete with container repair, duplicate with fresh ids, move, turn into, color, drag and
+  drop with columns), keymaps, Markdown shortcuts and paste conversion as behaviors.
+  Choices: Shift+Tab makes the following siblings children of the outdented block (the
+  visual order is kept); Enter on a block with children inserts the new block as its first
+  child; a duplicated child page becomes a link to the same page; `>` makes a quote.
 
 ## Risks and open questions
 

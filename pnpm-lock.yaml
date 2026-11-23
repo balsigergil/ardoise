@@ -480,6 +480,9 @@ importers:
       '@ardoise/config':
         specifier: workspace:*
         version: link:../config
+      '@ardoise/i18n':
+        specifier: workspace:*
+        version: link:../i18n
       jsdom:
         specifier: 31.0.1
         version: 31.0.1
