@@ -148,7 +148,32 @@ async function main() {
     roundTrips.push((await timed(() => push(ws, pick(level2))))[0]);
   row('Mutation round-trip (page.update)', stats(roundTrips), 150);
 
-  // 4. Seq serialization: concurrent writers in one workspace.
+  // 4. Search (ADR 0009 §8): quick find on titles, full text over the seeded body text.
+  const quick: number[] = [];
+  const quickTerms = ['Level 4 1', 'Team 3 page', 'Le', 'level 3', 'Deep'];
+  for (let i = 0; i < ITERATIONS / 2; i++) {
+    const q = encodeURIComponent(pick(quickTerms));
+    quick.push(
+      (await timed(() => call('GET', `/api/workspaces/${ws}/search/quick?q=${q}&limit=20`)))[0],
+    );
+  }
+  row('Quick find (title)', stats(quick), 150);
+  const fts: number[] = [];
+  const common: number[] = [];
+  for (let i = 0; i < ITERATIONS / 2; i++) {
+    const rare = `word${Math.floor(Math.random() * 990).toString(36)}`;
+    fts.push(
+      (await timed(() => call('GET', `/api/workspaces/${ws}/search?q=${rare}&limit=20`)))[0],
+    );
+    const frequent = pick(['project', 'budget', 'roadmap', 'team']);
+    common.push(
+      (await timed(() => call('GET', `/api/workspaces/${ws}/search?q=${frequent}&limit=20`)))[0],
+    );
+  }
+  row('Full-text search (rare term)', stats(fts), 500);
+  row('Full-text search (common term)', stats(common), 500);
+
+  // 5. Seq serialization: concurrent writers in one workspace.
   const serialization: string[] = [];
   const perWriter = Number(process.env.BENCH_WRITES ?? 50);
   for (const writers of [1, 4, 16, 32]) {

@@ -206,6 +206,8 @@ export interface LargeSeedOptions {
   /** One grant every `grantEvery` pages, to `members` seeded users. */
   grantEvery: number;
   members: number;
+  /** Fill `page_search` with titles and generated body text (search benchmarks). */
+  searchText: boolean;
   log?: (line: string) => void;
 }
 
@@ -217,7 +219,26 @@ export const LARGE_DEFAULTS: LargeSeedOptions = {
   deepChain: 40,
   grantEvery: 50,
   members: 20,
+  searchText: true,
 };
+
+/**
+ * Vocabulary of the seeded body text: a few common words (many matches) and many rare
+ * ones, so search benchmarks cover both ends.
+ */
+export const SEED_WORDS = [
+  'project',
+  'meeting',
+  'notes',
+  'plan',
+  'review',
+  'budget',
+  'roadmap',
+  'design',
+  'release',
+  'team',
+  ...Array.from({ length: 990 }, (_, i) => `word${i.toString(36)}`),
+];
 
 /**
  * The benchmark workspace (ARCHITECTURE §12): by default 10 teamspaces × 100 roots with
@@ -301,6 +322,26 @@ export async function seedLarge(
       [ws],
     );
     log(`grants: ${grants.rowCount ?? 0}`);
+    if (o.searchText) {
+      // Search projection: the title and 24 deterministic words per page (md5 of the id).
+      const search = await client.query(
+        `INSERT INTO page_search (workspace_id, page_id, title, plain_text, tsv)
+         SELECT s.workspace_id, s.id, s.title, s.body,
+                setweight(to_tsvector('ardoise', s.title), 'A') ||
+                setweight(to_tsvector('ardoise', s.body), 'B')
+         FROM (
+           SELECT p.workspace_id, p.id, p.title,
+                  (SELECT string_agg(w.words[1 + (('x' || substr(md5(p.id::text || i::text), 1, 6))::bit(24)::int
+                            % array_length(w.words, 1))], ' ')
+                   FROM generate_series(1, 24) AS i) AS body
+           FROM pages p, (SELECT $2::text[] AS words) w
+           WHERE p.workspace_id = $1
+         ) s`,
+        [ws, SEED_WORDS],
+      );
+      log(`search rows: ${search.rowCount ?? 0}`);
+      await client.query('ANALYZE page_search');
+    }
     await client.query('ANALYZE pages');
     await client.query('ANALYZE page_permissions');
     return { workspaceId: ws, pages, grants: grants.rowCount ?? 0, ms: Date.now() - started };

@@ -65,5 +65,12 @@ describe('seeds', () => {
       [report.workspaceId],
     );
     expect(ids.rows.every((r) => isUuidV7(r.id))).toBe(true);
+    // Every page gets a search row with generated body text (search benchmarks).
+    const search = await pool.query<{ n: number; words: number }>(
+      `SELECT count(*)::int AS n, min(array_length(string_to_array(plain_text, ' '), 1))::int AS words
+       FROM page_search WHERE workspace_id = $1`,
+      [report.workspaceId],
+    );
+    expect(search.rows[0]).toEqual({ n: report.pages, words: 24 });
   });
 });
