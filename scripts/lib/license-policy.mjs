@@ -5,7 +5,7 @@ import { isExpressionAllowed } from './license-expression.mjs';
  * Evaluates every installed package against the policy (ADR 0001).
  * @param {Array<{ name: string, version: string, license: string }>} packages
  * @param {{ allowed: string[], dataOnly: { licenses: string[], packages: string[] },
- *           exceptions: Record<string, { license: string, reason: string }> }} policy
+ *           exceptions: Record<string, { license: string, versions?: string[], reason: string }> }} policy
  * @returns {Array<{ name: string, version: string, license: string }>} violations
  */
 export function findViolations(packages, policy) {
@@ -15,7 +15,13 @@ export function findViolations(packages, policy) {
 
   return packages.filter((pkg) => {
     const exception = policy.exceptions[pkg.name];
-    if (exception && exception.license === pkg.license) return false;
+    // An exception covers the recorded license, and only the reviewed versions if listed.
+    if (
+      exception &&
+      exception.license === pkg.license &&
+      (!exception.versions || exception.versions.includes(pkg.version))
+    )
+      return false;
     const isAllowed = (id) =>
       allowed.has(id) || (dataOnlyLicenses.has(id) && dataOnlyPackages.has(pkg.name));
     return !isExpressionAllowed(pkg.license ?? '', isAllowed);

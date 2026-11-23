@@ -28,5 +28,11 @@
     "licenses": ["CC-BY-3.0", "CC-BY-4.0"],
     "packages": ["caniuse-lite", "spdx-exceptions", "spdx-license-ids"]
   },
-  "exceptions": {}
+  "exceptions": {
+    "@sesamecare-oss/redlock": {
+      "license": "UNLICENSED",
+      "versions": ["1.4.0"],
+      "reason": "ADR 0010: package.json metadata says UNLICENSED, but the shipped LICENSE.md is the MIT license (fork of node-redlock by Mike Marcacci). Pulled by @hocuspocus/extension-redis."
+    }
+  }
 }

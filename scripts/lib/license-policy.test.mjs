@@ -5,7 +5,10 @@ import { findViolations, normalizePnpmLicenses } from './license-policy.mjs';
 const policy = {
   allowed: ['MIT', 'Apache-2.0'],
   dataOnly: { licenses: ['CC-BY-4.0'], packages: ['caniuse-lite'] },
-  exceptions: { 'odd-pkg': { license: 'Custom', reason: 'reviewed: MIT text' } },
+  exceptions: {
+    'odd-pkg': { license: 'Custom', reason: 'reviewed: MIT text' },
+    pinned: { license: 'UNLICENSED', versions: ['1.4.0'], reason: 'LICENSE file is MIT' },
+  },
 };
 
 describe('findViolations', () => {
@@ -37,6 +40,15 @@ describe('findViolations', () => {
     );
     expect(
       findViolations([{ name: 'odd-pkg', version: '1', license: 'Other' }], policy),
+    ).toHaveLength(1);
+  });
+
+  it('limits a versioned exception to the reviewed versions', () => {
+    expect(
+      findViolations([{ name: 'pinned', version: '1.4.0', license: 'UNLICENSED' }], policy),
+    ).toEqual([]);
+    expect(
+      findViolations([{ name: 'pinned', version: '1.5.0', license: 'UNLICENSED' }], policy),
     ).toHaveLength(1);
   });
 
