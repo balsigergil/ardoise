@@ -82,8 +82,15 @@ export function runSlashItem(
   slashCommand(item)(editor.state, editor.view.dispatch, editor.view);
 }
 
+/**
+ * Above the block keymap (priority 200): while a menu is open, Enter, Tab and arrows go
+ * to the menu, not to the block commands.
+ */
+const MENU_PRIORITY = 1000;
+
 export const SlashMenu = Extension.create<SlashMenuOptions>({
   name: 'slashMenu',
+  priority: MENU_PRIORITY,
   addOptions: () => ({
     registry: null,
     store: null,
@@ -145,6 +152,7 @@ export function insertMention(editor: Editor, range: Range, item: MentionItem) {
 
 export const MentionMenu = Extension.create<MentionMenuOptions>({
   name: 'mentionMenu',
+  priority: MENU_PRIORITY,
   addOptions: () => ({ store: null, search: null }),
   addProseMirrorPlugins() {
     const { store, search } = this.options;

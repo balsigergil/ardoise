@@ -179,6 +179,23 @@ describe('slash menu and mentions', () => {
     expect(first.textContent).toBe('');
   });
 
+  it('gives Enter and arrows to the open menu, not to the block keymap', async () => {
+    const { editor, stores } = makeEditor(doc(block('paragraph', '')));
+    editor.commands.setTextSelection(2);
+    type(editor, '/todo');
+    await act(() => Promise.resolve());
+    expect(stores.slash.get().open).toBe(true);
+    const press = (key: string) =>
+      editor.view.someProp('handleKeyDown', (f) =>
+        f(editor.view, new KeyboardEvent('keydown', { key })),
+      );
+    press('ArrowDown');
+    press('ArrowUp');
+    press('Enter');
+    expect(editor.state.doc.childCount).toBe(1);
+    expect(editor.state.doc.firstChild!.type.name).toBe('todo');
+  });
+
   it('closes with Escape and stays closed in code blocks', async () => {
     const { editor, stores } = makeEditor(
       doc({ type: 'codeBlock', content: [{ type: 'codeText' }] }),
