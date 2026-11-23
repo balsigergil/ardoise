@@ -110,7 +110,7 @@ export const CodeText = Node.create({
 });
 
 /** Foreign `<pre>`: the whole text becomes the code part of a code block. */
-function codeFromPre(el: HTMLElement, schema: Schema): Fragment {
+function codeFromPre(el: { textContent: string | null }, schema: Schema): Fragment {
   const text = el.textContent ?? '';
   return Fragment.from(schema.nodes['codeText']!.create(null, text ? schema.text(text) : null));
 }
@@ -131,7 +131,7 @@ export const CodeBlock = Node.create({
         const lang = /language-([\w+#-]+)/.exec(cls)?.[1];
         return { language: lang ?? 'plain' };
       },
-      getContent: (el, schema) => codeFromPre(el as HTMLElement, schema),
+      getContent: (el, schema) => codeFromPre(el, schema),
     },
   ],
   renderHTML: render('codeBlock'),

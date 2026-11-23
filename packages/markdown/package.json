@@ -18,8 +18,17 @@
     "build": "tsc -p tsconfig.build.json",
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
-  "dependencies": {},
+  "dependencies": {
+    "@ardoise/editor": "workspace:*",
+    "@ardoise/shared": "workspace:*",
+    "mdast-util-to-string": "4.0.0",
+    "remark-gfm": "4.0.1",
+    "remark-math": "6.0.0",
+    "remark-parse": "11.0.0",
+    "unified": "11.0.5"
+  },
   "devDependencies": {
-    "@ardoise/config": "workspace:*"
+    "@ardoise/config": "workspace:*",
+    "@types/mdast": "4.0.4"
   }
 }
