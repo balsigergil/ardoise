@@ -32,6 +32,7 @@ import { WorkspaceSettingsPage } from '@/routes/workspace/settings';
 import { workspaceSettingsTabs } from '@/routes/workspace/tabs';
 import { TeamspacePage } from '@/routes/workspace/teamspace';
 import { PageView } from '@/routes/workspace/page';
+import { SearchPage } from '@/routes/workspace/search';
 import { SharedPage } from '@/routes/public/shared-page';
 
 export interface RouterContext {
@@ -241,6 +242,17 @@ const teamspaceRoute = createRoute({
   },
 });
 
+const searchRoute = createRoute({
+  getParentRoute: () => workspaceRoute,
+  path: '/search',
+  validateSearch: z.object({ q: z.string().max(200).optional().catch(undefined) }),
+  component: function SearchRoute() {
+    const { workspaceId } = workspaceRoute.useParams();
+    const { q } = searchRoute.useSearch();
+    return <SearchPage key={workspaceId} workspaceId={workspaceId} initialQuery={q ?? ''} />;
+  },
+});
+
 const pageRoute = createRoute({
   getParentRoute: () => workspaceRoute,
   path: '/p/$pageId',
@@ -266,6 +278,7 @@ const routeTree = rootRoute.addChildren([
       workspaceHomeRoute,
       workspaceSettingsRoute,
       teamspaceRoute,
+      searchRoute,
       pageRoute,
     ]),
   ]),

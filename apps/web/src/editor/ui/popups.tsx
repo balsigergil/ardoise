@@ -44,7 +44,7 @@ function Option({
 }) {
   const ref = useRef<HTMLButtonElement>(null);
   useEffect(() => {
-    if (active) ref.current?.scrollIntoView({ block: 'nearest' });
+    if (active) ref.current?.scrollIntoView?.({ block: 'nearest' });
   }, [active]);
   return (
     <button

@@ -20,6 +20,8 @@ export interface EditorEnv {
   preview: ((url: string) => Promise<LinkPreviewDto>) | null;
   /** In-app link to a page (public pages link inside the share). */
   pageHref: (pageId: string) => string | null;
+  /** Pages known without a request (public pages: the subpages the link covers). */
+  knownPages?: ReadonlyMap<string, { id: string; title: string; icon: PageDto['icon'] }>;
 }
 
 export const EditorEnvContext = createContext<EditorEnv | null>(null);
@@ -51,6 +53,14 @@ export function usePageRef(pageId: string | null): PageRefState {
     staleTime: 60_000,
   });
   if (!pageId) return { status: 'missing' };
+  const known = env.knownPages?.get(pageId);
+  if (known) {
+    return {
+      status: 'ok',
+      page: { ...known, parentKind: 'page', parentId: env.pageId },
+      trashed: false,
+    };
+  }
   if (fromStore) {
     return { status: 'ok', page: fromStore, trashed: !!sync?.store.isTrashed(pageId) };
   }

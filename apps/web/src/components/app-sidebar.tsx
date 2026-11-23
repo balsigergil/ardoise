@@ -1,9 +1,11 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 import { Link } from '@tanstack/react-router';
-import { FileStack, Import, Settings, Trash2, type LucideIcon } from 'lucide-react';
-import { useState } from 'react';
+import { FileStack, Import, Search, Settings, Trash2, type LucideIcon } from 'lucide-react';
+import { useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { SidebarTree } from '@/components/page-tree/sidebar-tree';
+import { QuickFind } from '@/components/search/quick-find';
+import { useQuickFindShortcut } from '@/components/search/use-quick-find-shortcut';
 import { TrashDialog } from '@/components/trash-dialog';
 import {
   Sidebar,
@@ -25,10 +27,23 @@ const comingSoon: { key: 'templates' | 'import'; icon: LucideIcon }[] = [
 export function AppSidebar({ workspaceId }: { workspaceId?: string | undefined }) {
   const { t } = useTranslation();
   const [trashOpen, setTrashOpen] = useState(false);
+  const [searching, setSearching] = useState(false);
+  useQuickFindShortcut(useCallback(() => workspaceId && setSearching(true), [workspaceId]));
   return (
     <Sidebar aria-label={t('ui.sidebarTitle')}>
       <SidebarHeader>
         <WorkspaceSwitcher currentId={workspaceId} />
+        {workspaceId && (
+          <SidebarMenu>
+            <SidebarMenuItem>
+              <SidebarMenuButton onClick={() => setSearching(true)} data-testid="search-button">
+                <Search />
+                <span>{t('search.quick.shortcut')}</span>
+                <kbd className="ml-auto text-xs text-muted-foreground">⌘K</kbd>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          </SidebarMenu>
+        )}
       </SidebarHeader>
       {workspaceId && <SidebarTree workspaceId={workspaceId} />}
       <SidebarFooter className={workspaceId ? undefined : 'mt-auto'}>
@@ -74,6 +89,9 @@ export function AppSidebar({ workspaceId }: { workspaceId?: string | undefined }
         </SidebarMenu>
       </SidebarFooter>
       {workspaceId && trashOpen && <TrashDialog open onOpenChange={setTrashOpen} />}
+      {workspaceId && searching && (
+        <QuickFind workspaceId={workspaceId} onClose={() => setSearching(false)} />
+      )}
       <SidebarRail />
     </Sidebar>
   );

@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 /** Public link page (PRODUCT §5): read-only, anonymous, never indexed. */
-import type { PublicChildrenDto, PublicPageDto } from '@ardoise/shared';
+import type { PublicChildrenDto, PublicContentDto, PublicPageDto } from '@ardoise/shared';
 import { useQuery } from '@tanstack/react-query';
 import { Link } from '@tanstack/react-router';
 import { ChevronRight } from 'lucide-react';
-import { useEffect } from 'react';
+import { lazy, Suspense, useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { PageIcon } from '@/components/page-tree/page-icon';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -12,6 +12,11 @@ import { api, pageQuery } from '@/lib/api';
 import { pageTitle } from '@/lib/pages';
 import { cn } from '@/lib/utils';
 import { coverClass } from '@/lib/covers';
+import { publicFileUrls } from '@/editor/files';
+
+const StaticContent = lazy(() =>
+  import('@/editor/static-content').then((m) => ({ default: m.StaticContent })),
+);
 
 /** Adds `<meta name="robots" content="noindex">` while mounted (the server also sends X-Robots-Tag). */
 function useNoIndex() {
@@ -41,6 +46,26 @@ export function SharedPage({ token, pageId }: { token: string; pageId?: string |
       ),
     enabled: !!page.data?.page.hasChildren,
   });
+
+  const content = useQuery({
+    queryKey: ['public', token, pageId ?? 'root', 'content'],
+    queryFn: () =>
+      api.get<PublicContentDto>(pageId ? `${base}/pages/${pageId}/content` : `${base}/content`),
+    enabled: !!page.data,
+    retry: false,
+  });
+  const fileUrls = useMemo(() => publicFileUrls(token), [token]);
+  const knownPages = useMemo(
+    () =>
+      new Map(
+        (children.data?.items ?? []).map((c) => [c.id, { id: c.id, title: c.title, icon: c.icon }]),
+      ),
+    [children.data],
+  );
+  const pageHref = useMemo(
+    () => (id: string) => `/share/${encodeURIComponent(token)}?page=${id}`,
+    [token],
+  );
 
   useEffect(() => {
     if (page.data) document.title = pageTitle(page.data.page, t('pages.untitled'));
@@ -100,6 +125,19 @@ export function SharedPage({ token, pageId }: { token: string; pageId?: string |
         <h1 className={cn('text-4xl font-bold', p.icon ? 'mt-4' : 'mt-12')}>
           {pageTitle(p, t('pages.untitled'))}
         </h1>
+        {content.data && (content.data.doc.content?.length ?? 0) > 0 && (
+          <div className="mt-6">
+            <Suspense fallback={<Skeleton className="h-24 w-full" />}>
+              <StaticContent
+                doc={content.data.doc}
+                pageId={p.id}
+                fileUrls={fileUrls}
+                pageHref={pageHref}
+                knownPages={knownPages}
+              />
+            </Suspense>
+          </div>
+        )}
         {children.data && children.data.items.length > 0 && (
           <ul className="mt-8 grid gap-0.5">
             {children.data.items.map((c) => (
