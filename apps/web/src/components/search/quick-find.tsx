@@ -1,5 +1,9 @@
 // SPDX-License-Identifier: AGPL-3.0-only
-/** Quick find (PRODUCT §14): titles across the workspace, Ctrl/Cmd+K. */
+/**
+ * Quick find (PRODUCT §4, §14), Ctrl/Cmd+K: recent pages when the query is empty, else
+ * title matches first, then content matches, then a link to the full search.
+ */
+import type { QuickFindItemDto, SearchResultsDto } from '@ardoise/shared';
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from '@tanstack/react-router';
 import { Search } from 'lucide-react';
@@ -15,6 +19,8 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { quickFindQuery, useDebounced } from '@/editor/ui/search-queries';
+import { api } from '@/lib/api';
+import { recentsQuery } from '@/lib/pages';
 import { cn } from '@/lib/utils';
 
 export function QuickFind({ workspaceId, onClose }: { workspaceId: string; onClose: () => void }) {
@@ -22,9 +28,27 @@ export function QuickFind({ workspaceId, onClose }: { workspaceId: string; onClo
   const navigate = useNavigate();
   const [q, setQ] = useState('');
   const [index, setIndex] = useState(0);
-  const debounced = useDebounced(q);
+  const debounced = useDebounced(q.trim());
   const results = useQuery(quickFindQuery(workspaceId, debounced));
-  const items = debounced ? (results.data?.items ?? []) : [];
+  const content = useQuery({
+    queryKey: ['workspaces', workspaceId, 'quick-find-content', debounced],
+    queryFn: () =>
+      api.get<SearchResultsDto>(
+        `/api/workspaces/${workspaceId}/search?q=${encodeURIComponent(debounced)}&limit=5`,
+      ),
+    enabled: debounced.length > 0,
+    staleTime: 10_000,
+  });
+  const recents = useQuery({ ...recentsQuery(workspaceId), enabled: !debounced });
+  const titleItems = debounced ? (results.data?.items ?? []) : [];
+  const seen = new Set(titleItems.map((i) => i.id));
+  const contentItems = debounced ? (content.data?.items ?? []).filter((i) => !seen.has(i.id)) : [];
+  const recentItems: QuickFindItemDto[] = debounced
+    ? []
+    : (recents.data?.items ?? [])
+        .slice(0, 8)
+        .map((r) => ({ id: r.page.id, title: r.page.title, icon: r.page.icon, path: [] }));
+  const items: QuickFindItemDto[] = [...recentItems, ...titleItems, ...contentItems];
   const count = items.length + (q.trim() ? 1 : 0);
   const open = (pageId: string) => {
     onClose();
@@ -76,14 +100,24 @@ export function QuickFind({ workspaceId, onClose }: { workspaceId: string; onClo
           />
         </div>
         <ul role="listbox" className="grid max-h-80 gap-0.5 overflow-y-auto">
-          {!q.trim() && (
+          {!q.trim() && recentItems.length === 0 && (
             <li className="px-2 py-1.5 text-sm text-muted-foreground">{t('search.quick.hint')}</li>
           )}
-          {debounced && !results.isFetching && items.length === 0 && (
+          {!q.trim() && recentItems.length > 0 && (
+            <li className="px-2 pt-1 text-xs font-medium text-muted-foreground">
+              {t('search.quick.recent')}
+            </li>
+          )}
+          {debounced && !results.isFetching && !content.isFetching && items.length === 0 && (
             <li className="px-2 py-1.5 text-sm text-muted-foreground">{t('search.quick.empty')}</li>
           )}
           {items.map((item, i) => (
             <li key={item.id}>
+              {i === titleItems.length + recentItems.length && contentItems.length > 0 && (
+                <p className="px-2 pt-2 pb-1 text-xs font-medium text-muted-foreground">
+                  {t('search.quick.inContent')}
+                </p>
+              )}
               <button
                 type="button"
                 role="option"

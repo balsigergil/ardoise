@@ -643,7 +643,9 @@
       "empty": "No pages found",
       "hint": "Type to search titles",
       "fullSearch": "Search “{{q}}” in all content",
-      "shortcut": "Search"
+      "shortcut": "Search",
+      "recent": "Recent pages",
+      "inContent": "In content"
     },
     "page": {
       "title": "Search",

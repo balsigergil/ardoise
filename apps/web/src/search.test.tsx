@@ -75,6 +75,64 @@ describe('quick find', () => {
   });
 });
 
+describe('quick find sections', () => {
+  it('shows recent pages first, then title and content matches', async () => {
+    const recent = { id: '0190a000-0000-7000-8000-0000000000d1', title: 'Weekly sync' };
+    const inBody = '0190a000-0000-7000-8000-0000000000d2';
+    mockApi({
+      ...signedIn(),
+      [`GET /api/workspaces/${WS}/recents`]: {
+        body: {
+          seq: 1,
+          items: [
+            {
+              page: { id: recent.id, title: recent.title, icon: null },
+              visitedAt: '2026-11-23T00:00:00Z',
+            },
+          ],
+        },
+      },
+      [`GET /api/workspaces/${WS}/search/quick`]: { body: quick },
+      [`GET /api/workspaces/${WS}/search`]: {
+        body: {
+          items: [
+            {
+              id: PAGE,
+              title: 'Roadmap 2026',
+              icon: null,
+              path: [],
+              snippet: '',
+              updatedAt: '',
+              createdBy: null,
+            },
+            {
+              id: inBody,
+              title: 'Notes',
+              icon: null,
+              path: [],
+              snippet: 'the \u0002road\u0003',
+              updatedAt: '',
+              createdBy: null,
+            },
+          ],
+          nextCursor: null,
+        },
+      },
+    });
+    await renderApp(`/w/${WS}`);
+    const user = userEvent.setup();
+    await user.click(await screen.findByTestId('search-button'));
+    expect(await screen.findByText('Recent pages')).toBeTruthy();
+    expect(screen.getByRole('option', { name: /Weekly sync/ })).toBeTruthy();
+    await user.type(screen.getByLabelText('Search pages…'), 'road');
+    expect(await screen.findByText('In content')).toBeTruthy();
+    const options = screen.getAllByRole('option').map((o) => o.textContent);
+    expect(options[0]).toContain('Roadmap 2026');
+    expect(options[1]).toContain('Notes');
+    expect(options.filter((o) => o?.includes('Roadmap 2026'))).toHaveLength(1);
+  });
+});
+
 describe('search page', () => {
   it('shows results with highlighted snippets and sends filters', async () => {
     const results: SearchResultsDto = {

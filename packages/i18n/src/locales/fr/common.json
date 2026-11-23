@@ -643,7 +643,9 @@
       "empty": "Aucune page trouvée",
       "hint": "Tapez pour chercher dans les titres",
       "fullSearch": "Chercher « {{q}} » dans tout le contenu",
-      "shortcut": "Rechercher"
+      "shortcut": "Rechercher",
+      "recent": "Pages récentes",
+      "inContent": "Dans le contenu"
     },
     "page": {
       "title": "Recherche",

@@ -63,3 +63,16 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
+
+## KaTeX fonts
+
+The web bundle includes the fonts shipped with `katex` (MIT license for the code). The
+KaTeX fonts are distributed by the KaTeX project under the SIL Open Font License 1.1
+(see the `katex` package and https://github.com/KaTeX/katex-fonts).
+
+## libvips (through sharp)
+
+The server image includes the prebuilt `libvips` binaries of `@img/sharp-libvips-*`
+(LGPL-3.0-or-later), loaded dynamically by `sharp` (Apache-2.0) for image thumbnails.
+Their license and the corresponding source references ship in those packages; the
+library can be replaced by rebuilding the image with another `libvips` build.

@@ -94,6 +94,13 @@ reference for the clean-room implementation (see `CLAUDE.md` §1.1). Scope marke
   restored to their original location (or to the root of their teamspace, or the
   restorer's private pages, if the parent no longer exists) or permanently deleted. Pages are purged automatically after the retention period.
 - **Recents**: per user, the pages visited most recently.
+- **Child pages in content**: creating a page from the `/` menu inserts a child page
+  block where the cursor is. Subpages created from the sidebar get no block; the page
+  lists, below its content, the subpages that no child page block shows. Deleting a
+  child page block from its block menu moves the page to the trash; removing it while
+  editing text keeps the page (it then shows in that list). A child page block whose page
+  moved or is in the trash says so. Duplicating a page copies its content and its
+  subpages' content; a duplicated child page block becomes a link to the same page.
 - **Backlinks**: every page lists the pages that link to or mention it.
 - **Public link** [v1]: "Share to web" gives a read-only public URL for a page and
   optionally its subpages. It is rendered by the SPA, is marked `noindex` and can be revoked.
@@ -112,9 +119,14 @@ reference for the clean-room implementation (see `CLAUDE.md` §1.1). Scope marke
 - Inline formatting: bold, italic, underline, strikethrough, inline code, text color,
   background color, link, inline equation, mention.
 - `@` mentions point to a person, a page or a date (absolute or relative, with optional reminder **[later]**).
+  Dates show as "today", "tomorrow" or "yesterday" when close, otherwise as a localized date.
 - Pasting rich content (HTML, Markdown, plain text) converts it into blocks. Pasting a
   URL on an empty line offers to turn it into a link, a bookmark or an embed **[later]**.
 - Undo/redo is per user. Under collaboration, a user only undoes their own changes.
+- Whether a toggle or toggle heading is open or closed is a per-user choice, remembered
+  on each device; it does not change the page for others.
+- Locked pages and pages a user can only view open read-only; access changes reach open
+  pages at once.
 
 ### 6.2 Blocks in v1
 Text (paragraph) · Heading 1/2/3 (each optionally toggleable) · Bulleted list ·
@@ -123,7 +135,12 @@ Code (language selection, syntax highlighting, wrap, copy) · Divider · Image (
 resize, caption) · File (upload, download) · Simple table (rows, columns, header
 row/column) · Columns (2–5, resizable, created by dragging a block beside another) ·
 Block equation (KaTeX) · Link to page · Inline database / full-page database ·
-Synced block · Table of contents · Bookmark (URL preview card) · Child page.
+Synced block · Table of contents · Bookmark (URL preview card: title, description and
+site name; images of other sites are not shown) · Child page.
+
+Columns are created from the `/` menu (2 to 5) or by dropping a block on the left or
+right edge of another block; a column left empty disappears, and a single remaining
+column turns back into plain blocks.
 
 **[later]**: embeds (video, maps, PDF viewer, third-party iframes), audio and video
 players, breadcrumb block, buttons, forms.
@@ -244,6 +261,10 @@ players, breadcrumb block, buttons, forms.
 - Full-text search over titles and content of every page the user can view, with
   filters (teamspace, created by, edited date, in titles only) and highlighted snippets.
 - The engine is server-side Postgres FTS. Offline, search covers cached pages only.
+- Quick find ignores accents and can hand the query over to the full search page.
+- Very common terms are ranked among their first 5,000 matches, and a page of results
+  scans a bounded number of matches the user may not see: a user with access to few
+  pages of a huge workspace may need a more precise query.
 
 ## 15. Offline and PWA [v1]
 
