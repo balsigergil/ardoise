@@ -380,7 +380,6 @@
     "copyLink": "Copy link",
     "linkCopied": "Link copied.",
     "inTrash": "This page is in the trash.",
-    "contentSoon": "Page content arrives with the editor.",
     "icon": {
       "add": "Add icon",
       "change": "Change icon",
@@ -497,6 +496,172 @@
       "media": "Media",
       "advanced": "Advanced",
       "inline": "Inline"
+    },
+    "placeholder": "Type “/” for commands",
+    "emptyPage": "Write something, or press “/” for commands",
+    "code": {
+      "language": "Language",
+      "plain": "Plain text",
+      "wrap": "Wrap lines",
+      "copy": "Copy code"
+    },
+    "image": {
+      "upload": "Upload an image",
+      "uploading": "Uploading…",
+      "caption": "Add a caption",
+      "resize": "Resize image"
+    },
+    "file": {
+      "upload": "Upload a file",
+      "download": "Download",
+      "untitled": "Untitled file"
+    },
+    "equation": {
+      "empty": "Add an equation",
+      "inlineEmpty": "Equation",
+      "invalid": "Invalid LaTeX",
+      "source": "LaTeX source",
+      "placeholder": "e.g. E = mc^2"
+    },
+    "pageLink": {
+      "deleted": "in the trash",
+      "moved": "moved",
+      "noAccess": "No access"
+    },
+    "toc": {
+      "empty": "Add headings to build the table of contents.",
+      "untitled": "Untitled heading"
+    },
+    "bookmark": {
+      "placeholder": "Paste a web link",
+      "create": "Create bookmark"
+    },
+    "plugin": {
+      "missing": "Plugin “{{plugin}}” is not available",
+      "badge": "Plugin"
+    },
+    "mention": {
+      "unknownUser": "Unknown person",
+      "people": "People",
+      "pages": "Pages",
+      "dates": "Dates",
+      "today": "Today",
+      "tomorrow": "Tomorrow",
+      "yesterday": "Yesterday",
+      "empty": "No results"
+    },
+    "slash": {
+      "empty": "No matching blocks",
+      "label": "Insert a block"
+    },
+    "handle": {
+      "add": "Add a block below",
+      "drag": "Drag to move, click for options"
+    },
+    "menu": {
+      "colorText": "Text color",
+      "colorBackground": "Background",
+      "defaultColor": "Default",
+      "moveToTitle": "Move blocks to…",
+      "moved": "Blocks moved",
+      "linkCopied": "Link to block copied",
+      "deletePage": "Delete the page too?"
+    },
+    "colors": {
+      "gray": "Gray",
+      "brown": "Brown",
+      "orange": "Orange",
+      "yellow": "Yellow",
+      "green": "Green",
+      "blue": "Blue",
+      "purple": "Purple",
+      "pink": "Pink",
+      "red": "Red"
+    },
+    "bubble": {
+      "bold": "Bold",
+      "italic": "Italic",
+      "underline": "Underline",
+      "strike": "Strikethrough",
+      "code": "Inline code",
+      "link": "Link",
+      "linkPlaceholder": "Paste a link",
+      "removeLink": "Remove link",
+      "color": "Color",
+      "equation": "Equation",
+      "turnInto": "Turn into"
+    },
+    "table": {
+      "rowAbove": "Insert row above",
+      "rowBelow": "Insert row below",
+      "colLeft": "Insert column left",
+      "colRight": "Insert column right",
+      "deleteRow": "Delete row",
+      "deleteCol": "Delete column",
+      "headerRow": "Header row",
+      "headerColumn": "Header column"
+    },
+    "toggle": {
+      "expand": "Expand",
+      "collapse": "Collapse"
+    },
+    "todo": {
+      "checkbox": "Done"
+    },
+    "callout": {
+      "icon": "Change icon"
+    },
+    "status": {
+      "connecting": "Connecting…",
+      "offline": "Offline: changes will sync when you are back online",
+      "readOnly": "You can view this page",
+      "locked": "This page is locked",
+      "denied": "You no longer have access to this page",
+      "tooLarge": "This page is too large to be saved. Remove content to keep editing."
+    },
+    "presence": {
+      "viewing": "{{count}} people here",
+      "you": "You"
+    },
+    "backlinks": {
+      "title_one": "{{count}} backlink",
+      "title_other": "{{count}} backlinks",
+      "none": "No backlinks",
+      "more": "Show more",
+      "mention": "mentioned",
+      "link": "linked"
+    },
+    "upload": {
+      "uploading": "Uploading {{name}}…",
+      "done": "{{name}} uploaded"
+    }
+  },
+  "search": {
+    "quick": {
+      "title": "Search",
+      "placeholder": "Search pages…",
+      "empty": "No pages found",
+      "hint": "Type to search titles",
+      "fullSearch": "Search “{{q}}” in all content",
+      "shortcut": "Search"
+    },
+    "page": {
+      "title": "Search",
+      "placeholder": "Search in titles and content",
+      "empty": "No results",
+      "titleOnly": "Titles only",
+      "teamspace": "Teamspace",
+      "anyTeamspace": "All teamspaces",
+      "createdBy": "Created by",
+      "anyone": "Anyone",
+      "edited": "Last edited",
+      "anyTime": "Any time",
+      "lastDay": "Last 24 hours",
+      "lastWeek": "Last 7 days",
+      "lastMonth": "Last 30 days",
+      "lastYear": "Last year",
+      "more": "Show more results",
+      "hint": "Search the pages you can access"
     }
   }
 }

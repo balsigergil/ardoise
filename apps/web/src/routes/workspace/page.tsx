@@ -30,7 +30,7 @@ import {
   Trash2,
   Unlock,
 } from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
+import { lazy, Suspense, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 import { EmojiPicker } from '@/components/emoji-picker';
@@ -38,6 +38,10 @@ import { MovePageDialog } from '@/components/page-tree/move-dialog';
 import { usePageActions } from '@/components/page-tree/page-actions';
 import { PageIcon } from '@/components/page-tree/page-icon';
 import { ShareDialog } from '@/components/share-dialog';
+import { Backlinks } from '@/editor/backlinks';
+const PageEditor = lazy(() =>
+  import('@/editor/page-editor').then((m) => ({ default: m.PageEditor })),
+);
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import {
@@ -153,14 +157,20 @@ function Breadcrumb({
   );
 }
 
+/**
+ * Subpages that no child page block of the content shows (pages created from the
+ * sidebar, or whose block was removed by editing; M3 plan).
+ */
 function Subpages({
   workspaceId,
   page,
   editable,
+  hidden,
 }: {
   workspaceId: string;
   page: PageDto;
   editable: boolean;
+  hidden: ReadonlySet<string>;
 }) {
   const { t } = useTranslation();
   const { store, refreshToken } = useSyncContext();
@@ -175,7 +185,8 @@ function Subpages({
     next: null,
   });
   const next = more.after !== null ? more.next : (first.data ?? null);
-  const children = useSyncSelector((s) => s.children(parent));
+  const children = useSyncSelector((s) => s.children(parent)).filter((c) => !hidden.has(c.id));
+  if (!first.isPending && children.length === 0 && !next && hidden.size > 0) return null;
   return (
     <section aria-label={t('pages.subpages')} className="mt-8 grid gap-1">
       <h2 className="text-sm font-medium text-muted-foreground">{t('pages.subpages')}</h2>
@@ -287,6 +298,7 @@ export function PageView({ workspaceId, pageId }: { workspaceId: string; pageId:
   });
   const [sharing, setSharing] = useState(false);
   const [moving, setMoving] = useState(false);
+  const [inContent, setInContent] = useState<ReadonlySet<string>>(new Set());
 
   useEffect(() => {
     if (!detail.data) return;
@@ -558,10 +570,21 @@ export function PageView({ workspaceId, pageId }: { workspaceId: string; pageId:
         {!editable && canEdit && page.isLocked && (
           <p className="text-sm text-muted-foreground">{t('pages.lockedHint')}</p>
         )}
-        <p className="mt-6 rounded-md border border-dashed p-4 text-sm text-muted-foreground">
-          {t('pages.contentSoon')}
-        </p>
-        <Subpages workspaceId={workspaceId} page={page} editable={editable} />
+        <div className="mt-6">
+          <Suspense fallback={<Skeleton className="h-24 w-full" />}>
+            <PageEditor
+              key={page.id}
+              workspaceId={workspaceId}
+              page={page}
+              editable={editable}
+              locked={page.isLocked}
+              me={me}
+              onChildPagesChange={setInContent}
+            />
+          </Suspense>
+        </div>
+        <Subpages workspaceId={workspaceId} page={page} editable={editable} hidden={inContent} />
+        <Backlinks workspaceId={workspaceId} pageId={page.id} />
       </div>
 
       {workspace && (

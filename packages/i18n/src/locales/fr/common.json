@@ -380,7 +380,6 @@
     "copyLink": "Copier le lien",
     "linkCopied": "Lien copié.",
     "inTrash": "Cette page est dans la corbeille.",
-    "contentSoon": "Le contenu des pages arrive avec l’éditeur.",
     "icon": {
       "add": "Ajouter une icône",
       "change": "Changer l’icône",
@@ -497,6 +496,172 @@
       "media": "Médias",
       "advanced": "Avancé",
       "inline": "En ligne"
+    },
+    "placeholder": "Tapez « / » pour les commandes",
+    "emptyPage": "Écrivez quelque chose, ou tapez « / » pour les commandes",
+    "code": {
+      "language": "Langage",
+      "plain": "Texte brut",
+      "wrap": "Retour à la ligne",
+      "copy": "Copier le code"
+    },
+    "image": {
+      "upload": "Importer une image",
+      "uploading": "Import en cours…",
+      "caption": "Ajouter une légende",
+      "resize": "Redimensionner l’image"
+    },
+    "file": {
+      "upload": "Importer un fichier",
+      "download": "Télécharger",
+      "untitled": "Fichier sans nom"
+    },
+    "equation": {
+      "empty": "Ajouter une équation",
+      "inlineEmpty": "Équation",
+      "invalid": "LaTeX invalide",
+      "source": "Source LaTeX",
+      "placeholder": "p. ex. E = mc^2"
+    },
+    "pageLink": {
+      "deleted": "dans la corbeille",
+      "moved": "déplacée",
+      "noAccess": "Accès refusé"
+    },
+    "toc": {
+      "empty": "Ajoutez des titres pour construire la table des matières.",
+      "untitled": "Titre sans nom"
+    },
+    "bookmark": {
+      "placeholder": "Collez un lien web",
+      "create": "Créer le signet"
+    },
+    "plugin": {
+      "missing": "Le plugin « {{plugin}} » n’est pas disponible",
+      "badge": "Plugin"
+    },
+    "mention": {
+      "unknownUser": "Personne inconnue",
+      "people": "Personnes",
+      "pages": "Pages",
+      "dates": "Dates",
+      "today": "Aujourd’hui",
+      "tomorrow": "Demain",
+      "yesterday": "Hier",
+      "empty": "Aucun résultat"
+    },
+    "slash": {
+      "empty": "Aucun bloc correspondant",
+      "label": "Insérer un bloc"
+    },
+    "handle": {
+      "add": "Ajouter un bloc en dessous",
+      "drag": "Glisser pour déplacer, cliquer pour les options"
+    },
+    "menu": {
+      "colorText": "Couleur du texte",
+      "colorBackground": "Arrière-plan",
+      "defaultColor": "Par défaut",
+      "moveToTitle": "Déplacer les blocs vers…",
+      "moved": "Blocs déplacés",
+      "linkCopied": "Lien du bloc copié",
+      "deletePage": "Supprimer aussi la page ?"
+    },
+    "colors": {
+      "gray": "Gris",
+      "brown": "Marron",
+      "orange": "Orange",
+      "yellow": "Jaune",
+      "green": "Vert",
+      "blue": "Bleu",
+      "purple": "Violet",
+      "pink": "Rose",
+      "red": "Rouge"
+    },
+    "bubble": {
+      "bold": "Gras",
+      "italic": "Italique",
+      "underline": "Souligné",
+      "strike": "Barré",
+      "code": "Code en ligne",
+      "link": "Lien",
+      "linkPlaceholder": "Collez un lien",
+      "removeLink": "Retirer le lien",
+      "color": "Couleur",
+      "equation": "Équation",
+      "turnInto": "Transformer en"
+    },
+    "table": {
+      "rowAbove": "Insérer une ligne au-dessus",
+      "rowBelow": "Insérer une ligne en dessous",
+      "colLeft": "Insérer une colonne à gauche",
+      "colRight": "Insérer une colonne à droite",
+      "deleteRow": "Supprimer la ligne",
+      "deleteCol": "Supprimer la colonne",
+      "headerRow": "Ligne d’en-tête",
+      "headerColumn": "Colonne d’en-tête"
+    },
+    "toggle": {
+      "expand": "Déplier",
+      "collapse": "Replier"
+    },
+    "todo": {
+      "checkbox": "Terminé"
+    },
+    "callout": {
+      "icon": "Changer l’icône"
+    },
+    "status": {
+      "connecting": "Connexion…",
+      "offline": "Hors ligne : les modifications seront synchronisées au retour de la connexion",
+      "readOnly": "Vous pouvez consulter cette page",
+      "locked": "Cette page est verrouillée",
+      "denied": "Vous n’avez plus accès à cette page",
+      "tooLarge": "Cette page est trop volumineuse pour être enregistrée. Retirez du contenu pour continuer."
+    },
+    "presence": {
+      "viewing": "{{count}} personnes ici",
+      "you": "Vous"
+    },
+    "backlinks": {
+      "title_one": "{{count}} rétrolien",
+      "title_other": "{{count}} rétroliens",
+      "none": "Aucun rétrolien",
+      "more": "Afficher plus",
+      "mention": "mentionnée",
+      "link": "liée"
+    },
+    "upload": {
+      "uploading": "Import de {{name}}…",
+      "done": "{{name}} importé"
+    }
+  },
+  "search": {
+    "quick": {
+      "title": "Rechercher",
+      "placeholder": "Rechercher des pages…",
+      "empty": "Aucune page trouvée",
+      "hint": "Tapez pour chercher dans les titres",
+      "fullSearch": "Chercher « {{q}} » dans tout le contenu",
+      "shortcut": "Rechercher"
+    },
+    "page": {
+      "title": "Recherche",
+      "placeholder": "Chercher dans les titres et le contenu",
+      "empty": "Aucun résultat",
+      "titleOnly": "Titres uniquement",
+      "teamspace": "Espace d’équipe",
+      "anyTeamspace": "Tous les espaces d’équipe",
+      "createdBy": "Créé par",
+      "anyone": "N’importe qui",
+      "edited": "Dernière modification",
+      "anyTime": "N’importe quand",
+      "lastDay": "Dernières 24 heures",
+      "lastWeek": "7 derniers jours",
+      "lastMonth": "30 derniers jours",
+      "lastYear": "Dernière année",
+      "more": "Plus de résultats",
+      "hint": "Cherchez dans les pages auxquelles vous avez accès"
     }
   }
 }

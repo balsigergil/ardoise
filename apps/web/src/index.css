@@ -2,6 +2,8 @@
 /* shadcn/ui neutral theme tokens, used as they are (PRODUCT §19). */
 @import 'tailwindcss';
 @import 'tw-animate-css';
+@import 'katex/dist/katex.min.css';
+@import './editor/styles/editor.css';
 
 @custom-variant dark (&:is(.dark *));
 

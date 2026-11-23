@@ -52,6 +52,11 @@ export async function request<T>(method: string, path: string, body?: unknown): 
   return (await res.json()) as T;
 }
 
+/** The CSRF token, for requests built by hand (multipart uploads). */
+export function currentCsrfToken(): string | undefined {
+  return csrfToken;
+}
+
 /** Raw JSON request with the CSRF header, for the sync transport (it reads errors itself). */
 export function rawRequest(
   method: 'GET' | 'POST',

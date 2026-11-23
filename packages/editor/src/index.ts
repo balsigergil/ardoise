@@ -3,6 +3,8 @@
 export * from './schema/index.js';
 export * from './yjs.js';
 export * from './commands/blocks.js';
+export * from './commands/table.js';
+export * from './view-helpers.js';
 export * from './registry/index.js';
 export * from './projection/projection.js';
 export { BlockKeymap, MarkKeymap } from './behaviors/keymap.js';

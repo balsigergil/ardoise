@@ -30,6 +30,11 @@ export default defineConfig({
         advancedChunks: {
           groups: [
             { name: 'react', test: /node_modules[\\/](react|react-dom|scheduler)[\\/]/ },
+            // The editor stack loads with the first page view (lazy route component).
+            {
+              name: 'editor',
+              test: /node_modules[\\/](@tiptap|prosemirror-[a-z-]+|yjs|y-prosemirror|y-protocols|lib0|lowlight|highlight\.js|katex|@hocuspocus|linkifyjs|@floating-ui|orderedmap|rope-sequence|w3c-keyname|unified|remark-[a-z-]+|micromark[a-z-]*|mdast-[a-z-]+)[\\/]/,
+            },
             { name: 'vendor', test: /node_modules/ },
           ],
         },

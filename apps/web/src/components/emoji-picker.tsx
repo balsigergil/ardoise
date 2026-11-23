@@ -53,15 +53,20 @@ export function EmojiPicker({
   trigger,
   onSelect,
   onRemove,
+  open,
+  onOpenChange,
 }: {
   trigger: ReactNode;
   onSelect: (emoji: string) => void;
   onRemove?: () => void;
+  /** Controlled mode (opened from code, e.g. a callout icon in the editor). */
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
 }) {
   const { t } = useTranslation();
   const [custom, setCustom] = useState('');
   return (
-    <DropdownMenu>
+    <DropdownMenu {...(open !== undefined && { open })} {...(onOpenChange && { onOpenChange })}>
       <DropdownMenuTrigger asChild>{trigger}</DropdownMenuTrigger>
       <DropdownMenuContent align="start" className="w-72 p-2">
         <div className="grid grid-cols-8 gap-1" role="group" aria-label={t('pages.icon.choose')}>
