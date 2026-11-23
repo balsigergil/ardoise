@@ -56,9 +56,9 @@ describe('server boot (role=all)', () => {
     await client.connect();
     try {
       const { rows } = await client.query<{ extname: string }>(
-        "SELECT extname FROM pg_extension WHERE extname IN ('ltree', 'pg_trgm', 'unaccent') ORDER BY extname",
+        "SELECT extname FROM pg_extension WHERE extname IN ('btree_gin', 'ltree', 'pg_trgm', 'unaccent') ORDER BY extname",
       );
-      expect(rows.map((r) => r.extname)).toEqual(['ltree', 'pg_trgm', 'unaccent']);
+      expect(rows.map((r) => r.extname)).toEqual(['btree_gin', 'ltree', 'pg_trgm', 'unaccent']);
     } finally {
       await client.end();
     }

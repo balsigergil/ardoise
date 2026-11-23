@@ -4,6 +4,8 @@ import { z } from 'zod';
 /** Instance limits (PRODUCT §3). Stored under `instance_settings.limits`. */
 export const limitsSchema = z.object({
   maxUploadSizeMb: z.number().int().min(1).max(10_240).default(100),
+  /** Cap on a page's encoded Yjs document (ADR 0009 §4). */
+  maxDocumentSizeMb: z.number().int().min(1).max(100).default(10),
   trashRetentionDays: z.number().int().min(1).max(3650).default(30),
   /** null = unlimited */
   historyRetentionDays: z.number().int().min(1).max(36_500).nullable().default(null),

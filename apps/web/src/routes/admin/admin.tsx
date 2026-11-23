@@ -395,6 +395,7 @@ function SettingsTab() {
         const v = formValues(
           event.currentTarget,
           'maxUploadSizeMb',
+          'maxDocumentSizeMb',
           'trashRetentionDays',
           'historyRetentionDays',
           'offlineRowsPerDatabase',
@@ -403,6 +404,7 @@ function SettingsTab() {
         save.mutate({
           limits: {
             maxUploadSizeMb: num(v.maxUploadSizeMb),
+            maxDocumentSizeMb: num(v.maxDocumentSizeMb),
             trashRetentionDays: num(v.trashRetentionDays),
             historyRetentionDays: v.historyRetentionDays ? num(v.historyRetentionDays) : null,
             offlineRowsPerDatabase: num(v.offlineRowsPerDatabase),
@@ -423,6 +425,15 @@ function SettingsTab() {
           min={1}
           max={10240}
           defaultValue={limits.maxUploadSizeMb}
+          required
+        />
+        <Field
+          label={t('admin.settings.maxDocumentSizeMb')}
+          name="maxDocumentSizeMb"
+          type="number"
+          min={1}
+          max={100}
+          defaultValue={limits.maxDocumentSizeMb}
           required
         />
         <Field

@@ -6,3 +6,4 @@
 export * from './instance.js';
 export * from './workspaces.js';
 export * from './pages.js';
+export * from './content.js';

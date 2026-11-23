@@ -22,6 +22,13 @@
       "when": 1795370808341,
       "tag": "0002_pages_sync",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1795463768252,
+      "tag": "0003_content_files_search",
+      "breakpoints": true
     }
   ]
 }

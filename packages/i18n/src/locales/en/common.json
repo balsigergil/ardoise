@@ -316,6 +316,7 @@
     "settings": {
       "limits": "Limits",
       "maxUploadSizeMb": "Maximum upload size (MB)",
+      "maxDocumentSizeMb": "Maximum page content size (MB)",
       "trashRetentionDays": "Trash retention (days)",
       "historyRetentionDays": "Version history retention (days)",
       "unlimitedHint": "Leave empty for unlimited.",

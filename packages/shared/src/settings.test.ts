@@ -6,6 +6,7 @@ describe('instance settings', () => {
   it('fills the documented defaults (PRODUCT §3)', () => {
     expect(parseSettings(limitsSchema, undefined)).toEqual({
       maxUploadSizeMb: 100,
+      maxDocumentSizeMb: 10,
       trashRetentionDays: 30,
       historyRetentionDays: null,
       offlineRowsPerDatabase: 50,

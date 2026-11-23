@@ -48,7 +48,8 @@ reference for the clean-room implementation (see `CLAUDE.md` §1.1). Scope marke
   - users (invite, disable, delete, promote) and workspaces (list, size);
   - SMTP settings and a test email;
   - AI providers;
-  - limits: max upload size (default 100 MB), trash retention (default 30 days),
+  - limits: max upload size (default 100 MB), max page content size (default 10 MB),
+    trash retention (default 30 days),
     version history retention (default unlimited), rows cached for the default view
     of each cached database for offline use (default 50), invitation expiry;
   - storage usage;

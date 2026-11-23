@@ -316,6 +316,7 @@
     "settings": {
       "limits": "Limites",
       "maxUploadSizeMb": "Taille maximale des fichiers (Mo)",
+      "maxDocumentSizeMb": "Taille maximale du contenu d’une page (Mo)",
       "trashRetentionDays": "Conservation de la corbeille (jours)",
       "historyRetentionDays": "Conservation de l’historique des versions (jours)",
       "unlimitedHint": "Laissez vide pour ne pas limiter.",
