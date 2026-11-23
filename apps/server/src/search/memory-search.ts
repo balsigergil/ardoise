@@ -33,9 +33,11 @@ export class MemorySearchAdapter implements SearchPort {
   ): Promise<TitleCandidate[]> {
     const needle = norm(q);
     const hits = this.pages(workspaceId)
-      .filter((p) =>
-        q.length < 3 ? norm(p.title).startsWith(needle) : norm(p.title).includes(needle),
-      )
+      .filter((p) => {
+        const words = needle.split(/\s+/).filter(Boolean);
+        if (words.length === 1 && q.length < 3) return norm(p.title).startsWith(needle);
+        return words.every((w) => norm(p.title).includes(w));
+      })
       .sort(
         (a, b) =>
           Number(norm(b.title).startsWith(needle)) - Number(norm(a.title).startsWith(needle)) ||

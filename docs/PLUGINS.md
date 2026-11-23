@@ -400,6 +400,22 @@ are good structure even without plugins. ROADMAP lists them as tasks.
   component.
 - **Projection extractors** keyed by node type, with the generic fallback for unknown nodes.
 
+**State after M3 (2026-11-23)**: done.
+- The five reserved types, `ext` and their fallbacks are in the schema
+  (`packages/editor/src/schema`); a document holding all of them round-trips through Yjs,
+  the server decoder and the clipboard; `ext` survives copy, paste and duplication.
+- Overlapping `pluginMark` instances survive `y-prosemirror` (no fallback, §6.4).
+- `plugin:` (and `synced:` until M6) document names are refused by `CollabAccess`.
+- `EditorRegistry`: blocks (extensions, slash items, turn-into targets, block actions),
+  inline slash items and behaviors; `createCoreRegistry()` registers the core the same
+  way. The editor's extension list is `registry.extensions()`; the slash menu, block menu
+  and "turn into" lists read it. Keymaps, Markdown shortcuts and paste conversion are
+  behaviors.
+- `ProjectionRegistry` with per-node extractors and the generic fallback (`text`
+  attribute, then content); used by the projection job and content duplication.
+- Server code that copies content edits the Yjs tree directly, so unknown node types are
+  kept.
+
 **M4 — Databases**
 - A **property type registry**: `type`, config schema, value schema, **value kind**
   (`text | number | date | bool | user | none`), indexing into `database_row_values`,

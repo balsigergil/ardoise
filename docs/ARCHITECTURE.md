@@ -178,7 +178,8 @@ Conventions:
   its own Yjs document (`synced:<id>`).
 - Projection tables, maintained asynchronously from documents:
   - `page_search` (workspace_id, page_id, tsv tsvector, plain_text, updated_at),
-    with title weighted A and content B, `simple` config + `unaccent`;
+    with title weighted A and content B, in the `ardoise` text search configuration
+    (`simple` + `unaccent`, migration 0004), so snippets highlight accented words too;
   - `page_links` (workspace_id, source_page_id, target_page_id, kind
     link|mention|synced_ref), which powers backlinks;
   - `page_mentions_users` (workspace_id, page_id, user_id, block_id), used to diff
@@ -400,7 +401,18 @@ Editor (packages/editor) ── Yjs docs ── HocuspocusProvider + y-indexeddb
 
 ### 8.6 Routing and data loading
 - TanStack Router, code-split per route (editor, database views, admin, settings).
+  The editor stack (Tiptap, ProseMirror, Yjs, lowlight, KaTeX, Hocuspocus) is its own
+  chunk, loaded with the first page view.
 - Long lists and trees use TanStack Virtual.
+
+### 8.7 Editor client (M3)
+- One `HocuspocusProviderWebsocket` per tab; one provider per open document. Close and
+  refusal reasons (ADR 0009) drive the editor: `reconnect` re-opens the document,
+  `forbidden`/`not_found` drop it, `document_too_large` warns that edits are not saved.
+- Text blocks render through the schema's DOM plus decorations (list numbers, to-do
+  boxes, toggle chevrons and their per-user collapsed state, callout icons); interactive
+  blocks are React node views. Menus (slash, mentions, block menu, formatting, tables)
+  read the editor registry.
 
 ## 9. Permissions
 
@@ -447,11 +459,14 @@ Editor (packages/editor) ── Yjs docs ── HocuspocusProvider + y-indexeddb
 
 ## 11. Other subsystems
 
-- **Projection jobs** (BullMQ, debounced per document):
+- **Projection jobs** (BullMQ, debounced per document: 5 s after a store, one follow-up
+  when stored again while running):
   1. decode the Yjs state to editor JSON;
   2. extract plain text, links, mentions and synced references;
   3. update `page_search`, `page_links` and `page_mentions_users`;
   4. emit mention notifications for new mentions.
+- **Link previews** (bookmarks): fetched by the api role through an SSRF guard (public
+  unicast addresses only, checked on every DNS lookup; 3 redirects, 5 s, 1 MB, HTML only).
 - **Search**: `SearchPort` with the `PostgresSearchAdapter`. Results are filtered by
   permission in batches after retrieval, with bounded scans (ADR 0009 §8). It uses `websearch_to_tsquery` on
   `simple` + `unaccent`, `ts_headline` snippets and trigram for title prefix/fuzzy.

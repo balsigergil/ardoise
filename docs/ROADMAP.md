@@ -77,23 +77,23 @@ The seq serialization benchmark is recorded.
 
 ## M3 — Editor and real-time collaboration
 
-- [ ] `packages/editor`: Tiptap (MIT packages only) schema with block-container nesting
+- [x] `packages/editor`: Tiptap (MIT packages only) schema with block-container nesting
       and `blockId`
-- [ ] Blocks: text, H1–H3 (+ toggle headings), bulleted, numbered, to-do, toggle, quote,
+- [x] Blocks: text, H1–H3 (+ toggle headings), bulleted, numbered, to-do, toggle, quote,
       callout, code (highlighting), divider, image, file, simple table, columns, block
       equation, link to page, child page, table of contents, bookmark
-- [ ] Inline: marks, colors, links, inline equation, mentions (user, page, date)
-- [ ] Slash menu, drag handles, block menu (turn into, color, duplicate, move to, copy
+- [x] Inline: marks, colors, links, inline equation, mentions (user, page, date)
+- [x] Slash menu, drag handles, block menu (turn into, color, duplicate, move to, copy
       link, delete), multi-block selection, Markdown shortcuts, paste conversion
-- [ ] `collab` role: Hocuspocus with auth hooks, read-only enforcement, persistence to
+- [x] `collab` role: Hocuspocus with auth hooks, read-only enforcement, persistence to
       `page_documents`, Valkey extension, connection kill on permission revoke
-- [ ] Presence: avatars, colored cursors and selections
-- [ ] `files` module: streamed uploads to S3 with limits, presigned downloads, thumbnails job
-- [ ] `projection` jobs: plain text, links, mentions → `page_search`, `page_links`;
+- [x] Presence: avatars, colored cursors and selections
+- [x] `files` module: streamed uploads to S3 with limits, presigned downloads, thumbnails job
+- [x] `projection` jobs: plain text, links, mentions → `page_search`, `page_links`;
       backlinks panel
-- [ ] Search: quick find (titles, trigram) and full search page (FTS, filters, snippets)
-- [ ] Page lock enforced in the editor and on the server
-- [ ] Extension seams (ADR 0008, PLUGINS.md §11): reserved `pluginBlock` /
+- [x] Search: quick find (titles, trigram) and full search page (FTS, filters, snippets)
+- [x] Page lock enforced in the editor and on the server
+- [x] Extension seams (ADR 0008, PLUGINS.md §11): reserved `pluginBlock` /
       `pluginContainer` / `pluginText` / `pluginInline` nodes and `pluginMark` with
       fallbacks (overlap test with `y-prosemirror`); global `ext` attribute; `plugin:`
       document prefix reserved; block definition and editor behavior registries driving

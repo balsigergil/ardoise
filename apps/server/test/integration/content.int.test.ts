@@ -159,8 +159,9 @@ describe('files', () => {
     expect(uploaded.body).toMatchObject({ name: 'photo.png', mime: 'image/png', isImage: true });
 
     const url = `/files/${workspaceId}/${uploaded.body.id}`;
-    const full = await admin.request('GET', url);
+    const full = await fetch(`${base}${url}`, { headers: { cookie: admin.cookieHeader } });
     expect(full.status).toBe(200);
+    expect(new Uint8Array(await full.arrayBuffer())).toEqual(new Uint8Array(png));
     expect(full.headers.get('content-type')).toBe('image/png');
     expect(full.headers.get('x-content-type-options')).toBe('nosniff');
     const part = await fetch(`${base}${url}`, {

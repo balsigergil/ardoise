@@ -31,6 +31,14 @@ describe('quick find', () => {
     expect(forOwner.items.map((i) => i.title).sort()).toEqual(['Été 2026', 'Été secret']);
   });
 
+  it('matches every word, in any order and with other words between', async () => {
+    const { h, member, ws } = await setup();
+    expect(
+      (await h.search.quickFind(member, ws.id, '2026 ete', 20)).items.map((i) => i.title),
+    ).toEqual(['Été 2026']);
+    expect((await h.search.quickFind(member, ws.id, 'ete 2027', 20)).items).toEqual([]);
+  });
+
   it('hides the titles of ancestors the user cannot see', async () => {
     const { h, owner, member, ws, secret } = await setup();
     const shared = await h.createPage(owner, ws.id, { kind: 'page', id: secret }, 'Shared plan');

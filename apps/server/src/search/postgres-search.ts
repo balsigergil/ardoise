@@ -33,11 +33,18 @@ export class PostgresSearchAdapter implements SearchPort {
     limit: number,
   ): Promise<TitleCandidate[]> {
     const needle = likeEscape(q.toLowerCase());
-    // Short queries match title prefixes (btree); longer ones any substring (trigram).
+    const words = q.toLowerCase().split(/\s+/).filter(Boolean).map(likeEscape);
+    // One short word matches title prefixes (btree); otherwise every word must appear
+    // somewhere in the title (trigram index on the longer words).
     const match: SQL =
-      q.length < 3
+      words.length === 1 && q.length < 3
         ? sql`lower(ardoise_unaccent(p.title)) LIKE lower(ardoise_unaccent(${needle})) || '%'`
-        : sql`ardoise_unaccent(p.title) ILIKE '%' || ardoise_unaccent(${needle}) || '%'`;
+        : sql.join(
+            words.map(
+              (w) => sql`ardoise_unaccent(p.title) ILIKE '%' || ardoise_unaccent(${w}) || '%'`,
+            ),
+            sql` AND `,
+          );
     const result = await this.db.execute<{ id: string }>(sql`
       SELECT p.id
       FROM pages p
