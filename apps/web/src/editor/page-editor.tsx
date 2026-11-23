@@ -33,7 +33,7 @@ import { EmojiPicker } from '@/components/emoji-picker';
 import { usePageActions } from '@/components/page-tree/page-actions';
 import { api, ApiError } from '@/lib/api';
 import { useSyncStore } from '@/sync/hooks';
-import { openDocument, type DocSession } from './collab';
+import { openDocument, sessionHolder, type DocSession } from './collab';
 import { appendBlocks, childPageIds, dateItems, registry } from './editor-utils';
 import { EditorEnvContext, type EditorEnv } from './env';
 import { localCollapsedStorage } from './extensions/decorations';
@@ -49,14 +49,14 @@ import { MentionPopup, SlashPopup } from './ui/popups';
 import { Presence } from './ui/presence';
 import { TableToolbar } from './ui/table-toolbar';
 
-function useSession(workspaceId: string, pageId: string, user: CollabUser): DocSession {
-  const session = useMemo(
-    () => openDocument(workspaceId, pageId, user),
+/** The page's collab session, open while mounted; null until the first commit. */
+function useSession(workspaceId: string, pageId: string, user: CollabUser): DocSession | null {
+  const holder = useMemo(
+    () => sessionHolder(() => openDocument(workspaceId, pageId, user)),
     [workspaceId, pageId, user],
   );
-  useEffect(() => () => session.destroy(), [session]);
-  useSyncExternalStore(session.subscribe, () => `${session.status}:${session.readOnly}`);
-  return session;
+  useSyncExternalStore(holder.subscribe, holder.snapshot);
+  return holder.session;
 }
 
 export interface PageEditorProps {
@@ -72,25 +72,39 @@ export interface PageEditorProps {
   onChildPagesChange?: (ids: ReadonlySet<string>) => void;
 }
 
-export function PageEditor({
+export function PageEditor(props: PageEditorProps) {
+  const { t } = useTranslation();
+  const { me } = props;
+  const user = useMemo<CollabUser>(
+    () => ({ id: me.id, name: me.name, color: presenceColor(me.id) }),
+    [me.id, me.name],
+  );
+  const session = useSession(props.workspaceId, props.page.id, user);
+  if (!session)
+    return (
+      <div className="ardoise-editor-frame relative" data-status="connecting">
+        <p className="text-sm text-muted-foreground">{t('editor.status.connecting')}</p>
+      </div>
+    );
+  // One editor per session: a new session (other page, remount) starts from scratch.
+  return <PageEditorBody key={session.doc.guid} {...props} user={user} session={session} />;
+}
+
+function PageEditorBody({
   workspaceId,
   page,
   editable,
   locked,
-  me,
   onChildPagesChange,
   showLockBanner = true,
-}: PageEditorProps) {
+  user,
+  session,
+}: PageEditorProps & { user: CollabUser; session: DocSession }) {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const store = useSyncStore();
   const actions = usePageActions();
-  const user = useMemo<CollabUser>(
-    () => ({ id: me.id, name: me.name, color: presenceColor(me.id) }),
-    [me.id, me.name],
-  );
-  const session = useSession(workspaceId, page.id, user);
   const stores = useMemo(
     () => ({
       slash: createStore<SuggestionState<SlashItem>>(closedSuggestion()),

@@ -145,3 +145,40 @@ export function openDocument(
     },
   };
 }
+
+/** A session opened while subscribed: the shape `useSyncExternalStore` expects. */
+export interface SessionHolder {
+  readonly session: DocSession | null;
+  subscribe: (listener: () => void) => () => void;
+  snapshot: () => string;
+}
+
+/**
+ * Opens the session on subscribe and destroys it on unsubscribe, so nothing connects
+ * during render and a remount (React StrictMode mounts, unmounts and mounts again)
+ * gets a live session instead of a destroyed one.
+ */
+export function sessionHolder(open: () => DocSession): SessionHolder {
+  let session: DocSession | null = null;
+  let generation = 0;
+  return {
+    get session() {
+      return session;
+    },
+    subscribe(listener) {
+      const opened = open();
+      session = opened;
+      generation += 1;
+      const off = opened.subscribe(listener);
+      listener();
+      return () => {
+        off();
+        opened.destroy();
+        if (session === opened) session = null;
+        generation += 1;
+      };
+    },
+    snapshot: () =>
+      session ? `${generation}:${session.status}:${session.readOnly}` : `${generation}:none`,
+  };
+}
