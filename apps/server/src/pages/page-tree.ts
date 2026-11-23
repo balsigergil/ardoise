@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 /** Subtree operations shared by mutations and jobs (ARCHITECTURE §4.3, ADR 0003 item 5). */
+import { copyDocuments } from './page-content.js';
 import { DomainError, MAX_PAGE_DEPTH, newId, uuidToLabel } from '@ardoise/shared';
 import type { PageRecord, Store, SubtreeCursor } from '../store/store.js';
 
@@ -98,5 +99,14 @@ export async function copyDescendants(
     const last = batch[batch.length - 1]!;
     after = { depth: last.depth, id: last.id };
   }
+  // Content last, once every copy exists, so child page blocks can point to copies.
+  const pageIds = new Map([...ids].map(([sourceId, record]) => [sourceId, record.id]));
+  await copyDocuments(
+    store,
+    ws,
+    [...ids].map(([sourceId, record]) => [sourceId, record.id, record.title] as const),
+    pageIds,
+    now,
+  );
   return copied;
 }

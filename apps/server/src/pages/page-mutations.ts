@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 /** Handlers for `page.*`, `favorite.*` and `follow.*` mutations (M2 plan: required levels). */
+import { copyDocuments } from './page-content.js';
 import {
   atLeast,
   DomainError,
@@ -321,6 +322,14 @@ export function pageHandlers(): PageHandlers {
         });
       } else if (size > 1) {
         await copyDescendants(ctx.store, source, copy, ctx.actor.id, ctx.now);
+      } else {
+        await copyDocuments(
+          ctx.store,
+          ctx.workspaceId,
+          [[source.id, copy.id, copy.title]],
+          new Map([[source.id, copy.id]]),
+          ctx.now,
+        );
       }
       if (grants.length > 0) ctx.access('page', copy.id);
       await emitPage(ctx, toPageDto(copy, false));

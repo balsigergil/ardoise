@@ -6,6 +6,7 @@ import {
   type PageListDto,
   type PageListQuery,
   type PublicChildrenDto,
+  type PublicContentDto,
   type PublicPageDto,
   type RecentDto,
   type SharingDto,
@@ -128,6 +129,29 @@ export class PublicPagesController {
     @Inject(RateLimiter) private readonly limiter: RateLimiter,
     @Inject(FileService) private readonly files: FileService,
   ) {}
+
+  @Public()
+  @Get('content')
+  async rootContent(
+    @Param('token') token: string,
+    @ClientIp() ip: string,
+    @Res({ passthrough: true }) res: Response,
+  ): Promise<PublicContentDto> {
+    await this.guard(ip, res);
+    return this.pages.content(token);
+  }
+
+  @Public()
+  @Get('pages/:page/content')
+  async pageContent(
+    @Param('token') token: string,
+    @Param('page', id()) page: string,
+    @ClientIp() ip: string,
+    @Res({ passthrough: true }) res: Response,
+  ): Promise<PublicContentDto> {
+    await this.guard(ip, res);
+    return this.pages.content(token, page);
+  }
 
   /** Files embedded in pages the link covers (ADR 0009 §7). */
   @Public()

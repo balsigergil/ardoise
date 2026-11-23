@@ -18,6 +18,9 @@ import type { Store } from './store/store.js';
 import { CONFIG, DATABASE, JOB_QUEUE, S3, STORE, SYNC_BUS, VALKEY } from './tokens.js';
 import type { S3Client } from '@aws-sdk/client-s3';
 import { FileService, sharpThumbnailer } from './files/file.service.js';
+import { LinkPreviewService } from './links/link-preview.service.js';
+import { PostgresSearchAdapter } from './search/postgres-search.js';
+import { SearchService } from './search/search.service.js';
 import { S3ObjectStorage } from './files/object-storage.js';
 import { createS3Client } from './infra/s3.js';
 import { BullJobQueue } from './jobs/bullmq-queue.js';
@@ -180,6 +183,17 @@ class SyncLifecycle implements OnApplicationShutdown {
         new ProjectionService(s, p, jobs, new Logger('projection')),
     },
     {
+      provide: SearchService,
+      inject: [STORE, PermissionService, DATABASE],
+      useFactory: (s: Store, p: PermissionService, db: DatabaseHandle) =>
+        new SearchService(s, p, new PostgresSearchAdapter(db.db)),
+    },
+    {
+      provide: LinkPreviewService,
+      inject: [STORE, RateLimiter],
+      useFactory: (s: Store, limiter: RateLimiter) => new LinkPreviewService(s, limiter),
+    },
+    {
       provide: FileService,
       inject: [STORE, PermissionService, S3, InstanceSettingsService, JOB_QUEUE, CONFIG],
       useFactory: (
@@ -229,6 +243,8 @@ class SyncLifecycle implements OnApplicationShutdown {
     JobProcessors,
     ProjectionService,
     FileService,
+    SearchService,
+    LinkPreviewService,
     STORE,
     SecretKeyring,
     RateLimiter,

@@ -3,6 +3,8 @@
  * Public links (PRODUCT §5, ADR 0004): anonymous, read-only access to a page and, when
  * enabled, its subpages. Unknown, revoked and uncovered pages all answer `not_found`.
  */
+import type { PublicContentDto } from '@ardoise/shared';
+import { storedContent } from './page-content.js';
 import {
   DomainError,
   publicLinkCovers,
@@ -64,6 +66,13 @@ export class PublicPageService {
         );
       },
     };
+  }
+
+  /** The stored body of a covered page (ADR 0009 §10). */
+  async content(token: string, pageId?: string): Promise<PublicContentDto> {
+    const link = await this.link(token);
+    const { page } = await this.covered(link, pageId ?? link.pageId);
+    return { doc: await storedContent(this.store, link.workspaceId, page.id) };
   }
 
   async page(token: string, pageId?: string): Promise<PublicPageDto> {

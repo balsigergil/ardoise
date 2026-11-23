@@ -16,6 +16,8 @@ import { pageHandlers } from '../pages/page-mutations.js';
 import { ProjectionService } from '../projection/projection.service.js';
 import { FileService } from '../files/file.service.js';
 import { MemoryObjectStorage } from '../files/object-storage.js';
+import { MemorySearchAdapter } from '../search/memory-search.js';
+import { SearchService } from '../search/search.service.js';
 import { PageService } from '../pages/page.service.js';
 import { PublicPageService } from '../pages/public.service.js';
 import { sharingHandlers } from '../pages/sharing-mutations.js';
@@ -139,6 +141,7 @@ export function createHarness(options: HarnessOptions = {}) {
     silentLogger,
     { presign: false, thumbnailer: (input) => Promise.resolve(input.slice(0, 4)) },
   );
+  const search = new SearchService(store, permissions, new MemorySearchAdapter(store));
   const processors = new JobProcessors(store, settings, bus, clock, silentLogger, {
     projection,
     files,
@@ -258,6 +261,7 @@ export function createHarness(options: HarnessOptions = {}) {
     projection,
     objects,
     files,
+    search,
     mutate,
     tryMutate,
     createPage,

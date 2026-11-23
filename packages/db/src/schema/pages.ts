@@ -75,9 +75,19 @@ export const pages = pgTable(
   (t) => [
     primaryKey({ columns: [t.workspaceId, t.id] }),
     index('pages_children_idx').on(t.workspaceId, t.parentId, t.position, t.id),
-    // Page ids are globally unique, so `path` and `title` indexes need no workspace prefix.
+    // Page ids are globally unique, so the `path` index needs no workspace prefix.
     index('pages_path_gist').using('gist', t.path),
-    index('pages_title_trgm').using('gin', sql`${t.title} gin_trgm_ops`),
+    // Quick find (ADR 0009 §8): accent-insensitive substring (trigram, btree_gin) and
+    // prefix (short queries) matches on titles. `ardoise_unaccent` is migration 0004.
+    index('pages_title_trgm').using(
+      'gin',
+      t.workspaceId,
+      sql`ardoise_unaccent(${t.title}) gin_trgm_ops`,
+    ),
+    index('pages_title_prefix_idx').on(
+      t.workspaceId,
+      sql`lower(ardoise_unaccent(${t.title})) text_pattern_ops`,
+    ),
     index('pages_moving_idx')
       .on(t.workspaceId)
       .where(sql`${t.moveState} IS NOT NULL`),

@@ -112,6 +112,17 @@ collab auth and revocation, files, search, bookmarks, public page content).
   under `Content-Security-Policy: sandbox`. Uploads are refused on locked or trashed
   pages. Thumbnails: sharp, 800 px WebP. Deleted files are purged after one day.
 
+- T10 done (integration pending Docker): `SearchPort` with `PostgresSearchAdapter` and an
+  in-memory fake. Migration `0004` adds the `ardoise` text search configuration (`simple`
+  + `unaccent`, so snippets also highlight accented words), an immutable
+  `ardoise_unaccent` and accent-insensitive title indexes (trigram from 3 characters,
+  prefix below). Full search ranks at most the first 5,000 matches of a query (bounded
+  cost for very common terms). Link previews go through an SSRF guard (`net.BlockList`
+  checked on every DNS lookup, 3 redirects, 5 s, 1 MB). Public pages read
+  `GET /api/public/:token/content`. Duplicating a page copies its content and its
+  subpages' content (Yjs tree edited in place, so unknown nodes survive), with fresh
+  block ids and child page blocks pointing to the copies.
+
 ## Risks and open questions
 
 - **Schema is a persisted format** (ADR 0009): changing it later needs a document

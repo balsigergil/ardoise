@@ -25,6 +25,7 @@ export const rateRules = {
   invitationIp: { limit: 30, windowMs: 15 * MINUTE },
   mailTest: { limit: 10, windowMs: 15 * MINUTE },
   publicLinkIp: { limit: 300, windowMs: 5 * MINUTE },
+  linkPreviewUser: { limit: 60, windowMs: 5 * MINUTE },
 } satisfies Record<string, RateRule>;
 
 export type RateBucket = keyof typeof rateRules;

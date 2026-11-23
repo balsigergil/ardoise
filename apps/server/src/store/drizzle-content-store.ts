@@ -76,10 +76,13 @@ export function filesRepo(db: Executor): FilesRepo {
   };
 }
 
-/** `setweight(title, A) || setweight(body, B)` over `simple` + `unaccent` (§4.4). */
+/**
+ * `setweight(title, A) || setweight(body, B)` with the `ardoise` configuration
+ * (`simple` + `unaccent`, migration 0004).
+ */
 const tsv = (title: unknown, body: unknown) => sql`
-  setweight(to_tsvector('simple', unaccent(${title})), 'A') ||
-  setweight(to_tsvector('simple', unaccent(${body})), 'B')`;
+  setweight(to_tsvector('ardoise', ${title}), 'A') ||
+  setweight(to_tsvector('ardoise', ${body}), 'B')`;
 
 export function projectionRepo(db: Executor): ProjectionRepo {
   return {
