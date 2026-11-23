@@ -136,3 +136,103 @@ collab auth and revocation, files, search, bookmarks, public page content).
   linux-arm64.
 - **Columns by drag and drop** is the most involved interaction; if it slips, slash-menu
   columns ship first and drag-to-create is recorded as a limitation.
+
+## Summary (2026-11-23)
+
+**Status: done, pending review.** All M3 boxes are ticked in `docs/ROADMAP.md`.
+
+### What was built
+- **Editor package** (`packages/editor`): the ADR 0009 schema (typed block containers,
+  reserved plugin types, `ext`), `UniqueBlockIds`, Yjs helpers, block and table commands,
+  `EditorRegistry` + `createCoreRegistry` (blocks, slash items, turn-into targets, block
+  actions, behaviors), keymaps, Markdown shortcuts, paste conversion, projection with
+  `ProjectionRegistry`, view helpers (list numbers, outline).
+- **Markdown** (`packages/markdown`): Markdown → editor JSON (GFM, math, alerts).
+- **Data model** (migrations `0003`, `0004`): `page_documents`, `files`, `page_search`,
+  `page_links`, `page_mentions_users`; `btree_gin`; the `ardoise` text search
+  configuration and `ardoise_unaccent`; accent-insensitive title indexes.
+- **Server**:
+  - `collab`: Hocuspocus 4 at `/collab` on our `ws` upgrade handler (in-process for
+    `all`, own listener for `collab`), cookie + Origin auth, per-document authorization
+    and read-only, persistence with the size cap, Valkey fan-out, `collab:recheck` after
+    access and lock changes, awareness identity from the session.
+  - `projection`: job per stored document (search text, links, user mentions), title
+    write-through, backlinks read.
+  - `files`: streamed uploads with limits and byte sniffing, ranged or presigned
+    downloads, public-link files, thumbnails (sharp), purge job.
+  - `search`: quick find (prefix first, then every word) and full-text search with
+    filters and snippets, permission-filtered with bounded scans; link previews behind an
+    SSRF guard; public page content; content copy on duplicate.
+- **Web**: the page editor (Tiptap + Collaboration + carets) with node views for every
+  block, decorations for text blocks, slash menu, `@` mentions, drag handles with
+  columns, block menu, formatting and table toolbars, presence avatars, status banners
+  (offline, read-only, locked, revoked, too large), backlinks, scroll to `#block-<id>`,
+  quick find (recent pages, titles, content) and the search page, read-only content on
+  public pages. The editor stack is a lazy chunk.
+
+### Tests
+- 681 unit tests: 114 shared, 122 editor, 8 markdown, 251 server, 85 web, 22 sync, 5 db,
+  26 i18n, 48 scripts. They include the Yjs/server-decoder/clipboard round trip of every
+  node type, overlapping plugin marks under a concurrent edit, block commands on nested
+  and column structures, cross-block selections staying valid, an in-memory Hocuspocus
+  server with real providers (sync, read-only, refusals, revocation, presence), files,
+  projection, search, SSRF guard and the editor UI in jsdom.
+- 48 integration tests (Testcontainers): collaboration across two collab nodes through
+  Valkey (relay, persistence, reload, read-only, revocation on another node, `plugin:`
+  refused, upgrade without session refused), uploads to RustFS (ranges, thumbnail, size
+  limit), projection into search and backlinks, public content and files, link preview of
+  an internal address refused.
+- 18 e2e tests (Playwright), including *two browsers co-edit a page; cursors visible; no
+  lost text* (concurrent typing in the same paragraph keeps every character, content
+  survives a reload), Markdown shortcuts and the slash menu, lock and unlock seen live by
+  a collaborator, quick find and full-text search. Run twice in a row: 18/18 both times.
+
+### Acceptance verification
+- `pnpm lint`, `typecheck`, `test`, `test:integration`, `test:e2e`, `check:licenses`
+  (810 packages), `check:spdx` (397 files) and `docker build` pass; sharp loads in the
+  image.
+- **Benchmarks** on a fresh large seed (1,111,040 pages with generated body text,
+  22,220 grants; 247 s), production build, role=all, same dev host as M2:
+
+| Operation | p50 | p95 | Budget (p95) |
+|---|---|---|---|
+| Sidebar level load, cold permission cache | 7.9 ms | 9.5 ms | 100 ms |
+| Page metadata | 7.1 ms | 8.1 ms | 300 ms |
+| Mutation round-trip | 12.0 ms | 13.8 ms | 150 ms |
+| Quick find (title) | 11.0 ms | 18.2 ms | 150 ms |
+| Full-text search, rare term | 166.7 ms | 175.6 ms | 500 ms |
+| Full-text search, common term | 157.0 ms | 164.9 ms | 500 ms |
+
+  The first quick-find run missed its budget (p95 1.7 s: ranking ~1M matching synthetic
+  titles); prefix-first matching with capped candidates fixed it.
+
+### Deviations and decisions
+- **ADRs**: ADR 0009 (approved at the start); ADR 0010 (license exception for
+  `@sesamecare-oss/redlock` 1.4.0: MIT license file, `UNLICENSED` metadata; the
+  maintainer chose to keep AGPL-3.0-only).
+- **Plugin seams**: all in place (PLUGINS.md §11 "State after M3"); overlapping
+  `pluginMark` needs no fallback (ADR 0008).
+- File downloads are `/files/:workspaceId/:id` (lookup on the primary key) instead of
+  `/files/:id`; the session guard now covers `/files`.
+- Projection jobs debounce by 5 s time windows with a job id per window (BullMQ
+  deduplication did not release its key, and custom ids cannot contain `:`).
+- The lock hint of the page view shows to people who can unlock (Full access); others
+  see the editor's "This page is locked" banner.
+- PRODUCT now states the child page block rules, per-device toggle state, columns
+  creation, mention dates, bookmark previews without remote images, and quick find /
+  search limits.
+
+### Known limitations
+- **Not verified on Windows**, **CI not run on GitHub**; benchmarks from a fast dev host.
+- Full search ranks among the first 5,000 matches; quick find among 1,000 per pass. A
+  user who can see few pages of a huge workspace may get few results (`hasMore` hints).
+- Snippets of title-only matches show the start of the body.
+- Moving blocks to another page copies them through the target's Yjs document from the
+  browser; it needs edit access there and an online connection.
+- Unsaved edits of a document over the size cap stay in memory only (the editor warns).
+- Duplicating a page copies the last stored state (edits from the last ~10 s may be
+  missed).
+- Undo of a "move to" or of a child page creation does not restore the other page.
+- Mention notifications arrive in M6 (new mentions are already computed).
+- The e2e teardown prints a `57P01` error from the Postgres pool when the container
+  stops; it predates M3 and does not affect results.
