@@ -1,4 +1,11 @@
 // SPDX-License-Identifier: AGPL-3.0-only
+import {
+  emptyContentData,
+  memoryDocumentsRepo,
+  memoryFilesRepo,
+  memoryProjectionRepo,
+  type MemoryContentData,
+} from './memory-content-store.js';
 /* eslint-disable @typescript-eslint/require-await -- fakes mirror the async repository interface */
 /**
  * In-memory `Store` for unit tests. Same ordering and pagination rules as the Drizzle
@@ -52,6 +59,10 @@ export class MemoryStore implements Store {
   readonly publicLinks = memoryPublicLinksRepo(this.sync);
   readonly changeLog = memoryChangeLogRepo(this.sync);
   readonly appliedMutations = memoryAppliedMutationsRepo(this.sync);
+  readonly content: MemoryContentData = emptyContentData();
+  readonly documents = memoryDocumentsRepo(this.content);
+  readonly files = memoryFilesRepo(this.content, this.sync);
+  readonly projection = memoryProjectionRepo(this.content);
 
   readonly users: Store['users'] = {
     findById: async (id) => this.data.users.get(id),

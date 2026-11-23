@@ -15,6 +15,7 @@ import { createS3Client, ensureBucket } from './infra/s3.js';
 import { securityHeaders } from './http/security-headers.js';
 import { featuresForRole } from './roles/roles.js';
 import { cacheControlFor, isNoIndexRoute, isSpaRoute } from './spa/spa.js';
+import { CollabServer } from './collab/collab.server.js';
 import { SyncGateway } from './sync/sync.gateway.js';
 
 /** Built SPA location: `ARDOISE_WEB_DIST`, or `web/` next to the server's `dist/`. */
@@ -55,6 +56,9 @@ export async function createApp(
     serveSpa(app, options.webDist ?? defaultWebDist(), logger);
     app.get(SyncGateway).attach(app.getHttpServer());
   }
+  // With role=all, Hocuspocus shares the HTTP server; with role=collab it is the only
+  // WebSocket handler (ADR 0004).
+  if (features.collab) app.get(CollabServer).attach(app.getHttpServer());
   return app;
 }
 

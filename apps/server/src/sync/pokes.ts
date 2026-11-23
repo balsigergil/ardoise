@@ -10,7 +10,12 @@ export const SYNC_CHANNEL = 'ardoise:sync';
 
 export type SyncEvent =
   | { type: 'poke'; workspaceId: string; seq: number }
-  | { type: 'kick'; workspaceId: string; userId: string };
+  | { type: 'kick'; workspaceId: string; userId: string }
+  /**
+   * Access or lock changed (ADR 0009 §6): collab nodes re-check their open connections
+   * for these pages, or for the whole workspace when `pageIds` is null.
+   */
+  | { type: 'collab:recheck'; workspaceId: string; pageIds: string[] | null };
 
 export interface SyncEventBus {
   publish(event: SyncEvent): Promise<void>;

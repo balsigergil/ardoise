@@ -27,7 +27,9 @@ import {
   sql,
   type SQL,
 } from 'drizzle-orm';
+import type { DocumentsRepo, FilesRepo, ProjectionRepo } from './content-store.js';
 import { decodeCursor, likeContains, toPage } from './cursor.js';
+import { documentsRepo, filesRepo, projectionRepo } from './drizzle-content-store.js';
 import {
   appliedMutationsRepo,
   changeLogRepo,
@@ -646,6 +648,9 @@ export class DrizzleStore implements Store {
   readonly publicLinks: PublicLinksRepo;
   readonly changeLog: ChangeLogRepo;
   readonly appliedMutations: AppliedMutationsRepo;
+  readonly documents: DocumentsRepo;
+  readonly files: FilesRepo;
+  readonly projection: ProjectionRepo;
 
   constructor(private readonly db: Executor) {
     this.users = usersRepo(db);
@@ -661,6 +666,9 @@ export class DrizzleStore implements Store {
     this.publicLinks = publicLinksRepo(db);
     this.changeLog = changeLogRepo(db);
     this.appliedMutations = appliedMutationsRepo(db);
+    this.documents = documentsRepo(db);
+    this.files = filesRepo(db);
+    this.projection = projectionRepo(db);
   }
 
   transaction<T>(fn: (store: Store) => Promise<T>): Promise<T> {

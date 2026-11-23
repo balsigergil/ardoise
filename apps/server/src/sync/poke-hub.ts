@@ -53,6 +53,7 @@ export class PokeHub {
   }
 
   handle(event: SyncEvent): void {
+    if (event.type === 'collab:recheck') return; // for collab nodes
     const clients = this.byWorkspace.get(event.workspaceId);
     if (!clients) return;
     if (event.type === 'kick') {

@@ -156,6 +156,7 @@ export class JobProcessors {
       for (const root of roots) {
         const seq = await this.store.transaction(async (store) => {
           await store.changeLog.lockCounter(root.workspaceId);
+          await store.files.markDeletedUnder(root.workspaceId, root.path, this.clock.now());
           await store.pages.purgeSubtree(root.workspaceId, root.path);
           return appendEntries(
             store,

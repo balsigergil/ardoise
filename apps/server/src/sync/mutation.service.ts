@@ -40,6 +40,8 @@ export interface EntryScope {
 export class MutationContext {
   readonly entries: { change: Change; scope: EntryScope }[] = [];
   permissionsChanged = false;
+  /** Pages whose open collab connections must be re-checked (lock changes). */
+  readonly recheckPages = new Set<string>();
   readonly jobs: { name: JobName; data: unknown }[] = [];
   readonly events: (() => Promise<void>)[] = [];
 
@@ -72,6 +74,11 @@ export class MutationContext {
       op: 'upsert',
       data: { scope, id, userIds },
     });
+  }
+
+  /** Open collab connections of the page re-check their access after commit. */
+  collabRecheck(pageId: string): void {
+    this.recheckPages.add(pageId);
   }
 
   enqueue<N extends JobName>(name: N, data: JobPayloads[N]): void {
@@ -228,6 +235,14 @@ export class MutationService {
         });
       }
       for (const event of ctx.events) await event().catch(() => undefined);
+      if (ctx.permissionsChanged || ctx.recheckPages.size > 0) {
+        const pageIds = ctx.permissionsChanged ? null : [...ctx.recheckPages];
+        await this.bus
+          .publish({ type: 'collab:recheck', workspaceId, pageIds })
+          .catch((error: unknown) => {
+            this.logger.warn({ err: error, workspaceId }, 'collab recheck publish failed');
+          });
+      }
       return result;
     } catch (error) {
       if (error instanceof DuplicateMutation) {

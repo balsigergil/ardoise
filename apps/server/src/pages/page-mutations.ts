@@ -179,6 +179,7 @@ export function pageHandlers(): PageHandlers {
         createdBy: ctx.actor.id,
         createdAt: ctx.now,
       });
+      if (dto.title) await ctx.store.projection.setTitle(ctx.workspaceId, dto.id, dto.title);
       await emitPage(ctx, dto);
     }),
 
@@ -190,6 +191,10 @@ export function pageHandlers(): PageHandlers {
       );
       const dto = pageResult(ctx.apply('page.update', args, { page: dtos([page]) }));
       await ctx.store.pages.update(ctx.workspaceId, page.id, patchFromDto(dto));
+      // Titles are searchable at once (ADR 0009 §8); locks reach open editors (§6).
+      if (dto.title !== page.title)
+        await ctx.store.projection.setTitle(ctx.workspaceId, page.id, dto.title);
+      if (dto.isLocked !== page.isLocked) ctx.collabRecheck(page.id);
       await emitPage(ctx, dto);
     }),
 
@@ -269,6 +274,7 @@ export function pageHandlers(): PageHandlers {
     'page.purge': lockFirst(async (ctx, args) => {
       const page = await requirePage(ctx, args.id, 'full_access');
       ctx.apply('page.purge', args, { page: dtos([page]) });
+      await ctx.store.files.markDeletedUnder(ctx.workspaceId, page.path, ctx.now);
       await ctx.store.pages.purgeSubtree(ctx.workspaceId, page.path);
       ctx.emit({ type: 'page', id: page.id, op: 'delete' }, { pageId: page.id });
     }),

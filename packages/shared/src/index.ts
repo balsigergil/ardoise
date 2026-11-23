@@ -12,3 +12,4 @@ export * from './pages.js';
 export * from './permissions.js';
 export * from './sync.js';
 export * from './mutations/index.js';
+export * from './collab.js';

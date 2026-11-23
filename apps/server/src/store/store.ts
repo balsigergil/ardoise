@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: AGPL-3.0-only
+import type { DocumentsRepo, FilesRepo, ProjectionRepo } from './content-store.js';
 /**
  * Repository interfaces (CLAUDE.md §4: persistence behind repositories). Services
  * depend on these; `drizzle-store.ts` implements them and `memory-store.ts` backs
@@ -273,6 +274,9 @@ export interface Store {
   publicLinks: PublicLinksRepo;
   changeLog: ChangeLogRepo;
   appliedMutations: AppliedMutationsRepo;
+  documents: DocumentsRepo;
+  files: FilesRepo;
+  projection: ProjectionRepo;
   /** Runs `fn` in one database transaction. */
   transaction<T>(fn: (store: Store) => Promise<T>): Promise<T>;
   /** Serializes `fn` across processes with a transaction-scoped advisory lock. */

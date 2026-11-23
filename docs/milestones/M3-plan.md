@@ -83,6 +83,23 @@ collab auth and revocation, files, search, bookmarks, public page content).
   visual order is kept); Enter on a block with children inserts the new block as its first
   child; a duplicated child page becomes a link to the same page; `>` makes a quote.
 
+- T4 done: projection over editor JSON with an extractor registry (`ProjectionRegistry`)
+  and the generic fallback (`text` attribute, then content); plain text capped at 200k
+  characters; in-app hrefs (`/w/<ws>/p/<id>`) count as links.
+- T5 done: `markdownToDoc` (remark + GFM + math); GitHub alerts become callouts, remote
+  images become links (strict CSP), raw HTML stays text.
+- T6 done: migration `0003` (`page_documents`, `files`, `page_search`, `page_links`,
+  `page_mentions_users`), with `btree_gin` so the search GIN index starts with
+  `workspace_id`. `files` has no foreign key to `pages`: a purge marks the files deleted
+  and a daily job removes the objects. New admin limit `maxDocumentSizeMb` (10).
+- T7 done (integration test written, run pending Docker): `CollabAccess`,
+  `CollabPersistence` and `CollabServer` (Hocuspocus 4 on our own `ws` upgrade handler,
+  Redis extension over Valkey). `collab:recheck` is published after access changes (whole
+  workspace) and lock changes (that page); kicks re-check the user. Awareness `user` is
+  rewritten with the session identity. Documents over the limit are not stored and
+  connected clients get a `document_too_large` stateless message. Projection jobs use
+  BullMQ deduplication (5 s delay, one follow-up when stored while running).
+
 ## Risks and open questions
 
 - **Schema is a persisted format** (ADR 0009): changing it later needs a document

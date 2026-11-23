@@ -2,7 +2,7 @@
 /** BullMQ over Valkey: the api role enqueues, the worker role processes (ARCHITECTURE §2). */
 import { Queue, Worker } from 'bullmq';
 import { Redis } from 'ioredis';
-import type { JobName, JobPayloads, JobQueue } from './jobs.js';
+import type { EnqueueOptions, JobName, JobPayloads, JobQueue } from './jobs.js';
 import type { JobProcessors } from './processors.js';
 
 export const QUEUE_NAME = 'ardoise';
@@ -25,10 +25,14 @@ export class BullJobQueue implements JobQueue {
   async enqueue<N extends JobName>(
     name: N,
     data: JobPayloads[N],
-    options: { jobId?: string } = {},
+    options: EnqueueOptions = {},
   ): Promise<void> {
     await this.queue.add(name, data, {
       ...(options.jobId && { jobId: options.jobId }),
+      ...(options.debounce && {
+        delay: options.debounce.delayMs,
+        deduplication: { id: options.debounce.id, keepLastIfActive: true },
+      }),
       attempts: 5,
       backoff: { type: 'exponential', delay: 2000 },
       removeOnComplete: 1000,
@@ -47,6 +51,11 @@ export class BullJobQueue implements JobQueue {
       'change-log-purge',
       { pattern: '37 3 * * *' },
       { name: 'changeLog.purge', data: {} },
+    );
+    await this.queue.upsertJobScheduler(
+      'files-purge',
+      { pattern: '57 3 * * *' },
+      { name: 'files.purgeDeleted', data: {} },
     );
   }
 
