@@ -14,6 +14,15 @@ import type { JobName, JobPayloads } from './jobs.js';
 export const CHANGE_LOG_HORIZON_DAYS = 30;
 const DAY_MS = 24 * 60 * 60 * 1000;
 
+/** Services behind the content jobs (M3). */
+export interface JobServices {
+  projection?: { projectDocument(payload: JobPayloads['projection.document']): Promise<void> };
+  files?: {
+    thumbnail(payload: JobPayloads['file.thumbnail']): Promise<void>;
+    purgeDeleted(): Promise<number>;
+  };
+}
+
 export class JobProcessors {
   constructor(
     private readonly store: Store,
@@ -21,6 +30,7 @@ export class JobProcessors {
     private readonly bus: SyncEventBus,
     private readonly clock: Clock,
     private readonly logger: Pick<Logger, 'log' | 'warn'>,
+    private readonly services: JobServices = {},
   ) {}
 
   async run<N extends JobName>(name: N, data: JobPayloads[N]): Promise<void> {
@@ -34,6 +44,15 @@ export class JobProcessors {
         return;
       case 'changeLog.purge':
         await this.purgeChangeLog();
+        return;
+      case 'projection.document':
+        return this.services.projection?.projectDocument(
+          data as JobPayloads['projection.document'],
+        );
+      case 'file.thumbnail':
+        return this.services.files?.thumbnail(data as JobPayloads['file.thumbnail']);
+      case 'files.purgeDeleted':
+        await this.services.files?.purgeDeleted();
         return;
     }
   }

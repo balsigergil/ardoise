@@ -21,6 +21,7 @@ import type { JobQueue } from './jobs/jobs.js';
 import { JobProcessors } from './jobs/processors.js';
 import { pageHandlers } from './pages/page-mutations.js';
 import { PageService } from './pages/page.service.js';
+import { ProjectionService } from './projection/projection.service.js';
 import { PublicPageService } from './pages/public.service.js';
 import { sharingHandlers } from './pages/sharing-mutations.js';
 import { PermissionService, ValkeyPermissionCache } from './permissions/permission.service.js';
@@ -169,10 +170,20 @@ class SyncLifecycle implements OnApplicationShutdown {
         new PublicPageService(s, p, k),
     },
     {
+      provide: ProjectionService,
+      inject: [STORE, PermissionService, JOB_QUEUE],
+      useFactory: (s: Store, p: PermissionService, jobs: JobQueue) =>
+        new ProjectionService(s, p, jobs, new Logger('projection')),
+    },
+    {
       provide: JobProcessors,
-      inject: [STORE, InstanceSettingsService, SYNC_BUS],
-      useFactory: (s: Store, settings: InstanceSettingsService, bus: SyncEventBus) =>
-        new JobProcessors(s, settings, bus, clock, new Logger('jobs')),
+      inject: [STORE, InstanceSettingsService, SYNC_BUS, ProjectionService],
+      useFactory: (
+        s: Store,
+        settings: InstanceSettingsService,
+        bus: SyncEventBus,
+        projection: ProjectionService,
+      ) => new JobProcessors(s, settings, bus, clock, new Logger('jobs'), { projection }),
     },
     SyncLifecycle,
   ],
@@ -185,6 +196,7 @@ class SyncLifecycle implements OnApplicationShutdown {
     PageService,
     PublicPageService,
     JobProcessors,
+    ProjectionService,
     STORE,
     SecretKeyring,
     RateLimiter,

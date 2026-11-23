@@ -13,6 +13,7 @@ import type { Logger } from '@nestjs/common';
 import { RecordingJobQueue } from '../jobs/jobs.js';
 import { JobProcessors } from '../jobs/processors.js';
 import { pageHandlers } from '../pages/page-mutations.js';
+import { ProjectionService } from '../projection/projection.service.js';
 import { PageService } from '../pages/page.service.js';
 import { PublicPageService } from '../pages/public.service.js';
 import { sharingHandlers } from '../pages/sharing-mutations.js';
@@ -124,7 +125,8 @@ export function createHarness(options: HarnessOptions = {}) {
   const pull = new PullService(store, permissions);
   const pages = new PageService(store, permissions, keyring, clock, PUBLIC_URL);
   const publicPages = new PublicPageService(store, permissions, keyring);
-  const processors = new JobProcessors(store, settings, bus, clock, silentLogger);
+  const projection = new ProjectionService(store, permissions, jobs, silentLogger);
+  const processors = new JobProcessors(store, settings, bus, clock, silentLogger, { projection });
 
   /** Pushes one mutation; returns the result (rejections included). */
   async function tryMutate<N extends MutationName>(
@@ -237,6 +239,7 @@ export function createHarness(options: HarnessOptions = {}) {
     pages,
     publicPages,
     processors,
+    projection,
     mutate,
     tryMutate,
     createPage,

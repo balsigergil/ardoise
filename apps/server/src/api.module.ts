@@ -6,6 +6,7 @@ import { AuthController, MeController } from './auth/auth.controller.js';
 import { ApiErrorFilter } from './http/error-filter.js';
 import { SessionGuard } from './http/session.guard.js';
 import { PagesController, PublicPagesController } from './pages/pages.controller.js';
+import { ProjectionController } from './projection/projection.controller.js';
 import { SyncController } from './sync/sync.controller.js';
 import { SyncGateway } from './sync/sync.gateway.js';
 import {
@@ -28,6 +29,7 @@ import {
     SyncController,
     PagesController,
     PublicPagesController,
+    ProjectionController,
   ],
   providers: [
     SyncGateway,

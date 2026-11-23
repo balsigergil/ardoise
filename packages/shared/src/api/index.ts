@@ -284,3 +284,4 @@ export interface InstanceInfoDto {
   workspaceInvitationsEnabled: boolean;
 }
 export * from './pages.js';
+export * from './content.js';
