@@ -28,8 +28,8 @@ export type JobName = keyof JobPayloads;
 export interface EnqueueOptions {
   jobId?: string;
   /**
-   * Runs the job `delayMs` after the first enqueue with this id; later enqueues while it
-   * waits are merged into it, and one enqueued while it runs makes it run once more.
+   * At most one job per id and `delayMs` window, run when the window ends (later
+   * enqueues in the window are merged into it).
    */
   debounce?: { id: string; delayMs: number };
 }

@@ -65,6 +65,8 @@ export interface PageEditorProps {
   /** The user can edit, the page is not locked or trashed (the page view decides). */
   editable: boolean;
   locked: boolean;
+  /** False when the page view already explains the lock (people who can unlock). */
+  showLockBanner?: boolean;
   me: { id: string; name: string };
   /** Pages shown by child page blocks of the content. */
   onChildPagesChange?: (ids: ReadonlySet<string>) => void;
@@ -77,6 +79,7 @@ export function PageEditor({
   locked,
   me,
   onChildPagesChange,
+  showLockBanner = true,
 }: PageEditorProps) {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -369,7 +372,9 @@ export function PageEditor({
         : session.status === 'offline'
           ? { icon: <CloudOff className="size-4" />, text: t('editor.status.offline') }
           : locked
-            ? { icon: <Lock className="size-4" />, text: t('editor.status.locked') }
+            ? showLockBanner
+              ? { icon: <Lock className="size-4" />, text: t('editor.status.locked') }
+              : null
             : session.readOnly
               ? { icon: <Eye className="size-4" />, text: t('editor.status.readOnly') }
               : null;

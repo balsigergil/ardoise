@@ -567,7 +567,7 @@ export function PageView({ workspaceId, pageId }: { workspaceId: string; pageId:
         <div className="mt-2">
           <TitleInput key={page.id} page={page} disabled={!editable} />
         </div>
-        {!editable && canEdit && page.isLocked && (
+        {!editable && canShare && page.isLocked && (
           <p className="text-sm text-muted-foreground">{t('pages.lockedHint')}</p>
         )}
         <div className="mt-6">
@@ -578,6 +578,7 @@ export function PageView({ workspaceId, pageId }: { workspaceId: string; pageId:
               page={page}
               editable={editable}
               locked={page.isLocked}
+              showLockBanner={!canShare}
               me={me}
               onChildPagesChange={setInContent}
             />

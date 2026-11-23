@@ -227,6 +227,28 @@ describe('projection, search and backlinks', () => {
     expect(short.body.items.map((i) => i.id)).toContain(target);
   });
 
+  it('finds content of private pages', async () => {
+    const id = newId();
+    const result = await admin.mutate(workspaceId, 'page.create', {
+      id,
+      parent: {
+        kind: 'private',
+        id: (await admin.get<{ user: { id: string } }>('/api/auth/session')).body.user.id,
+      },
+      position: positionBetween(null, null),
+    });
+    expect(result.status).toBe('applied');
+    await admin.mutate(workspaceId, 'page.update', { id, title: 'Shared notes' });
+    await writeContent(id, [paragraph('one two lpha beta gamma delta a')]);
+    const found = await until(async () => {
+      const res = await admin.get<SearchResultsDto>(
+        `/api/workspaces/${workspaceId}/search?q=gamma`,
+      );
+      return res.body.items.some((i) => i.id === id) ? res.body : undefined;
+    });
+    expect(found.items[0]!.title).toBe('Shared notes');
+  });
+
   it('finds renamed titles at once and respects the title-only filter', async () => {
     const pageId = await createPage('Draft');
     await admin.mutate(workspaceId, 'page.update', { id: pageId, title: 'Quarterly roadmap' });

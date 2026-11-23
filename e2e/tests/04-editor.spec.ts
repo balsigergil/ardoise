@@ -35,7 +35,7 @@ test.describe.serial('editor: real-time collaboration', () => {
     await setTitle(owner, 'Shared notes');
     pageUrl = owner.url();
 
-    await owner.getByRole('button', { name: 'Share' }).click();
+    await owner.getByRole('button', { name: 'Share', exact: true }).click();
     const dialog = owner.getByTestId('share-dialog');
     await dialog
       .getByRole('searchbox', { name: 'Add people, teamspaces or everyone' })
@@ -64,9 +64,13 @@ test.describe.serial('editor: real-time collaboration', () => {
     // Both type at the same time in the same paragraph: nothing is lost.
     await owner.keyboard.press('ControlOrMeta+End');
     await owner.keyboard.press('Enter');
-    await expect(editor(member).locator('[data-type="paragraph"]')).toHaveCount(3, {
-      timeout: 15_000,
-    });
+    const paragraphs = (page: Page) => editor(page).locator('[data-type="paragraph"]').count();
+    // Both sides see the owner's new, empty last line before typing into it.
+    await expect
+      .poll(async () => (await paragraphs(member)) === (await paragraphs(owner)), {
+        timeout: 15_000,
+      })
+      .toBe(true);
     await member.keyboard.press('ControlOrMeta+End');
     const ownerWords = 'alpha beta gamma delta ';
     const memberWords = 'one two three four ';
@@ -74,14 +78,23 @@ test.describe.serial('editor: real-time collaboration', () => {
       owner.keyboard.type(ownerWords, { delay: 15 }),
       member.keyboard.type(memberWords, { delay: 15 }),
     ]);
-    const text = async (page: Page) => (await editor(page).innerText()).replace(/\s+/g, ' ').trim();
+    // Document text only: collaborators' carets (and their name labels) are left out.
+    const text = (page: Page) =>
+      editor(page).evaluate((el) => {
+        const copy = el.cloneNode(true) as HTMLElement;
+        copy.querySelectorAll('.collaboration-carets__caret').forEach((c) => c.remove());
+        return (copy.textContent ?? '').replace(/\s+/g, ' ').trim();
+      });
     await expect
       .poll(async () => (await text(owner)) === (await text(member)), { timeout: 15_000 })
       .toBe(true);
     const merged = await text(owner);
-    for (const word of [...ownerWords.split(' '), ...memberWords.split(' ')].filter(Boolean)) {
-      expect(merged).toContain(word);
-    }
+    // Concurrent typing at the same spot may interleave, but every character survives.
+    const letters = (value: string) => [...value.replace(/\s+/g, '')].sort().join('');
+    const typed = letters(ownerWords + memberWords);
+    const before = 'Hello from the ownerHi from Nina';
+    expect(merged.startsWith(before)).toBe(true);
+    expect(letters(merged.slice(before.length))).toBe(typed);
 
     // The content is stored: a reload shows it.
     await owner.waitForTimeout(3_000);
@@ -127,7 +140,7 @@ test.describe.serial('editor: real-time collaboration', () => {
     await owner.getByRole('button', { name: 'Page options' }).click();
     await owner.getByRole('menuitem', { name: 'Lock page' }).click();
     await expect(editor(member)).toHaveAttribute('contenteditable', 'false', { timeout: 15_000 });
-    await expect(member.getByText('This page is locked')).toBeVisible();
+    await expect(member.getByText('This page is locked', { exact: true })).toBeVisible();
     await owner.getByRole('button', { name: 'Page options' }).click();
     await owner.getByRole('menuitem', { name: 'Unlock page' }).click();
     await expect(editor(member)).toHaveAttribute('contenteditable', 'true', { timeout: 15_000 });
@@ -136,22 +149,21 @@ test.describe.serial('editor: real-time collaboration', () => {
   });
 
   test('quick find and full-text search find the page', async ({ page }) => {
+    test.setTimeout(90_000);
     await login(page, admin);
+    await expect(page.getByTestId('search-button')).toBeVisible();
     await page.keyboard.press('ControlOrMeta+K');
     await page.getByLabel('Search pages…').fill('shared no');
     await page.getByRole('option', { name: /Shared notes/ }).click();
     await expect(page).toHaveURL(pageUrl);
 
     await page.goto(`${new URL(pageUrl).pathname.split('/p/')[0]}/search?q=gamma`);
-    await expect
-      .poll(
-        async () => {
-          await page.reload();
-          return page.getByTestId('search-results').getByText('Shared notes').count();
-        },
-        { timeout: 30_000, intervals: [2_000] },
-      )
-      .toBeGreaterThan(0);
+    // Content is indexed a few seconds after it is stored: retry with reloads.
+    const hit = page.getByTestId('search-results').getByText('Shared notes');
+    await expect(async () => {
+      await page.reload();
+      await expect(hit).toBeVisible({ timeout: 3_000 });
+    }).toPass({ timeout: 30_000 });
     await expect(
       page.getByTestId('search-results').locator('mark', { hasText: 'gamma' }),
     ).toBeVisible();

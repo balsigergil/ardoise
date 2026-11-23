@@ -60,6 +60,7 @@ export function openDocument(
   const doc = new Y.Doc();
   let status: DocStatus = 'connecting';
   let destroyed = false;
+  let reauthenticating = false;
   let provider: HocuspocusProvider;
 
   const connect = () => {
@@ -73,7 +74,10 @@ export function openDocument(
         status = 'synced';
         notify();
       },
-      onAuthenticated: () => notify(),
+      onAuthenticated: () => {
+        reauthenticating = false;
+        notify();
+      },
       onAuthenticationFailed: ({ reason }) => {
         status = reason === COLLAB_REASONS.reconnect ? 'connecting' : 'denied';
         notify();
@@ -82,8 +86,12 @@ export function openDocument(
         if (destroyed) return;
         const reason = String(event.reason ?? '');
         if (reason === COLLAB_REASONS.reconnect) {
-          provider.destroy();
-          connect();
+          // The access level changed: authenticate this document again on the same
+          // socket (the provider reports one close message twice, hence the flag).
+          if (!reauthenticating) {
+            reauthenticating = true;
+            void provider.sendToken();
+          }
           return;
         }
         if (

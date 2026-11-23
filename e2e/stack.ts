@@ -5,6 +5,7 @@
  * reads the first-run setup URL from the server logs (E2E_SETUP_URL).
  */
 import { spawn, spawnSync, type ChildProcess } from 'node:child_process';
+import { appendFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { PostgreSqlContainer } from '@testcontainers/postgresql';
 import { GenericContainer, Wait } from 'testcontainers';
@@ -79,8 +80,11 @@ export default async function globalSetup(): Promise<() => Promise<void>> {
 
   let setupUrl: string | undefined;
   server.stdout?.setEncoding('utf8');
+  // E2E_SERVER_LOG=<file> keeps the server's logs for debugging.
+  const logFile = process.env.E2E_SERVER_LOG;
   server.stdout?.on('data', (chunk: string) => {
     setupUrl ??= /first-run setup: open (\S+)/.exec(chunk)?.[1];
+    if (logFile) appendFileSync(logFile, chunk);
   });
 
   await waitFor(async () => (await fetch(`${baseUrl}/readyz`)).ok, 60_000, 'the server');

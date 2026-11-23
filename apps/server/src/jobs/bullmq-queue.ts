@@ -15,6 +15,20 @@ function connection(url: string, name: string): Redis {
   return redis;
 }
 
+/**
+ * Debounce by time window: one job per id and window of `delayMs`, run at the end of
+ * the window, so it sees everything stored during it. Later enqueues in the same window
+ * reuse the job id and are ignored by BullMQ.
+ */
+export function debounceWindow(id: string, delayMs: number, now: number) {
+  const window = Math.floor(now / delayMs);
+  // BullMQ refuses custom ids containing ':'.
+  return {
+    jobId: `${id.replaceAll(':', '_')}_${window}`,
+    delay: (window + 1) * delayMs - now + 50,
+  };
+}
+
 export class BullJobQueue implements JobQueue {
   private readonly queue: Queue;
 
@@ -29,10 +43,8 @@ export class BullJobQueue implements JobQueue {
   ): Promise<void> {
     await this.queue.add(name, data, {
       ...(options.jobId && { jobId: options.jobId }),
-      ...(options.debounce && {
-        delay: options.debounce.delayMs,
-        deduplication: { id: options.debounce.id, keepLastIfActive: true },
-      }),
+      ...(options.debounce &&
+        debounceWindow(options.debounce.id, options.debounce.delayMs, Date.now())),
       attempts: 5,
       backoff: { type: 'exponential', delay: 2000 },
       removeOnComplete: 1000,

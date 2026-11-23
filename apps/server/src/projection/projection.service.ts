@@ -27,6 +27,10 @@ export class ProjectionService {
     const page = await this.store.pages.findById(workspaceId, pageId);
     if (!page) return;
     const projection = projectState(row.state);
+    this.logger.log(
+      { workspaceId, pageId, chars: projection.plainText.length, links: projection.links.length },
+      'document projected',
+    );
     // Synced blocks (M6) and plugin subdocuments (M9) project into their source page.
     if (docName === `page:${pageId}`) {
       const fresh = await this.store.transaction(async (store) => {
