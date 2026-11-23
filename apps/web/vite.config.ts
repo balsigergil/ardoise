@@ -17,7 +17,13 @@ export default defineConfig({
     strictPort: true,
     proxy: {
       ...Object.fromEntries(
-        proxied.map((path) => [path, { target: serverUrl, changeOrigin: false }]),
+        // `/sync` also carries the poke socket (`/sync/ws`). Browsers open one WebSocket
+        // handshake per host at a time (RFC 6455 §4.1), so an unproxied upgrade there
+        // would also stall `/collab`.
+        proxied.map((path) => [
+          path,
+          { target: serverUrl, changeOrigin: false, ws: path === '/sync' },
+        ]),
       ),
       '/collab': { target: serverUrl.replace(/^http/, 'ws'), ws: true },
     },
