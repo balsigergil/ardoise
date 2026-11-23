@@ -44,7 +44,10 @@ Option 3, with the runtime built in M9 (after v1) and the seams built during M3â
      and `pluginInline` (inline atom), with `plugin`, `type`, `version`, `data` (JSON,
      â‰¤ 16 KB) and a `text` fallback;
    - the mark `pluginMark` (`excludes: ""`), whose overlap behavior with `y-prosemirror`
-     is verified in M3, with a fixed set of mark names as the fallback;
+     is verified in M3, with a fixed set of mark names as the fallback. **Verified in M3
+     (2026-11-23)**: `y-prosemirror` 1.3 keeps overlapping instances with different
+     attributes through a Yjs round trip and a concurrent edit
+     (`packages/editor/src/schema/editor.test.ts`), so the fallback is not needed;
    - a global `ext` attribute (`{ [pluginId]: JSON }`, capped) on every block node, for
      plugin data attached to core blocks;
    - the `plugin:<blockId>` Yjs subdocument name, for state that several people edit at

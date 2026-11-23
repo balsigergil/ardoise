@@ -67,6 +67,14 @@ collab auth and revocation, files, search, bookmarks, public page content).
   `@aws-sdk/lib-storage` and `@aws-sdk/s3-request-presigner` (Apache-2.0), `sharp`
   (Apache-2.0, libvips LGPL-3.0), `file-type` (MIT), `unified`/`remark-*` (MIT).
 
+## Progress
+
+- T1 done: ADR 0009 accepted; ARCHITECTURE §4.4/§4.7/§5/§11 and PLUGINS §6.2 updated.
+- T2 done: schema in `packages/editor/src/schema` (headless, used by the server too),
+  `UniqueBlockIds`, Yjs helpers (`docFromJSON`, `stateToJSON`). Overlapping `pluginMark`
+  instances survive `y-prosemirror` (no fallback needed, ADR 0008 updated). Plugin
+  attributes use `data-plugin-*` HTML names because `data-type` is the node tag.
+
 ## Risks and open questions
 
 - **Schema is a persisted format** (ADR 0009): changing it later needs a document

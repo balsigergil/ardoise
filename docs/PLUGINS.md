@@ -246,6 +246,10 @@ trip and a concurrent edit. If they do not, the fallback is to reserve a small f
 of distinct mark names (`pluginMark1` … `pluginMark4`), allocated per plugin at enable
 time. The result is recorded in the M3 summary and in ADR 0008.
 
+**Result (M3)**: the test passes with `y-prosemirror` 1.3 (each instance is stored under
+a mark name suffixed with a hash of its attributes), so the single `pluginMark` type is
+kept and the fallback is not applied.
+
 ### 6.5 Data on core blocks: the `ext` attribute
 Every core block node, and `pluginBlock`, `pluginContainer` and `pluginText`, carries a
 global attribute `ext` (default `null`), declared once through a Tiptap global attribute:

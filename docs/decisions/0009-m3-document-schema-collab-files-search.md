@@ -51,7 +51,7 @@ points open that become **persisted formats** as soon as the first document is s
      `text*` with no marks.
    - Atom-like blocks have content `children?`: `divider`, `image {fileId, width,
      caption}`, `file {fileId, name, size}`, `equation {latex}`, `pageLink {pageId}`,
-     `childPage {pageId}`, `tableOfContents`, `bookmark {url, title, description}`,
+     `childPage {pageId}`, `tableOfContents`, `bookmark {url, title, description, siteName}`,
      `pluginBlock`.
    - `children` is `block+`. Tab/Shift+Tab move a block into or out of its previous
      sibling's `children`.

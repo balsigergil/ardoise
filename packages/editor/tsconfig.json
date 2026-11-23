@@ -1,5 +1,5 @@
 {
   "extends": "@ardoise/config/tsconfig.node.json",
-  "compilerOptions": { "rootDir": "." },
+  "compilerOptions": { "rootDir": ".", "lib": ["ES2024", "DOM", "DOM.Iterable"] },
   "include": ["src", "*.config.ts"]
 }
