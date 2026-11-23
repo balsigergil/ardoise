@@ -17,6 +17,8 @@ import type {
 
 /** Most matches ranked per query: very common terms are ranked within this window. */
 export const MAX_RANKED_MATCHES = 5_000;
+/** Most title matches ranked by quick find. */
+export const MAX_TITLE_MATCHES = 1_000;
 
 /** Escapes LIKE wildcards. */
 export function likeEscape(value: string): string {
@@ -33,31 +35,39 @@ export class PostgresSearchAdapter implements SearchPort {
     limit: number,
   ): Promise<TitleCandidate[]> {
     const needle = likeEscape(q.toLowerCase());
+    const prefix = sql`lower(ardoise_unaccent(p.title)) LIKE lower(ardoise_unaccent(${needle})) || '%'`;
+    // 1. Titles starting with the query: a btree index scan that stops at the cap.
+    const starts = await this.titleMatches(workspaceId, q, prefix);
     const words = q.toLowerCase().split(/\s+/).filter(Boolean).map(likeEscape);
-    // One short word matches title prefixes (btree); otherwise every word must appear
-    // somewhere in the title (trigram index on the longer words).
-    const match: SQL =
-      words.length === 1 && q.length < 3
-        ? sql`lower(ardoise_unaccent(p.title)) LIKE lower(ardoise_unaccent(${needle})) || '%'`
-        : sql.join(
-            words.map(
-              (w) => sql`ardoise_unaccent(p.title) ILIKE '%' || ardoise_unaccent(${w}) || '%'`,
-            ),
-            sql` AND `,
-          );
+    if (starts.length >= offset + limit || (words.length === 1 && q.length < 3)) {
+      return starts.slice(offset, offset + limit);
+    }
+    // 2. Then titles containing every word (trigram), except those already found.
+    const contains = sql.join(
+      words.map((w) => sql`ardoise_unaccent(p.title) ILIKE '%' || ardoise_unaccent(${w}) || '%'`),
+      sql` AND `,
+    );
+    const others = await this.titleMatches(workspaceId, q, sql`${contains} AND NOT (${prefix})`);
+    return [...starts, ...others].slice(offset, offset + limit);
+  }
+
+  /** Up to MAX_TITLE_MATCHES live pages matching `match`, best first. */
+  private async titleMatches(
+    workspaceId: string,
+    q: string,
+    match: SQL,
+  ): Promise<TitleCandidate[]> {
+    // Matches are capped before ranking, so very common words cost a bounded amount.
     const result = await this.db.execute<{ id: string }>(sql`
-      SELECT p.id
-      FROM pages p
-      WHERE p.workspace_id = ${workspaceId}
-        AND p.deleted_at IS NULL
-        AND ${match}
-      ORDER BY
-        (lower(ardoise_unaccent(p.title)) LIKE lower(ardoise_unaccent(${needle})) || '%') DESC,
-        similarity(ardoise_unaccent(p.title), ardoise_unaccent(${q})) DESC,
-        p.updated_at DESC,
-        p.id
-      OFFSET ${offset}
-      LIMIT ${limit}`);
+      SELECT m.id FROM (
+        SELECT p.id, p.title, p.updated_at
+        FROM pages p
+        WHERE p.workspace_id = ${workspaceId}
+          AND p.deleted_at IS NULL
+          AND ${match}
+        LIMIT ${MAX_TITLE_MATCHES}
+      ) m
+      ORDER BY similarity(ardoise_unaccent(m.title), ardoise_unaccent(${q})) DESC, m.updated_at DESC, m.id`);
     return result.rows.map((r) => ({ pageId: r.id }));
   }
 
