@@ -11,12 +11,14 @@ import {
   type SharingDto,
   type TrashQuery,
 } from '@ardoise/shared';
-import { Controller, Get, HttpCode, Inject, Param, Put, Query, Res } from '@nestjs/common';
+import { Controller, Get, Headers, HttpCode, Inject, Param, Put, Query, Res } from '@nestjs/common';
 import type { Response } from 'express';
 import type { AuthContext } from '../auth/auth.service.js';
 import { RateLimiter } from '../common/rate-limit.js';
 import { Auth, ClientIp, Public } from '../http/request.js';
 import { IdPipe, ZodPipe } from '../http/validation.js';
+import { FileService } from '../files/file.service.js';
+import { sendDownload } from '../files/files.controller.js';
 import { PageService } from './page.service.js';
 import { PublicPageService } from './public.service.js';
 
@@ -124,7 +126,28 @@ export class PublicPagesController {
   constructor(
     @Inject(PublicPageService) private readonly pages: PublicPageService,
     @Inject(RateLimiter) private readonly limiter: RateLimiter,
+    @Inject(FileService) private readonly files: FileService,
   ) {}
+
+  /** Files embedded in pages the link covers (ADR 0009 §7). */
+  @Public()
+  @Get('files/:file')
+  async file(
+    @Param('token') token: string,
+    @Param('file', id()) file: string,
+    @Query('thumb') thumb: string | undefined,
+    @Headers('range') range: string | undefined,
+    @ClientIp() ip: string,
+    @Res() res: Response,
+  ): Promise<void> {
+    await this.guard(ip, res);
+    const access = await this.pages.access(token);
+    const result = await this.files.downloadPublic(access.covers, access.workspaceId, file, {
+      thumb: thumb === '1',
+      ...(range && { range }),
+    });
+    await sendDownload(res, result);
+  }
 
   private async guard(ip: string, res: Response): Promise<void> {
     res.setHeader('X-Robots-Tag', 'noindex, nofollow');

@@ -88,7 +88,9 @@
       "move_cycle": "Une page ne peut pas être déplacée dans elle-même.",
       "invalid_parent": "Les pages ne peuvent pas être placées ici.",
       "too_deep": "Les pages ne peuvent pas être imbriquées aussi profondément.",
-      "resync_required": "Votre copie locale n’est plus à jour et est en cours de rechargement."
+      "resync_required": "Votre copie locale n’est plus à jour et est en cours de rechargement.",
+      "file_too_large": "Le fichier est trop volumineux.",
+      "preview_unavailable": "Aucun aperçu n’est disponible pour ce lien."
     }
   },
   "status": {

@@ -100,6 +100,18 @@ collab auth and revocation, files, search, bookmarks, public page content).
   connected clients get a `document_too_large` stateless message. Projection jobs use
   BullMQ deduplication (5 s delay, one follow-up when stored while running).
 
+- License exception (ADR 0010): `@sesamecare-oss/redlock` 1.4.0 says `UNLICENSED` in
+  `package.json` but ships the MIT license; the exception is pinned to that version.
+- T8 done: `ProjectionService` (job + backlinks), title write-through in `page.create`
+  and `page.update`. Self-links are dropped; mention notifications wait for M6.
+- T9 done (integration pending Docker): `FileService` over an `ObjectStorage` port
+  (S3 with `lib-storage`, memory fake). Downloads are `GET /files/:workspaceId/:id`
+  (the workspace id keeps the lookup on the primary key) and
+  `GET /api/public/:token/files/:id`. The MIME type comes from the first bytes for
+  images and PDF (the only inline types); anything else downloads as an attachment
+  under `Content-Security-Policy: sandbox`. Uploads are refused on locked or trashed
+  pages. Thumbnails: sharp, 800 px WebP. Deleted files are purged after one day.
+
 ## Risks and open questions
 
 - **Schema is a persisted format** (ADR 0009): changing it later needs a document

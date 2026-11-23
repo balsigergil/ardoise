@@ -15,7 +15,11 @@ import { MailService, nodemailerTransport } from './mail/mail.service.js';
 import { InstanceSettingsService } from './settings/instance-settings.service.js';
 import { DrizzleStore } from './store/drizzle-store.js';
 import type { Store } from './store/store.js';
-import { CONFIG, DATABASE, JOB_QUEUE, STORE, SYNC_BUS, VALKEY } from './tokens.js';
+import { CONFIG, DATABASE, JOB_QUEUE, S3, STORE, SYNC_BUS, VALKEY } from './tokens.js';
+import type { S3Client } from '@aws-sdk/client-s3';
+import { FileService, sharpThumbnailer } from './files/file.service.js';
+import { S3ObjectStorage } from './files/object-storage.js';
+import { createS3Client } from './infra/s3.js';
 import { BullJobQueue } from './jobs/bullmq-queue.js';
 import type { JobQueue } from './jobs/jobs.js';
 import { JobProcessors } from './jobs/processors.js';
@@ -176,14 +180,41 @@ class SyncLifecycle implements OnApplicationShutdown {
         new ProjectionService(s, p, jobs, new Logger('projection')),
     },
     {
+      provide: FileService,
+      inject: [STORE, PermissionService, S3, InstanceSettingsService, JOB_QUEUE, CONFIG],
+      useFactory: (
+        s: Store,
+        p: PermissionService,
+        s3: S3Client,
+        settings: InstanceSettingsService,
+        jobs: JobQueue,
+        c: Config,
+      ) => {
+        const publicClient = c.s3.publicUrl
+          ? createS3Client({ ...c.s3, endpoint: c.s3.publicUrl })
+          : undefined;
+        return new FileService(
+          s,
+          p,
+          new S3ObjectStorage(s3, c.s3.bucket, publicClient),
+          () => settings.limits(),
+          jobs,
+          clock,
+          new Logger('files'),
+          { presign: !!c.s3.publicUrl, thumbnailer: sharpThumbnailer },
+        );
+      },
+    },
+    {
       provide: JobProcessors,
-      inject: [STORE, InstanceSettingsService, SYNC_BUS, ProjectionService],
+      inject: [STORE, InstanceSettingsService, SYNC_BUS, ProjectionService, FileService],
       useFactory: (
         s: Store,
         settings: InstanceSettingsService,
         bus: SyncEventBus,
         projection: ProjectionService,
-      ) => new JobProcessors(s, settings, bus, clock, new Logger('jobs'), { projection }),
+        files: FileService,
+      ) => new JobProcessors(s, settings, bus, clock, new Logger('jobs'), { projection, files }),
     },
     SyncLifecycle,
   ],
@@ -197,6 +228,7 @@ class SyncLifecycle implements OnApplicationShutdown {
     PublicPageService,
     JobProcessors,
     ProjectionService,
+    FileService,
     STORE,
     SecretKeyring,
     RateLimiter,

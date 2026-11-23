@@ -88,7 +88,9 @@
       "move_cycle": "A page cannot be moved inside itself.",
       "invalid_parent": "Pages cannot be placed there.",
       "too_deep": "Pages cannot be nested this deep.",
-      "resync_required": "Your local copy is out of date and is being reloaded."
+      "resync_required": "Your local copy is out of date and is being reloaded.",
+      "file_too_large": "The file is too large.",
+      "preview_unavailable": "No preview is available for this link."
     }
   },
   "status": {

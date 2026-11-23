@@ -48,6 +48,24 @@ export class PublicPageService {
     return { page, chain: loaded.pages };
   }
 
+  /** For files and content served to a public link: its workspace and a coverage check. */
+  async access(token: string): Promise<{
+    workspaceId: string;
+    covers: (workspaceId: string, pageId: string) => Promise<boolean>;
+  }> {
+    const link = await this.link(token);
+    return {
+      workspaceId: link.workspaceId,
+      covers: async (workspaceId, pageId) => {
+        if (workspaceId !== link.workspaceId) return false;
+        return this.covered(link, pageId).then(
+          () => true,
+          () => false,
+        );
+      },
+    };
+  }
+
   async page(token: string, pageId?: string): Promise<PublicPageDto> {
     const link = await this.link(token);
     const { page, chain } = await this.covered(link, pageId ?? link.pageId);

@@ -14,6 +14,8 @@ import { RecordingJobQueue } from '../jobs/jobs.js';
 import { JobProcessors } from '../jobs/processors.js';
 import { pageHandlers } from '../pages/page-mutations.js';
 import { ProjectionService } from '../projection/projection.service.js';
+import { FileService } from '../files/file.service.js';
+import { MemoryObjectStorage } from '../files/object-storage.js';
 import { PageService } from '../pages/page.service.js';
 import { PublicPageService } from '../pages/public.service.js';
 import { sharingHandlers } from '../pages/sharing-mutations.js';
@@ -126,7 +128,21 @@ export function createHarness(options: HarnessOptions = {}) {
   const pages = new PageService(store, permissions, keyring, clock, PUBLIC_URL);
   const publicPages = new PublicPageService(store, permissions, keyring);
   const projection = new ProjectionService(store, permissions, jobs, silentLogger);
-  const processors = new JobProcessors(store, settings, bus, clock, silentLogger, { projection });
+  const objects = new MemoryObjectStorage();
+  const files = new FileService(
+    store,
+    permissions,
+    objects,
+    () => settings.limits(),
+    jobs,
+    clock,
+    silentLogger,
+    { presign: false, thumbnailer: (input) => Promise.resolve(input.slice(0, 4)) },
+  );
+  const processors = new JobProcessors(store, settings, bus, clock, silentLogger, {
+    projection,
+    files,
+  });
 
   /** Pushes one mutation; returns the result (rejections included). */
   async function tryMutate<N extends MutationName>(
@@ -240,6 +256,8 @@ export function createHarness(options: HarnessOptions = {}) {
     publicPages,
     processors,
     projection,
+    objects,
+    files,
     mutate,
     tryMutate,
     createPage,

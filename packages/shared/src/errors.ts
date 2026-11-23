@@ -45,6 +45,8 @@ export const errorCodes = [
   'invalid_parent',
   'too_deep',
   'resync_required',
+  'file_too_large',
+  'preview_unavailable',
 ] as const;
 
 export type ErrorCode = (typeof errorCodes)[number];
@@ -86,6 +88,10 @@ export function httpStatusFor(code: ErrorCode): number {
     case 'invitation_used':
     case 'resync_required':
       return 410;
+    case 'file_too_large':
+      return 413;
+    case 'preview_unavailable':
+      return 422;
     case 'rate_limited':
       return 429;
     case 'internal_error':

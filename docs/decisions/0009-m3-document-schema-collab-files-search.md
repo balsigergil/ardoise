@@ -97,7 +97,9 @@ points open that become **persisted formats** as soon as the first document is s
      pending|ready` and `thumbnail_key`. Uploads go to
      `POST /api/workspaces/:id/pages/:pageId/files` (Can edit), streamed to S3 with the
      admin size limit, MIME sniffed from the first bytes.
-   - `GET /files/:id` (Can view on `page_id`, or a public token whose page covers it)
+   - `GET /files/:workspaceId/:id` (Can view on `page_id`; the workspace id keeps the
+     lookup on the primary key), or `GET /api/public/:token/files/:id` when the token's
+     page covers it,
      streams or redirects (ADR 0004). `?thumb=1` serves the thumbnail when ready.
    - Files are soft-deleted with their page's purge; orphaned files (no longer referenced
      by any document) are kept until the page is purged in v1.
