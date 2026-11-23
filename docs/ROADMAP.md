@@ -93,6 +93,11 @@ The seq serialization benchmark is recorded.
       backlinks panel
 - [ ] Search: quick find (titles, trigram) and full search page (FTS, filters, snippets)
 - [ ] Page lock enforced in the editor and on the server
+- [ ] Extension seams (ADR 0008, PLUGINS.md §11): reserved `pluginBlock` /
+      `pluginContainer` / `pluginText` / `pluginInline` nodes and `pluginMark` with
+      fallbacks (overlap test with `y-prosemirror`); global `ext` attribute; `plugin:`
+      document prefix reserved; block definition and editor behavior registries driving
+      the menus and shortcuts; projection extractor registry with fallback
 
 **Tests**: unit (schema rules, node commands, projection extraction, search query
 builder). Integration (Hocuspocus auth/read-only/persistence across 2 collab nodes;
@@ -112,6 +117,9 @@ uploads). E2E: *two browsers co-edit a page; cursors visible; no lost text*.
 - [ ] View management: create, rename, duplicate, reorder, delete; per-view config
 - [ ] Row templates (default template)
 - [ ] Virtualized rendering everywhere; 100k-row seed + benchmark
+- [ ] Extension seams (PLUGINS.md §11): property type registry with value kinds (view
+      compiler keyed by value kind); `layout` and property `type` as strings; layout
+      registry; fallbacks for unknown types and layouts
 
 **Tests**: unit (view compiler, exhaustive by type and operator, SQL snapshots;
 property conversion; calculations). Integration (query correctness on seeded data;
@@ -134,6 +142,8 @@ view and a filter*.
       (ARCHITECTURE §8.5)
 - [ ] Offline search with MiniSearch over cached pages
 - [ ] Full resync when the cursor is older than the change-log horizon
+- [ ] Extension seams (PLUGINS.md §11): offline whitelist as a flag on mutation
+      definitions; service worker able to cache runtime-listed assets
 
 **Tests**: unit (cache policy selection, whitelist, replay/rejection logic). Integration
 (replay of offline batches including revoked access). E2E (Playwright offline
@@ -153,6 +163,8 @@ changes synced*; *access revoked while offline → changes rejected and reported
 - [ ] Synced blocks: create, copy and sync, nested editor, source indicator, unsync,
       access placeholder
 - [ ] Templates: mark page as template, template picker, built-in original templates
+- [ ] Extension seams (PLUGINS.md §11): notification type registry (`type` as `text`);
+      template `source`
 
 **Tests**: unit (anchor resolution, notification routing and preferences, batching,
 diff, restore transformation). Integration (notification emails via a fake SMTP server;
@@ -169,6 +181,8 @@ snapshot/restore through collab). E2E: *comment with mention → inbox notificat
       comments, search, users, files; OpenAPI + docs page; rate limiting
 - [ ] MCP server at `/mcp` (Streamable HTTP) with tools listed in PRODUCT §17
 - [ ] Export: page or subtree → Markdown ZIP; database → CSV; workspace → Markdown + CSV (job)
+- [ ] Extension seams (PLUGINS.md §11): Markdown serializer registry with the lossless
+      plugin-node fallback; MCP tool registry; string scopes; plugin nodes in the API block JSON
 
 **Tests**: unit (Markdown round-trips, token scope checks). Integration (every API
 endpoint incl. permission denials; MCP tool calls).
@@ -184,12 +198,43 @@ endpoint incl. permission denials; MCP tool calls).
 - [ ] Notion "Markdown & CSV" ZIP import: hierarchy, pages, databases with type
       inference and confirmation step, assets, link rewriting, resumable job, report
 - [ ] Markdown file/ZIP import
+- [ ] Extension seams (PLUGINS.md §11): AI provider, AI command and importer registries
 
 **Tests**: unit (prompt building, retrieval filtering, import parsers on fixture
 exports, type inference). Integration (import job end-to-end on a fixture ZIP; AI with
 mocked provider). E2E: *import a fixture Notion export and browse it*.
 
 **v1 release**: tag `v1.0.0` after M8, with release notes and upgrade documentation.
+
+---
+
+## M9 — Plugins (after v1)
+
+Design: `docs/PLUGINS.md`, ADR 0008. Starts once the M3–M8 extension seams are in place.
+
+- [ ] `packages/plugin-sdk`: manifest schema, `definePlugin`, server and client types (API `0.x`)
+- [ ] `plugins` module: loader from `ARDOISE_PLUGINS_DIR`, engine and license checks,
+      statuses, instance and workspace enablement, encrypted settings
+- [ ] `plugin_records` + `pluginRecord.set/delete` mutations, `pluginRecord` entity in pull
+      and the client store, per-collection governance and offline flag
+- [ ] Actions, HTTP routes, jobs and schedules, MCP tools, change consumers (integration
+      principal, per-plugin cursor), failure isolation
+- [ ] Client loader: import map for shared libraries, lazy contributions, PWA client manifest, CSP origins
+- [ ] Plugin subdocuments (`plugin:<blockId>`): authorization by containing page, size
+      cap, included in history, export and duplication
+- [ ] Outgoing webhooks (Tier 0), signed and permission-filtered
+- [ ] Admin and workspace UI: list, capabilities, enable/disable, status, settings, purge
+- [ ] First-party example plugins in `plugins/`: diagram block, rating property type,
+      change notifier
+- [ ] Plugin developer guide
+
+**Tests**: unit (manifest validation, governance and delivery of records, fallbacks,
+consumer cursors). Integration (loading, enable/disable, records through mutations and
+pull, consumers, webhooks). E2E: *enable the example plugins, use the block and the
+property, disable the plugin → placeholders, re-enable → restored*.
+
+**Acceptance**: disabling and re-enabling a plugin loses no data; budgets unchanged
+with the example plugins enabled.
 
 ---
 

@@ -11,6 +11,7 @@ This file holds the rules that apply to every task. Read these before starting a
 - `docs/PRODUCT.md`: what we build (functional specification, v1 vs later)
 - `docs/ARCHITECTURE.md`: how we build it (components, data model, sync, scaling)
 - `docs/ROADMAP.md`: in what order (milestones, acceptance criteria, progress)
+- `docs/PLUGINS.md`: plugin system design and the extension seams required from M3 (ADR 0008)
 - `docs/decisions/`: Architecture Decision Records (ADRs)
 
 If these documents contradict each other, the order of precedence is:

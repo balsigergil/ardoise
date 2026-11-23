@@ -350,3 +350,21 @@ players, breadcrumb block, buttons, forms.
 - Content: embeds, forms, site publishing with custom domains and SEO.
 - Search: a dedicated search engine (Meilisearch).
 - Other: reminders on dates, a hosted offering.
+- Plugins (§21).
+
+## 21. Plugins [later]
+
+Design: `docs/PLUGINS.md` (ADR 0008).
+- Super-admins install plugins on the instance and enable them. Workspace owners and
+  admins then enable them for their workspace, after reviewing the capabilities each
+  plugin requests.
+- Plugins can add blocks, inline elements, slash-menu entries, database property types
+  and view layouts, AI providers and commands, importers and exporters, MCP tools,
+  automations that react to changes, and settings pages. Outgoing webhooks let external
+  systems react to changes.
+- Disabling or removing a plugin never deletes data. Its blocks show a placeholder with
+  a text preview (its text blocks stay editable as plain paragraphs), its formatting
+  shows as plain text, its properties show their raw value, and its views fall back to a
+  table. Re-enabling the plugin restores everything. Deleting a plugin's data is a
+  separate, explicit action.
+- Plugins never unlock restricted features: every feature of Ardoise ships to every instance.

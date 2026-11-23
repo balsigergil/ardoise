@@ -164,7 +164,8 @@ Conventions:
 ### 4.4 Content (Yjs)
 - `page_documents` (workspace_id, page_id, doc_name, state bytea, state_vector bytea,
   updated_at, size).
-  - `doc_name` is `page:<id>` or `synced:<id>`.
+  - `doc_name` is `page:<id>` or `synced:<id>`. The prefix `plugin:<blockId>` is
+    reserved for plugin subdocuments (ADR 0008, M9).
   - It holds the full encoded Yjs state, written by Hocuspocus `onStoreDocument`
     (debounced 2 s, max 10 s).
 - `synced_blocks` (workspace_id, id, source_page_id, created_by). A synced block is
@@ -539,3 +540,33 @@ Editor (packages/editor) ── Yjs docs ── HocuspocusProvider + y-indexeddb
   - lint, typecheck, unit and license check on every push;
   - integration on PRs;
   - e2e and Docker image build on `main`.
+
+## 15. Extensibility (ADR 0008)
+
+The plugin runtime ships in M9 (after v1). Its full design is in `docs/PLUGINS.md`. The
+following rules apply **from M3 onwards**, so that M9 adds a facade instead of a rewrite:
+
+- **Registries, used by the core itself**: blocks (Tiptap extension, slash item, block
+  actions), projection extractors, property types, view layouts, notification types,
+  Markdown serializers, MCP tools, AI providers and commands, and importers. UI lists and
+  server dispatch read these registries, never a hard-coded list or `switch`.
+- **Strings for extensible identifiers** (zod schemas built from the registry, `text`
+  columns). `pgEnum` is kept for closed core concepts.
+- **Reserved editor types** (PLUGINS.md §6), part of the schema from M3. The schema never
+  depends on installed plugins:
+  - nodes `pluginBlock`, `pluginContainer`, `pluginText` and `pluginInline`, and the mark
+    `pluginMark`;
+  - a global `ext` attribute on every block node for plugin data on core blocks;
+  - the `plugin:<blockId>` document name for plugin subdocuments (§4.4), which Hocuspocus
+    rejects until M9.
+- **Editor behaviors** (shortcuts, input rules, paste handling, decorations) are
+  registered, not wired into the editor component.
+- **Property value kinds**: the view compiler, operators and calculations depend on a
+  property type's value kind (`text | number | date | bool | user | none`), not on the
+  type itself.
+- **Fallbacks**: unknown node types, property types and layouts render as documented
+  placeholders, and their data is never dropped.
+- **Mutation catalog stays closed**: plugin data uses the generic `pluginRecord.set` and
+  `pluginRecord.delete` mutations (M9). There are no synchronous plugin hooks inside
+  mutation transactions.
+- The offline whitelist is a flag on each mutation definition.
