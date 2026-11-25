@@ -17,8 +17,11 @@ test.describe.serial('pages: create, nest, move, share live', () => {
     await input.press('Enter');
   }
 
-  async function addSubpage(page: Page, title: string) {
-    await page.getByRole('button', { name: 'Add a subpage', exact: true }).click();
+  async function addSubpage(page: Page, parent: string, title: string) {
+    await row(page, parent).hover();
+    await row(page, parent)
+      .getByRole('button', { name: `Add a subpage to ${parent}` })
+      .click();
     await expect(page.getByRole('textbox', { name: 'Page title' })).toHaveValue('');
     await setTitle(page, title);
   }
@@ -35,9 +38,9 @@ test.describe.serial('pages: create, nest, move, share live', () => {
     await setTitle(owner, 'Project plan');
     await expect(row(owner, 'Project plan')).toBeVisible();
     const planUrl = owner.url();
-    await addSubpage(owner, 'Milestones');
+    await addSubpage(owner, 'Project plan', 'Milestones');
     await owner.goto(planUrl);
-    await addSubpage(owner, 'Budget');
+    await addSubpage(owner, 'Project plan', 'Budget');
     await owner.goto(planUrl);
     const subpages = owner.getByTestId('subpages');
     await expect(subpages.getByRole('link')).toHaveText(['Milestones', 'Budget']);

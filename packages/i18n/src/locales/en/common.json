@@ -339,7 +339,6 @@
     "tree": "Pages",
     "newPrivate": "New private page",
     "newIn": "New page in {{name}}",
-    "newSubpage": "Add a subpage",
     "addSubpage": "Add a subpage to {{title}}",
     "actionsFor": "Actions for {{title}}",
     "collapse": "Collapse",

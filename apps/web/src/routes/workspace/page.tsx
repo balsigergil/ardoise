@@ -22,7 +22,6 @@ import {
   Link as LinkIcon,
   Lock,
   MoreHorizontal,
-  Plus,
   RotateCcw,
   Share2,
   SmilePlus,
@@ -159,22 +158,21 @@ function Breadcrumb({
 
 /**
  * Subpages that no child page block of the content shows (pages created from the
- * sidebar, or whose block was removed by editing; M3 plan).
+ * sidebar, or whose block was removed by editing; M3 plan). Renders nothing when there
+ * are none: a page without such subpages stays blank, and subpages are created from the
+ * `/page` command of the editor.
  */
 function Subpages({
   workspaceId,
   page,
-  editable,
   hidden,
 }: {
   workspaceId: string;
   page: PageDto;
-  editable: boolean;
   hidden: ReadonlySet<string>;
 }) {
   const { t } = useTranslation();
   const { store, refreshToken } = useSyncContext();
-  const actions = usePageActions();
   const parent = { kind: 'page' as const, id: page.id };
   const first = useQuery({
     queryKey: ['workspaces', workspaceId, 'pages', page.id, 'children', refreshToken],
@@ -186,14 +184,10 @@ function Subpages({
   });
   const next = more.after !== null ? more.next : (first.data ?? null);
   const children = useSyncSelector((s) => s.children(parent)).filter((c) => !hidden.has(c.id));
-  if (!first.isPending && children.length === 0 && !next && hidden.size > 0) return null;
+  if (children.length === 0 && !next) return null;
   return (
     <section aria-label={t('pages.subpages')} className="mt-8 grid gap-1">
       <h2 className="text-sm font-medium text-muted-foreground">{t('pages.subpages')}</h2>
-      {first.isPending && children.length === 0 && <Skeleton className="h-8 w-full" />}
-      {!first.isPending && children.length === 0 && (
-        <p className="text-sm text-muted-foreground">{t('pages.noSubpages')}</p>
-      )}
       <ul className="grid gap-0.5" data-testid="subpages">
         {children.map((child) => (
           <li key={child.id}>
@@ -219,16 +213,6 @@ function Subpages({
           }
         >
           {t('pages.loadMore')}
-        </Button>
-      )}
-      {editable && (
-        <Button
-          variant="ghost"
-          className="justify-self-start text-muted-foreground"
-          onClick={() => actions.create(parent)}
-        >
-          <Plus />
-          {t('pages.newSubpage')}
         </Button>
       )}
     </section>
@@ -584,7 +568,7 @@ export function PageView({ workspaceId, pageId }: { workspaceId: string; pageId:
             />
           </Suspense>
         </div>
-        <Subpages workspaceId={workspaceId} page={page} editable={editable} hidden={inContent} />
+        <Subpages workspaceId={workspaceId} page={page} hidden={inContent} />
         <Backlinks workspaceId={workspaceId} pageId={page.id} />
       </div>
 
