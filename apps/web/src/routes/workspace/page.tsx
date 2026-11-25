@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 /**
- * Page view (PRODUCT §5). Content blocks arrive with the editor in M3; M2 edits the page
- * metadata and lists subpages. Everything is read from the sync store, so changes from
- * other users show up live.
+ * Page view (PRODUCT §5): page metadata (title, icon, cover) and the editor. Metadata is
+ * read from the sync store, so changes from other users show up live. Subpages show as
+ * child page blocks of the content; there is no separate list.
  */
 import {
   coverColors,
@@ -35,7 +35,6 @@ import { toast } from 'sonner';
 import { EmojiPicker } from '@/components/emoji-picker';
 import { MovePageDialog } from '@/components/page-tree/move-dialog';
 import { usePageActions } from '@/components/page-tree/page-actions';
-import { PageIcon } from '@/components/page-tree/page-icon';
 import { ShareDialog } from '@/components/share-dialog';
 const PageEditor = lazy(() =>
   import('@/editor/page-editor').then((m) => ({ default: m.PageEditor })),
@@ -56,7 +55,7 @@ import {
 import { Skeleton } from '@/components/ui/skeleton';
 import { useMe } from '@/auth/session';
 import { ApiError } from '@/lib/api';
-import { loadChildren, pageDetailQuery, pageTitle, touchRecent } from '@/lib/pages';
+import { pageDetailQuery, pageTitle, touchRecent } from '@/lib/pages';
 import { workspaceQuery } from '@/lib/queries';
 import { COVER_CLASSES, coverClass } from '@/lib/covers';
 import { cn } from '@/lib/utils';
@@ -155,69 +154,6 @@ function Breadcrumb({
   );
 }
 
-/**
- * Subpages that no child page block of the content shows (pages created from the
- * sidebar, or whose block was removed by editing; M3 plan). Renders nothing when there
- * are none: a page without such subpages stays blank, and subpages are created from the
- * `/page` command of the editor.
- */
-function Subpages({
-  workspaceId,
-  page,
-  hidden,
-}: {
-  workspaceId: string;
-  page: PageDto;
-  hidden: ReadonlySet<string>;
-}) {
-  const { t } = useTranslation();
-  const { store, refreshToken } = useSyncContext();
-  const parent = { kind: 'page' as const, id: page.id };
-  const first = useQuery({
-    queryKey: ['workspaces', workspaceId, 'pages', page.id, 'children', refreshToken],
-    queryFn: () => loadChildren(store, parent, null),
-  });
-  const [more, setMore] = useState<{ after: string | null; next: string | null }>({
-    after: null,
-    next: null,
-  });
-  const next = more.after !== null ? more.next : (first.data ?? null);
-  const children = useSyncSelector((s) => s.children(parent)).filter((c) => !hidden.has(c.id));
-  if (children.length === 0 && !next) return null;
-  return (
-    <section aria-label={t('pages.subpages')} className="mt-8 grid gap-1">
-      <h2 className="text-sm font-medium text-muted-foreground">{t('pages.subpages')}</h2>
-      <ul className="grid gap-0.5" data-testid="subpages">
-        {children.map((child) => (
-          <li key={child.id}>
-            <Link
-              to="/w/$workspaceId/p/$pageId"
-              params={{ workspaceId, pageId: child.id }}
-              className="flex items-center gap-2 rounded-md px-2 py-1.5 text-sm hover:bg-accent"
-            >
-              <PageIcon icon={child.icon} />
-              <span className="truncate">{pageTitle(child, t('pages.untitled'))}</span>
-            </Link>
-          </li>
-        ))}
-      </ul>
-      {next && (
-        <Button
-          variant="link"
-          className="justify-self-start"
-          onClick={() =>
-            void loadChildren(store, parent, next).then((after) =>
-              setMore({ after: next, next: after }),
-            )
-          }
-        >
-          {t('pages.loadMore')}
-        </Button>
-      )}
-    </section>
-  );
-}
-
 function NoAccess({
   workspaceId,
   pageId,
@@ -281,7 +217,6 @@ export function PageView({ workspaceId, pageId }: { workspaceId: string; pageId:
   });
   const [sharing, setSharing] = useState(false);
   const [moving, setMoving] = useState(false);
-  const [inContent, setInContent] = useState<ReadonlySet<string>>(new Set());
 
   useEffect(() => {
     if (!detail.data) return;
@@ -563,11 +498,9 @@ export function PageView({ workspaceId, pageId }: { workspaceId: string; pageId:
               locked={page.isLocked}
               showLockBanner={!canShare}
               me={me}
-              onChildPagesChange={setInContent}
             />
           </Suspense>
         </div>
-        <Subpages workspaceId={workspaceId} page={page} hidden={inContent} />
       </div>
 
       {workspace && (

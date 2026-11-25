@@ -35,9 +35,10 @@ collab auth and revocation, files, search, bookmarks, public page content).
 - **Undo** uses the `y-prosemirror` undo manager (per user, own changes only).
 - **Child pages**: creating a page from the slash menu creates it with `page.create` and
   inserts a `childPage` block. Pages created from the sidebar get no block; the page view
-  lists the subpages that no `childPage` block references, below the editor. Deleting a
+  listed the subpages that no `childPage` block references, below the editor (removed
+  after M3: the page view shows only the content). Deleting a
   `childPage` block from the block menu also trashes the page; removing it by editing
-  text does not (the page then shows in that list). A `childPage` whose page moved
+  text does not (the page stays in the sidebar). A `childPage` whose page moved
   elsewhere or is trashed renders as a muted "moved" / "deleted" link.
 - **Move to** (block menu) moves a block to another page by inserting it at the end of the
   target document (opened through a short-lived provider) and then removing it here.

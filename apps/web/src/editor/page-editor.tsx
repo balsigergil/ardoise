@@ -34,7 +34,7 @@ import { usePageActions } from '@/components/page-tree/page-actions';
 import { api, ApiError } from '@/lib/api';
 import { useSyncStore } from '@/sync/hooks';
 import { openDocument, sessionHolder, type DocSession } from './collab';
-import { appendBlocks, childPageIds, dateItems, registry } from './editor-utils';
+import { appendBlocks, dateItems, registry } from './editor-utils';
 import { EditorEnvContext, type EditorEnv } from './env';
 import { localCollapsedStorage } from './extensions/decorations';
 import { emptyHandleState, type HandleState } from './extensions/drag-handle';
@@ -68,8 +68,6 @@ export interface PageEditorProps {
   /** False when the page view already explains the lock (people who can unlock). */
   showLockBanner?: boolean;
   me: { id: string; name: string };
-  /** Pages shown by child page blocks of the content. */
-  onChildPagesChange?: (ids: ReadonlySet<string>) => void;
 }
 
 export function PageEditor(props: PageEditorProps) {
@@ -95,7 +93,6 @@ function PageEditorBody({
   page,
   editable,
   locked,
-  onChildPagesChange,
   showLockBanner = true,
   user,
   session,
@@ -304,22 +301,6 @@ function PageEditorBody({
     editor.setEditable(canWrite);
     editor.view.dispatch(editor.state.tr.setMeta('editableChanged', true));
   }, [editor, canWrite]);
-
-  useEffect(() => {
-    if (!editor || !onChildPagesChange) return;
-    let last = '';
-    const report = () => {
-      const ids = childPageIds(editor.state.doc);
-      const key = [...ids].sort().join(',');
-      if (key !== last) {
-        last = key;
-        onChildPagesChange(ids);
-      }
-    };
-    report();
-    editor.on('update', report);
-    return () => void editor.off('update', report);
-  }, [editor, onChildPagesChange]);
 
   // Scroll to `#block-<id>` once the content is there.
   useEffect(() => {

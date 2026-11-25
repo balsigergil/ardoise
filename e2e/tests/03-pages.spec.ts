@@ -42,14 +42,11 @@ test.describe.serial('pages: create, nest, move, share live', () => {
     await owner.goto(planUrl);
     await addSubpage(owner, 'Project plan', 'Budget');
     await owner.goto(planUrl);
-    const subpages = owner.getByTestId('subpages');
-    await expect(subpages.getByRole('link')).toHaveText(['Milestones', 'Budget']);
 
-    // Expand the tree in the sidebar and drag "Budget" into "Milestones".
-    await row(owner, 'Project plan').getByRole('button', { name: 'Expand' }).click();
+    // Adding a subpage from the sidebar expanded "Project plan": drag "Budget" into "Milestones".
+    await expect(row(owner, 'Milestones')).toBeVisible();
     await expect(row(owner, 'Budget')).toBeVisible();
     await row(owner, 'Budget').dragTo(row(owner, 'Milestones'));
-    await expect(subpages.getByRole('link')).toHaveText(['Milestones']);
     // Dropping inside a page expands it.
     await expect(row(owner, 'Milestones').getByRole('button', { name: 'Collapse' })).toBeVisible();
     await expect(row(owner, 'Budget')).toBeVisible();
