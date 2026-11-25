@@ -15,6 +15,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarRail,
+  SidebarTrigger,
 } from '@/components/ui/sidebar';
 import { UserMenu } from '@/components/user-menu';
 import { WorkspaceSwitcher } from '@/components/workspace-switcher';
@@ -32,7 +33,12 @@ export function AppSidebar({ workspaceId }: { workspaceId?: string | undefined }
   return (
     <Sidebar aria-label={t('ui.sidebarTitle')}>
       <SidebarHeader>
-        <WorkspaceSwitcher currentId={workspaceId} />
+        <div className="flex items-center gap-1">
+          <div className="min-w-0 flex-1">
+            <WorkspaceSwitcher currentId={workspaceId} />
+          </div>
+          <SidebarTrigger className="shrink-0" data-testid="sidebar-collapse" />
+        </div>
         {workspaceId && (
           <SidebarMenu>
             <SidebarMenuItem>

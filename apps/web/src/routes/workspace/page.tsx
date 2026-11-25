@@ -36,6 +36,7 @@ import { EmojiPicker } from '@/components/emoji-picker';
 import { MovePageDialog } from '@/components/page-tree/move-dialog';
 import { usePageActions } from '@/components/page-tree/page-actions';
 import { ShareDialog } from '@/components/share-dialog';
+import { InlineSidebarTrigger } from '@/components/sidebar-toggle';
 const PageEditor = lazy(() =>
   import('@/editor/page-editor').then((m) => ({ default: m.PageEditor })),
 );
@@ -297,6 +298,7 @@ export function PageView({ workspaceId, pageId }: { workspaceId: string; pageId:
   return (
     <article className={cn('pb-16', FONT_CLASSES[page.font])} data-testid="page-view">
       <div className="flex items-center gap-2 border-b px-4 py-2">
+        <InlineSidebarTrigger className="-ml-2" />
         <Breadcrumb workspaceId={workspaceId} detail={data} page={page} />
         <div className="ml-auto flex shrink-0 items-center gap-1">
           {page.isLocked && (

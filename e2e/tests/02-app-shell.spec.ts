@@ -1,6 +1,18 @@
 // SPDX-License-Identifier: AGPL-3.0-only
-import { expect, test } from '@playwright/test';
+import { expect, test, type Page } from '@playwright/test';
 import { admin, login } from './accounts.js';
+
+/** Picks the UI language in the account settings (the app shell has no top bar). */
+async function pickLanguage(page: Page, current: 'Language' | 'Langue', name: string) {
+  await page.goto('/account');
+  await page.getByRole('combobox', { name: current }).click();
+  const saved = page.waitForResponse(
+    (r) => r.url().endsWith('/api/me') && r.request().method() === 'PATCH',
+  );
+  await page.getByRole('option', { name }).click();
+  await saved;
+  await page.goto('/');
+}
 
 test.describe('app shell', () => {
   test('shows the sidebar sections in English', async ({ page }) => {
@@ -57,8 +69,7 @@ test.describe('app shell', () => {
     const first = await browser.newContext({ locale: 'en-US' });
     const page = await first.newPage();
     await login(page, admin);
-    await page.getByTestId('language-menu').click();
-    await page.getByRole('menuitemradio', { name: 'Français' }).click();
+    await pickLanguage(page, 'Language', 'Français');
     await expect(page.getByRole('heading', { name: 'Bienvenue dans Ardoise' })).toBeVisible();
     await first.close();
 
@@ -67,8 +78,7 @@ test.describe('app shell', () => {
     await login(other, admin);
     await expect(other.getByRole('heading', { name: 'Bienvenue dans Ardoise' })).toBeVisible();
     // Restore English for the following tests.
-    await other.getByTestId('language-menu').click();
-    await other.getByRole('menuitemradio', { name: 'English' }).click();
+    await pickLanguage(other, 'Langue', 'English');
     await expect(other.getByRole('heading', { name: 'Welcome to Ardoise' })).toBeVisible();
     await second.close();
   });
