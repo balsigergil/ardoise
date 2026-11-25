@@ -90,7 +90,7 @@ The seq serialization benchmark is recorded.
 - [x] Presence: avatars, colored cursors and selections
 - [x] `files` module: streamed uploads to S3 with limits, presigned downloads, thumbnails job
 - [x] `projection` jobs: plain text, links, mentions → `page_search`, `page_links`;
-      backlinks panel
+      backlinks panel (later removed from the page view)
 - [x] Search: quick find (titles, trigram) and full search page (FTS, filters, snippets)
 - [x] Page lock enforced in the editor and on the server
 - [x] Extension seams (ADR 0008, PLUGINS.md §11): reserved `pluginBlock` /

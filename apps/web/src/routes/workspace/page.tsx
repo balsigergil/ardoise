@@ -37,7 +37,6 @@ import { MovePageDialog } from '@/components/page-tree/move-dialog';
 import { usePageActions } from '@/components/page-tree/page-actions';
 import { PageIcon } from '@/components/page-tree/page-icon';
 import { ShareDialog } from '@/components/share-dialog';
-import { Backlinks } from '@/editor/backlinks';
 const PageEditor = lazy(() =>
   import('@/editor/page-editor').then((m) => ({ default: m.PageEditor })),
 );
@@ -569,7 +568,6 @@ export function PageView({ workspaceId, pageId }: { workspaceId: string; pageId:
           </Suspense>
         </div>
         <Subpages workspaceId={workspaceId} page={page} hidden={inContent} />
-        <Backlinks workspaceId={workspaceId} pageId={page.id} />
       </div>
 
       {workspace && (

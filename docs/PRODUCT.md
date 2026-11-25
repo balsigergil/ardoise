@@ -102,7 +102,8 @@ reference for the clean-room implementation (see `CLAUDE.md` §1.1). Scope marke
   editing text keeps the page (it then shows in that list). A child page block whose page
   moved or is in the trash says so. Duplicating a page copies its content and its
   subpages' content; a duplicated child page block becomes a link to the same page.
-- **Backlinks**: every page lists the pages that link to or mention it.
+- **Backlinks**: links and mentions between pages are tracked (`page_links`), but the
+  page view shows no backlinks panel.
 - **Public link** [v1]: "Share to web" gives a read-only public URL for a page and
   optionally its subpages. It is rendered by the SPA, is marked `noindex` and can be revoked.
   Full site publishing with SEO and custom domains is **[later]**.

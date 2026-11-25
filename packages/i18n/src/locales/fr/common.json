@@ -622,14 +622,6 @@
       "viewing": "{{count}} personnes ici",
       "you": "Vous"
     },
-    "backlinks": {
-      "title_one": "{{count}} rétrolien",
-      "title_other": "{{count}} rétroliens",
-      "none": "Aucun rétrolien",
-      "more": "Afficher plus",
-      "mention": "mentionnée",
-      "link": "liée"
-    },
     "upload": {
       "uploading": "Import de {{name}}…",
       "done": "{{name}} importé"

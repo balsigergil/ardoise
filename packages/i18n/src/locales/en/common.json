@@ -622,14 +622,6 @@
       "viewing": "{{count}} people here",
       "you": "You"
     },
-    "backlinks": {
-      "title_one": "{{count}} backlink",
-      "title_other": "{{count}} backlinks",
-      "none": "No backlinks",
-      "more": "Show more",
-      "mention": "mentioned",
-      "link": "linked"
-    },
     "upload": {
       "uploading": "Uploading {{name}}…",
       "done": "{{name}} uploaded"
