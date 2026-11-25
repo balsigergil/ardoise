@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 /** M3 search screens: quick find (Ctrl/Cmd+K) and the full search page. */
 import type { QuickFindDto, SearchResultsDto } from '@ardoise/shared';
-import { act, screen, waitFor } from '@testing-library/react';
+import { act, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it } from 'vitest';
 import { editedAfter, searchPath, snippetParts } from '@/components/search/snippet';
@@ -72,6 +72,20 @@ describe('quick find', () => {
     await user.click(await screen.findByRole('option', { name: /Search “budget” in all content/ }));
     await waitFor(() => expect(router.state.location.pathname).toBe(`/w/${WS}/search`));
     expect(router.state.location.search).toEqual({ q: 'budget' });
+  });
+
+  it('has no close button and closes with Escape', async () => {
+    mockApi({
+      ...signedIn(),
+      [`GET /api/workspaces/${WS}/search/quick`]: { body: { items: [] } },
+    });
+    await renderApp(`/w/${WS}`);
+    const user = userEvent.setup();
+    await user.click(await screen.findByTestId('search-button'));
+    const dialog = await screen.findByTestId('quick-find');
+    expect(within(dialog).queryByRole('button', { name: 'Close' })).toBeNull();
+    await user.keyboard('{Escape}');
+    await waitFor(() => expect(screen.queryByTestId('quick-find')).toBeNull());
   });
 });
 

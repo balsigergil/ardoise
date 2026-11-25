@@ -64,7 +64,11 @@ export function QuickFind({ workspaceId, onClose }: { workspaceId: string; onClo
   };
   return (
     <Dialog open onOpenChange={(value) => !value && onClose()}>
-      <DialogContent className="gap-2 p-3 sm:max-w-lg" data-testid="quick-find">
+      <DialogContent
+        className="gap-2 p-3 sm:max-w-lg"
+        data-testid="quick-find"
+        showCloseButton={false}
+      >
         <DialogHeader>
           <DialogTitle className="sr-only">{t('search.quick.title')}</DialogTitle>
           <DialogDescription className="sr-only">{t('search.quick.hint')}</DialogDescription>
