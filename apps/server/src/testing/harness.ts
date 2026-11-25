@@ -10,8 +10,10 @@ import {
   type MutationResult,
 } from '@ardoise/shared';
 import type { Logger } from '@nestjs/common';
-import { RecordingJobQueue } from '../jobs/jobs.js';
+import { RecordingJobQueue, type JobName } from '../jobs/jobs.js';
 import { JobProcessors } from '../jobs/processors.js';
+import { ChildBlockService } from '../pages/child-blocks.js';
+import { StoredContentEditor } from './stored-content-editor.js';
 import { pageHandlers } from '../pages/page-mutations.js';
 import { ProjectionService } from '../projection/projection.service.js';
 import { FileService } from '../files/file.service.js';
@@ -142,10 +144,19 @@ export function createHarness(options: HarnessOptions = {}) {
     { presign: false, thumbnailer: (input) => Promise.resolve(input.slice(0, 4)) },
   );
   const search = new SearchService(store, permissions, new MemorySearchAdapter(store));
+  const content = new StoredContentEditor(store, clock);
   const processors = new JobProcessors(store, settings, bus, clock, silentLogger, {
     projection,
     files,
+    childBlocks: new ChildBlockService(store, content),
   });
+
+  /** Runs the recorded jobs named `name` (and forgets them), in order. */
+  async function runJobs(name: JobName): Promise<void> {
+    const pending = jobs.jobs.filter((j) => j.name === name);
+    jobs.jobs.splice(0, jobs.jobs.length, ...jobs.jobs.filter((j) => j.name !== name));
+    for (const job of pending) await processors.run(name, job.data as never);
+  }
 
   /** Pushes one mutation; returns the result (rejections included). */
   async function tryMutate<N extends MutationName>(
@@ -258,6 +269,8 @@ export function createHarness(options: HarnessOptions = {}) {
     pages,
     publicPages,
     processors,
+    runJobs,
+    content,
     projection,
     objects,
     files,

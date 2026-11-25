@@ -32,9 +32,13 @@ export function usePageActions() {
     [t],
   );
 
-  /** Creates an empty page at the end of `parent` and opens it. */
+  /**
+   * Creates an empty page at the end of `parent` and opens it. Under a page, the server
+   * appends a child page block to the parent's content unless `inlineBlock` says the
+   * caller (the editor's `/page`) inserts the block itself.
+   */
   const create = useCallback(
-    (parent: PageParent) => {
+    (parent: PageParent, options: { inlineBlock?: boolean } = {}) => {
       const id = newId();
       const target = mutationParent(parent);
       if (!target) return undefined;
@@ -44,6 +48,7 @@ export function usePageActions() {
           id,
           parent: target,
           position: positionAt(siblings, siblings.length),
+          ...(options.inlineBlock && { appendBlock: false }),
         }),
       );
       if (ok)

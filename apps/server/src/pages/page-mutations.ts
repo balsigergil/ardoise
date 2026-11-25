@@ -181,6 +181,12 @@ export function pageHandlers(): PageHandlers {
         createdAt: ctx.now,
       });
       if (dto.title) await ctx.store.projection.setTitle(ctx.workspaceId, dto.id, dto.title);
+      if (parent.page && args.appendBlock)
+        ctx.enqueue('page.childBlock', {
+          workspaceId: ctx.workspaceId,
+          pageId: dto.id,
+          to: parent.page.id,
+        });
       await emitPage(ctx, dto);
     }),
 
@@ -225,6 +231,14 @@ export function pageHandlers(): PageHandlers {
       );
       const final = await relocate(ctx, page, dto, parent.page);
       await ctx.store.pages.update(ctx.workspaceId, page.id, patchFromDto(final));
+      // A reorder among siblings keeps the block where the content has it.
+      if (oldParent?.id !== parent.page?.id)
+        ctx.enqueue('page.childBlock', {
+          workspaceId: ctx.workspaceId,
+          pageId: page.id,
+          ...(oldParent && { from: oldParent.id }),
+          ...(parent.page && { to: parent.page.id }),
+        });
       await emitPage(ctx, final);
     }),
 
@@ -269,6 +283,13 @@ export function pageHandlers(): PageHandlers {
       const newParent = dto.parentKind === 'page' ? (parent ?? null) : null;
       const final = await relocate(ctx, page, dto, newParent);
       await ctx.store.pages.update(ctx.workspaceId, page.id, patchFromDto(final));
+      // Back under its page: the block still there (shown as deleted) is kept, or re-added.
+      if (newParent)
+        ctx.enqueue('page.childBlock', {
+          workspaceId: ctx.workspaceId,
+          pageId: page.id,
+          to: newParent.id,
+        });
       await emitPage(ctx, final);
     }),
 
@@ -332,6 +353,13 @@ export function pageHandlers(): PageHandlers {
         );
       }
       if (grants.length > 0) ctx.access('page', copy.id);
+      if (parent.page)
+        ctx.enqueue('page.childBlock', {
+          workspaceId: ctx.workspaceId,
+          pageId: copy.id,
+          to: parent.page.id,
+          afterPageId: source.id,
+        });
       await emitPage(ctx, toPageDto(copy, false));
     }),
 

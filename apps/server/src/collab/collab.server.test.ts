@@ -11,6 +11,8 @@ import { createHarness, PUBLIC_URL, silentLogger } from '../testing/harness.js';
 import { CollabAccess } from './collab-access.js';
 import { CollabPersistence } from './collab-persistence.js';
 import { CollabServer } from './collab.server.js';
+import { HocuspocusContentEditor } from './content-editor.js';
+import { ensureChildPageBlock } from '../pages/child-blocks.js';
 
 const cleanups: (() => Promise<void> | void)[] = [];
 afterEach(async () => {
@@ -176,6 +178,41 @@ describe('CollabServer', () => {
     // Locking makes the editor read-only: it is asked to reconnect, then gets readonly.
     await h.mutate(owner, ws.id, 'page.update', { id: page, isLocked: true });
     await until(() => editor.events.closed.includes('reconnect'));
+  });
+
+  it('applies server-side content edits to open editors and stores them', async () => {
+    const { h, owner, ws, page, connect, tokenOf, collab } = await setup();
+    const editor = connect(await tokenOf(owner));
+    await until(() => editor.provider.isSynced);
+    write(editor.document, 'typed');
+    const child = '0190a000-0000-7000-8000-0000000000c1';
+    await new HocuspocusContentEditor(collab.hocuspocus).edit(
+      ws.id,
+      page,
+      (doc) => void ensureChildPageBlock(doc, child),
+    );
+    await until(() => text(editor.document).includes(child));
+    expect(text(editor.document)).toContain('typed');
+    const row = await h.store.documents.find(ws.id, `page:${page}`);
+    const stored = new Y.Doc();
+    Y.applyUpdate(stored, row!.state);
+    expect(JSON.stringify(docToJSON(stored))).toContain(child);
+  });
+
+  it('edits documents nobody has open', async () => {
+    const { h, ws, page, collab } = await setup();
+    const child = '0190a000-0000-7000-8000-0000000000c2';
+    await new HocuspocusContentEditor(collab.hocuspocus).edit(
+      ws.id,
+      page,
+      (doc) => void ensureChildPageBlock(doc, child),
+    );
+    const row = await h.store.documents.find(ws.id, `page:${page}`);
+    expect(row).toBeDefined();
+    const stored = new Y.Doc();
+    Y.applyUpdate(stored, row!.state);
+    expect(JSON.stringify(docToJSON(stored))).toContain(child);
+    expect(collab.hocuspocus.documents.size).toBe(0);
   });
 
   it('rewrites presence with the authenticated identity', async () => {

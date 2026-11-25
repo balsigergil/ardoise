@@ -25,7 +25,6 @@ import { S3ObjectStorage } from './files/object-storage.js';
 import { createS3Client } from './infra/s3.js';
 import { BullJobQueue } from './jobs/bullmq-queue.js';
 import type { JobQueue } from './jobs/jobs.js';
-import { JobProcessors } from './jobs/processors.js';
 import { pageHandlers } from './pages/page-mutations.js';
 import { PageService } from './pages/page.service.js';
 import { ProjectionService } from './projection/projection.service.js';
@@ -219,17 +218,6 @@ class SyncLifecycle implements OnApplicationShutdown {
         );
       },
     },
-    {
-      provide: JobProcessors,
-      inject: [STORE, InstanceSettingsService, SYNC_BUS, ProjectionService, FileService],
-      useFactory: (
-        s: Store,
-        settings: InstanceSettingsService,
-        bus: SyncEventBus,
-        projection: ProjectionService,
-        files: FileService,
-      ) => new JobProcessors(s, settings, bus, clock, new Logger('jobs'), { projection, files }),
-    },
     SyncLifecycle,
   ],
   exports: [
@@ -240,7 +228,6 @@ class SyncLifecycle implements OnApplicationShutdown {
     PullService,
     PageService,
     PublicPageService,
-    JobProcessors,
     ProjectionService,
     FileService,
     SearchService,

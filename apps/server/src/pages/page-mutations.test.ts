@@ -242,7 +242,7 @@ describe('page.move', () => {
     const moving = await get(h, ws, big);
     expect(moving).toMatchObject({ moveState: 'moving', parentId: target });
     expect(moving.path).toBe(`${label(root)}.${label(big)}`);
-    expect(h.jobs.jobs).toEqual([
+    expect(h.jobs.jobs.filter((j) => j.name === 'page.moveSubtree')).toEqual([
       { name: 'page.moveSubtree', data: { workspaceId: ws, pageId: big, actorId: owner.id } },
     ]);
 

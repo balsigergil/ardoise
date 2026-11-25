@@ -1,7 +1,8 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 /**
  * M3 integration: Hocuspocus authorization, read-only enforcement and persistence
- * across two collab nodes sharing Valkey (ROADMAP M3).
+ * across two collab nodes sharing Valkey (ROADMAP M3), and server-written child page
+ * blocks (ADR 0011).
  */
 import { HocuspocusProvider, HocuspocusProviderWebsocket } from '@hocuspocus/provider';
 import {
@@ -215,6 +216,27 @@ describe('collaboration across two collab nodes', () => {
       () =>
         reader.events.closed.includes('not_found') || reader.events.denied.includes('not_found'),
     );
+  });
+
+  it('adds the child page block of a subpage created outside the editor (ADR 0011)', async () => {
+    const parent = await createPage('Parent');
+    // The editor is on node B; the job runs on node A (role=all) and reaches B over Valkey.
+    const editor = connect(urlB, admin, collabDocumentName(workspaceId, parent));
+    await until(() => editor.provider.isSynced);
+    write(editor.document, 'intro');
+    const child = newId();
+    const result = await admin.mutate(workspaceId, 'page.create', {
+      id: child,
+      parent: { kind: 'page', id: parent },
+      position: positionBetween(null, null),
+      title: 'From the sidebar',
+    });
+    expect(result.status).toBe('applied');
+    await until(() => text(editor.document).includes(child));
+    expect(text(editor.document).indexOf('intro')).toBeLessThan(
+      text(editor.document).indexOf(child),
+    );
+    expect(text(editor.document).split(child)).toHaveLength(2);
   });
 
   it('rejects the reserved plugin: prefix', async () => {

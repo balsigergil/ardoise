@@ -95,11 +95,14 @@ reference for the clean-room implementation (see `CLAUDE.md` §1.1). Scope marke
   restorer's private pages, if the parent no longer exists) or permanently deleted. Pages are purged automatically after the retention period.
 - **Recents**: per user, the pages visited most recently.
 - **Child pages in content**: creating a page from the `/` menu inserts a child page
-  block where the cursor is. The page view shows nothing else below its content: an
-  empty page stays blank, and subpages show only as child page blocks (and in the
-  sidebar). Deleting a child page block from its block menu moves the page to the trash;
-  removing it while editing text keeps the page (it stays in the sidebar). A child page block whose page
-  moved or is in the trash says so. Duplicating a page copies its content and its
+  block where the cursor is. A page created from the sidebar, or moved or restored
+  into a page, gets a child page block at the end of that page's content, and a page
+  moved out loses its block in the old parent. A duplicated page's block goes right
+  after its source's. The page view shows nothing else below its content: an empty
+  page stays blank, and subpages show as child page blocks (and in the sidebar).
+  Deleting a child page block from its block menu moves the page to the trash; removing
+  it while editing text keeps the page (it stays in the sidebar). A child page block
+  whose page moved or is in the trash says so. Duplicating a page copies its content and its
   subpages' content; a duplicated child page block becomes a link to the same page.
 - **Backlinks**: links and mentions between pages are tracked (`page_links`), but the
   page view shows no backlinks panel.

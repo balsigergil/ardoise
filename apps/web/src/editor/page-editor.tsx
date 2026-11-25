@@ -174,7 +174,7 @@ function PageEditorBody({
     const schema = editor.state.schema;
     switch (action) {
       case 'createPage': {
-        const id = actions.create({ kind: 'page', id: page.id });
+        const id = actions.create({ kind: 'page', id: page.id }, { inlineBlock: true });
         if (id)
           insertBlocksAfter([schema.nodes['childPage']!.create({ blockId: newId(), pageId: id })])(
             editor.state,

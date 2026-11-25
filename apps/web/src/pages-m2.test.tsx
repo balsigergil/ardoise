@@ -119,6 +119,17 @@ describe('sidebar tree', () => {
     expect(await screen.findAllByText('Untitled')).not.toHaveLength(0);
   });
 
+  it('creates a subpage from the sidebar and lets the server add its block', async () => {
+    const api = mockApi(workspaceApi());
+    await renderApp(`/w/${WS}`);
+    await screen.findByText('Roadmap');
+    await userEvent.click(screen.getByRole('button', { name: 'Add a subpage to Roadmap' }));
+    await waitFor(() => expect(pushed(api).map((m) => m.name)).toContain('page.create'));
+    const args = pushed(api)[0]!.args as { parent: unknown; appendBlock?: boolean };
+    expect(args.parent).toMatchObject({ kind: 'page' });
+    expect(args.appendBlock).not.toBe(false);
+  });
+
   it('adds a page to favorites from its menu', async () => {
     const api = mockApi(workspaceApi());
     await renderApp(`/w/${WS}`);

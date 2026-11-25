@@ -11,6 +11,17 @@ export interface JobPayloads {
     newId: string;
     actorId: string;
   };
+  /**
+   * Adds or removes the child page block of a page in its old and new parent pages'
+   * content (ADR 0011); `afterPageId` places a new block after another page's block.
+   */
+  'page.childBlock': {
+    workspaceId: string;
+    pageId: string;
+    from?: string;
+    to?: string;
+    afterPageId?: string;
+  };
   /** Daily: purges trash roots past the retention period. */
   'trash.purgeExpired': Record<string, never>;
   /** Daily: purges change-log entries past the horizon. */

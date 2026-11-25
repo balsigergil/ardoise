@@ -58,6 +58,11 @@ export const mutationArgs = {
     position: positionSchema,
     title: pageTitleSchema.default(''),
     icon: pageIconSchema.default(null),
+    /**
+     * Under a page, the server appends a child page block to the parent's content
+     * (ADR 0011). The editor passes false: it inserts the block at the cursor itself.
+     */
+    appendBlock: z.boolean().default(true),
   }),
   'page.update': pagePatch.extend({ id }).refine((v) => Object.keys(v).length > 1, {
     message: 'nothing to update',

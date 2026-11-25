@@ -34,7 +34,8 @@ collab auth and revocation, files, search, bookmarks, public page content).
   repaired by an `appendTransaction` when a paste or split duplicates one.
 - **Undo** uses the `y-prosemirror` undo manager (per user, own changes only).
 - **Child pages**: creating a page from the slash menu creates it with `page.create` and
-  inserts a `childPage` block. Pages created from the sidebar get no block; the page view
+  inserts a `childPage` block. Pages created from the sidebar get no block (after M3,
+  ADR 0011: the server adds one, also on moves and restores); the page view
   listed the subpages that no `childPage` block references, below the editor (removed
   after M3: the page view shows only the content). Deleting a
   `childPage` block from the block menu also trashes the page; removing it by editing

@@ -266,6 +266,10 @@ Conventions:
 - **Persistence**: `onLoadDocument` reads `page_documents`. `onStoreDocument` writes it
   and enqueues a `projection` job (debounced).
 - **Multi-node**: `@hocuspocus/extension-redis` pointed at Valkey, so any collab node can serve any document.
+- **Server-side edits** (ADR 0011): the worker writes child page blocks (a page created,
+  moved, restored or duplicated under a page) through `openDirectConnection` on a
+  Hocuspocus instance: the collab one with `role=all`, a headless one on Valkey with
+  `role=worker`. Browsers remain the only writers of any other content.
 - **Permission changes**: when access to a page is revoked, the server closes the
   affected connections (pub/sub event). On reconnect, auth fails and the client drops
   its local copy of that document (see §8.5).

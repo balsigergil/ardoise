@@ -16,6 +16,7 @@ const DAY_MS = 24 * 60 * 60 * 1000;
 
 /** Services behind the content jobs (M3). */
 export interface JobServices {
+  childBlocks?: { sync(payload: JobPayloads['page.childBlock']): Promise<void> };
   projection?: { projectDocument(payload: JobPayloads['projection.document']): Promise<void> };
   files?: {
     thumbnail(payload: JobPayloads['file.thumbnail']): Promise<void>;
@@ -39,6 +40,8 @@ export class JobProcessors {
         return this.moveSubtree(data as JobPayloads['page.moveSubtree']);
       case 'page.duplicateSubtree':
         return this.duplicateSubtree(data as JobPayloads['page.duplicateSubtree']);
+      case 'page.childBlock':
+        return this.services.childBlocks?.sync(data as JobPayloads['page.childBlock']);
       case 'trash.purgeExpired':
         await this.purgeExpiredTrash();
         return;

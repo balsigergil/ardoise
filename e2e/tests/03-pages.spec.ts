@@ -42,11 +42,19 @@ test.describe.serial('pages: create, nest, move, share live', () => {
     await owner.goto(planUrl);
     await addSubpage(owner, 'Project plan', 'Budget');
     await owner.goto(planUrl);
+    // Subpages created from the sidebar show as child page blocks (ADR 0011).
+    const childBlocks = owner.locator('.ardoise-page-link');
+    await expect(childBlocks).toHaveCount(2);
+    await expect(childBlocks.nth(0)).toContainText('Milestones');
+    await expect(childBlocks.nth(1)).toContainText('Budget');
 
     // Adding a subpage from the sidebar expanded "Project plan": drag "Budget" into "Milestones".
     await expect(row(owner, 'Milestones')).toBeVisible();
     await expect(row(owner, 'Budget')).toBeVisible();
     await row(owner, 'Budget').dragTo(row(owner, 'Milestones'));
+    // Its block leaves "Project plan".
+    await expect(childBlocks).toHaveCount(1);
+    await expect(childBlocks.first()).toContainText('Milestones');
     // Dropping inside a page expands it.
     await expect(row(owner, 'Milestones').getByRole('button', { name: 'Collapse' })).toBeVisible();
     await expect(row(owner, 'Budget')).toBeVisible();
