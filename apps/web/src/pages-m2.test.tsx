@@ -106,6 +106,18 @@ describe('sidebar tree', () => {
       expect(screen.getByTestId(`sidebar-section-${section}`)).toBeTruthy();
   });
 
+  it('shows the page icon and the expand chevron in a single slot', async () => {
+    mockApi(workspaceApi());
+    await renderApp(`/w/${WS}`);
+    const tree = await screen.findByTestId('sidebar-tree');
+    const row = (await within(tree).findByText('Roadmap')).closest('[data-testid="tree-row"]')!;
+    const toggle = within(row as HTMLElement).getByTestId('tree-toggle');
+    // The icon shows by default; the chevron is hidden until the slot is hovered.
+    expect(toggle.querySelectorAll('svg')).toHaveLength(2);
+    expect(toggle.querySelector('svg.hidden')).not.toBeNull();
+    expect(row.querySelector('a svg')).toBeNull();
+  });
+
   it('creates a page in a teamspace through a mutation, optimistically', async () => {
     const api = mockApi(workspaceApi());
     await renderApp(`/w/${WS}`);

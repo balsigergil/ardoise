@@ -340,28 +340,39 @@ export function SidebarTree({ workspaceId }: { workspaceId: string }) {
       >
         {over === 'before' && <span className="absolute inset-x-1 top-0 h-0.5 bg-sidebar-ring" />}
         {over === 'after' && <span className="absolute inset-x-1 bottom-0 h-0.5 bg-sidebar-ring" />}
-        <button
-          type="button"
-          className={cn(
-            'flex size-5 shrink-0 items-center justify-center rounded hover:bg-sidebar-accent-foreground/10',
-            !row.expandable && 'invisible',
-          )}
-          aria-label={row.expanded ? t('pages.collapse') : t('pages.expand')}
-          aria-expanded={row.expandable ? row.expanded : undefined}
-          tabIndex={row.expandable ? 0 : -1}
-          onClick={() => toggle(row.scope, page.id)}
-        >
-          <ChevronRight
-            className={cn('size-3.5 transition-transform', row.expanded && 'rotate-90')}
-          />
-        </button>
+        {/* One slot for the icon and the expand chevron: hovering the icon swaps them. */}
+        {row.expandable ? (
+          <button
+            type="button"
+            className="group/toggle flex size-5 shrink-0 items-center justify-center rounded hover:bg-sidebar-accent-foreground/10"
+            aria-label={row.expanded ? t('pages.collapse') : t('pages.expand')}
+            aria-expanded={row.expanded}
+            data-testid="tree-toggle"
+            onClick={() => toggle(row.scope, page.id)}
+          >
+            <PageIcon
+              icon={page.icon}
+              className="group-hover/toggle:hidden group-focus-visible/toggle:hidden"
+            />
+            <ChevronRight
+              aria-hidden="true"
+              className={cn(
+                'hidden size-3.5 transition-transform group-hover/toggle:block group-focus-visible/toggle:block',
+                row.expanded && 'rotate-90',
+              )}
+            />
+          </button>
+        ) : (
+          <span className="flex size-5 shrink-0 items-center justify-center">
+            <PageIcon icon={page.icon} />
+          </span>
+        )}
         <Link
           to="/w/$workspaceId/p/$pageId"
           params={{ workspaceId, pageId: page.id }}
-          className="flex min-w-0 flex-1 items-center gap-2"
+          className="flex min-w-0 flex-1 items-center pl-1"
           draggable={false}
         >
-          <PageIcon icon={page.icon} />
           <span className={cn('truncate', !page.title.trim() && 'text-muted-foreground')}>
             {title}
           </span>
