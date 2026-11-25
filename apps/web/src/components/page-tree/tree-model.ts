@@ -36,6 +36,12 @@ export type TreeRow =
       scope: string;
     };
 
+/** Left padding (px) of a sidebar row at `depth`: each level shifts by a small step. */
+export const INDENT_STEP = 10;
+export function rowIndent(depth: number): number {
+  return 4 + depth * INDENT_STEP;
+}
+
 export const expansionKey = (scope: string, pageId: string) => `${scope}:${pageId}`;
 
 /** Rows for one parent's subtree, depth-first, following `expanded`. */

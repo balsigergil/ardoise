@@ -46,6 +46,7 @@ import {
   flattenChildren,
   flattenPages,
   parentsToLoad,
+  rowIndent,
   type DropZone,
   type TreeRow,
 } from './tree-model';
@@ -262,7 +263,7 @@ export function SidebarTree({ workspaceId }: { workspaceId: string }) {
         return (
           <div
             className="flex h-full items-center gap-2 text-xs text-muted-foreground"
-            style={{ paddingLeft: indent(row.depth) }}
+            style={{ paddingLeft: rowIndent(row.depth) }}
           >
             <Loader2 className="size-3 animate-spin" aria-hidden="true" />
             <span>{t('status.loading')}</span>
@@ -272,7 +273,7 @@ export function SidebarTree({ workspaceId }: { workspaceId: string }) {
         return (
           <p
             className="flex h-full items-center text-xs text-muted-foreground"
-            style={{ paddingLeft: indent(row.depth) }}
+            style={{ paddingLeft: rowIndent(row.depth) }}
           >
             {row.parent.kind === 'page' ? t('pages.noSubpages') : t('pages.noPages')}
           </p>
@@ -282,7 +283,7 @@ export function SidebarTree({ workspaceId }: { workspaceId: string }) {
           <button
             type="button"
             className="flex h-full items-center text-xs text-destructive underline"
-            style={{ paddingLeft: indent(row.depth) }}
+            style={{ paddingLeft: rowIndent(row.depth) }}
             onClick={() => retry(row.parent)}
           >
             {t('pages.loadFailed')}
@@ -293,7 +294,7 @@ export function SidebarTree({ workspaceId }: { workspaceId: string }) {
           <button
             type="button"
             className="flex h-full items-center text-xs text-muted-foreground hover:underline"
-            style={{ paddingLeft: indent(row.depth) }}
+            style={{ paddingLeft: rowIndent(row.depth) }}
             onClick={() => more(row.parent)}
           >
             {t('pages.loadMore')}
@@ -317,7 +318,7 @@ export function SidebarTree({ workspaceId }: { workspaceId: string }) {
           over === 'inside' && 'ring-2 ring-sidebar-ring',
           drag?.pageId === page.id && 'opacity-50',
         )}
-        style={{ paddingLeft: indent(row.depth) }}
+        style={{ paddingLeft: rowIndent(row.depth) }}
         draggable
         onDragStart={(e) => onDragStart(e, page)}
         onDragEnd={() => setDrag(null)}
@@ -457,8 +458,4 @@ export function SidebarTree({ workspaceId }: { workspaceId: string }) {
       {moving && <MovePageDialog page={moving} onClose={() => setMoving(null)} />}
     </>
   );
-}
-
-function indent(depth: number): number {
-  return 4 + depth * 14;
 }

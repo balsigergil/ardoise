@@ -17,6 +17,7 @@ import {
   flattenPages,
   isSelfOrAncestor,
   parentsToLoad,
+  rowIndent,
   type LoadState,
   type TreeSource,
 } from './tree-model';
@@ -208,5 +209,13 @@ describe('drops', () => {
     const { s, a, c } = fixture();
     const drop = computeRootDrop(s, a.id, root);
     expect(drop.position > c.position).toBe(true);
+  });
+});
+
+describe('rowIndent', () => {
+  it('indents each level by a small, constant step', () => {
+    expect(rowIndent(0)).toBe(4);
+    expect(rowIndent(1) - rowIndent(0)).toBe(10);
+    expect(rowIndent(3) - rowIndent(2)).toBe(10);
   });
 });
