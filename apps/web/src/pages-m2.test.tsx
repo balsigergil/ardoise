@@ -11,12 +11,14 @@ import { me, mockApi, renderApp, signedIn, workspace, type MockApi } from '@/tes
 const editorStub = vi.hoisted(() => ({
   enabled: false,
   enterFromTitle: vi.fn(() => true),
+  onLeaveToTitle: undefined as ((text: string) => void) | undefined,
 }));
 vi.mock('@/editor/page-editor', async (importOriginal) => {
   const real = await importOriginal<typeof PageEditorModule>();
   function PageEditor(props: PageEditorModule.PageEditorProps) {
     if (!editorStub.enabled) return <real.PageEditor {...props} />;
     if (props.handleRef) props.handleRef.current = { enterFromTitle: editorStub.enterFromTitle };
+    editorStub.onLeaveToTitle = props.onLeaveToTitle;
     return <div data-testid="editor-stub" />;
   }
   return { ...real, PageEditor };
@@ -223,6 +225,27 @@ describe('page view', () => {
       await waitFor(() =>
         expect(pushed(api).find((m) => m.name === 'page.update')?.args).toMatchObject({
           title: 'Q3 goals!',
+        }),
+      );
+    } finally {
+      editorStub.enabled = false;
+    }
+  });
+
+  it('appends the first paragraph to the title on Backspace at its start', async () => {
+    editorStub.enabled = true;
+    try {
+      const api = mockApi(workspaceApi(detail()));
+      await renderApp(`/w/${WS}/p/${CHILD}`);
+      await screen.findByTestId('editor-stub');
+      const title = await screen.findByRole('textbox', { name: 'Page title' });
+      act(() => editorStub.onLeaveToTitle?.(' review'));
+      expect(title).toHaveProperty('value', 'Q3 goals review');
+      expect(document.activeElement).toBe(title);
+      expect(title).toHaveProperty('selectionStart', 'Q3 goals'.length);
+      await waitFor(() =>
+        expect(pushed(api).find((m) => m.name === 'page.update')?.args).toMatchObject({
+          title: 'Q3 goals review',
         }),
       );
     } finally {

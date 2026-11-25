@@ -9,6 +9,7 @@ import {
   indentBlocks,
   joinBackward,
   joinForward,
+  joinIntoTitle,
   moveBlocks,
   moveBlocksTo,
   outdentBlocks,
@@ -410,5 +411,54 @@ describe('enterFromTitle', () => {
     expect(run('paragraph \nparagraph b', enterFromTitle)).toBe(
       'paragraph |\nparagraph\nparagraph b',
     );
+  });
+});
+
+describe('joinIntoTitle', () => {
+  function leave(source: string) {
+    const left: string[] = [];
+    const state = stateOf(source);
+    let next = state;
+    const handled = joinIntoTitle((text) => left.push(text))(
+      state,
+      (tr) => (next = state.apply(tr)),
+    );
+    next.doc.check();
+    return { handled, left, doc: sketch(next) };
+  }
+
+  it('moves the first paragraph text to the title and removes the block', () => {
+    expect(leave('paragraph |hello\nparagraph world')).toEqual({
+      handled: true,
+      left: ['hello'],
+      doc: 'paragraph |world',
+    });
+  });
+
+  it('removes an empty first paragraph', () => {
+    expect(leave('paragraph |\nheading:level=1 Intro')).toMatchObject({
+      left: [''],
+      doc: 'heading |Intro',
+    });
+  });
+
+  it('keeps the single paragraph of a page, emptied', () => {
+    expect(leave('paragraph |only')).toMatchObject({ left: ['only'], doc: 'paragraph |' });
+    expect(leave('paragraph |')).toMatchObject({ left: [''], doc: 'paragraph |' });
+  });
+
+  it('lets the children take the place of the paragraph', () => {
+    expect(leave('paragraph |parent\n  paragraph child')).toMatchObject({
+      left: ['parent'],
+      doc: 'paragraph |child',
+    });
+  });
+
+  it('only applies at the very start of the first paragraph', () => {
+    expect(leave('paragraph he|llo').handled).toBe(false);
+    expect(leave('paragraph a\nparagraph |b').handled).toBe(false);
+    expect(leave('heading:level=1 |Intro').handled).toBe(false);
+    expect(leave('paragraph |he|llo').handled).toBe(false);
+    expect(leave('paragraph a\n  paragraph |child').handled).toBe(false);
   });
 });

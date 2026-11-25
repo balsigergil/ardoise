@@ -9,6 +9,7 @@ import {
   enterFromTitle,
   findBlock,
   insertBlocksAfter,
+  joinIntoTitle,
   normalize,
   type BlockRef,
   type SlashItem,
@@ -27,7 +28,7 @@ import { useNavigate } from '@tanstack/react-router';
 import type { Editor } from '@tiptap/core';
 import { EditorContent, useEditor } from '@tiptap/react';
 import { AlertTriangle, CloudOff, Eye, Lock } from 'lucide-react';
-import { useEffect, useMemo, useState, useSyncExternalStore, type RefObject } from 'react';
+import { useEffect, useMemo, useRef, useState, useSyncExternalStore, type RefObject } from 'react';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 import { EmojiPicker } from '@/components/emoji-picker';
@@ -83,6 +84,11 @@ export interface PageEditorProps {
   me: { id: string; name: string };
   /** Filled while the editor is mounted, so the page title can hand over the cursor. */
   handleRef?: RefObject<PageEditorHandle | null>;
+  /**
+   * Backspace at the start of the first paragraph: its text goes to the end of the
+   * title, which takes the focus. Omitted when the title cannot be edited.
+   */
+  onLeaveToTitle?: (text: string) => void;
 }
 
 export interface PageEditorHandle {
@@ -114,6 +120,7 @@ function PageEditorBody({
   locked,
   showLockBanner = true,
   handleRef,
+  onLeaveToTitle,
   user,
   session,
 }: PageEditorProps & { user: CollabUser; session: DocSession }) {
@@ -281,6 +288,11 @@ function PageEditorBody({
     return [...people, ...pages, ...dateItems(query, (k) => t(k as never)).slice(0, 3)];
   };
 
+  const leaveToTitle = useRef(onLeaveToTitle);
+  useEffect(() => {
+    leaveToTitle.current = onLeaveToTitle;
+  });
+
   const editor = useEditor(
     {
       extensions: createExtensions({
@@ -304,6 +316,13 @@ function PageEditorBody({
       }),
       editable: false,
       editorProps: {
+        // Runs before the block keymap, which would otherwise keep the cursor in place.
+        handleKeyDown: (view, event) => {
+          const leave = leaveToTitle.current;
+          if (!leave || event.key !== 'Backspace') return false;
+          if (event.shiftKey || event.altKey || event.ctrlKey || event.metaKey) return false;
+          return joinIntoTitle(leave)(view.state, view.dispatch);
+        },
         attributes: {
           class: 'ardoise-editor',
           'aria-label': t('editor.placeholder'),

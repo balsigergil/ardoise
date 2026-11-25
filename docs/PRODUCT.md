@@ -86,6 +86,9 @@ reference for the clean-room implementation (see `CLAUDE.md` §1.1). Scope marke
   cover (uploaded image or solid/gradient color), content blocks and child pages.
 - Enter in the title moves the cursor to the content: into the first paragraph of a
   blank page, or into a new empty paragraph inserted above the existing blocks.
+- Backspace at the very start of the first paragraph moves its text to the end of the
+  title, with the cursor at the join point; the paragraph is removed (its nested blocks
+  take its place), except on a blank page where it stays as the only empty paragraph.
 - Page options:
   - page width (normal/full) and font style (default/serif/mono);
   - lock (prevents content and structure edits until unlocked; requires full access to toggle);

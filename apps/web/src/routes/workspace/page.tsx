@@ -29,7 +29,15 @@ import {
   Trash2,
   Unlock,
 } from 'lucide-react';
-import { lazy, Suspense, useEffect, useRef, useState } from 'react';
+import {
+  lazy,
+  Suspense,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+  type RefObject,
+} from 'react';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 import { EmojiPicker } from '@/components/emoji-picker';
@@ -66,15 +74,22 @@ import { useMutate, useSyncSelector } from '@/sync/hooks';
 
 const FONT_CLASSES = { default: '', serif: 'font-serif', mono: 'font-mono' } as const;
 
+interface TitleHandle {
+  /** Appends `text` to the title and puts the cursor at the join point. */
+  appendAndFocus(text: string): void;
+}
+
 function TitleInput({
   page,
   disabled,
   onEnter,
+  handleRef,
 }: {
   page: PageDto;
   disabled: boolean;
   /** Moves the cursor into the content; false when it cannot (e.g. still loading). */
   onEnter: () => boolean;
+  handleRef: RefObject<TitleHandle | null>;
 }) {
   const { t } = useTranslation();
   const { store } = useSyncContext();
@@ -88,8 +103,30 @@ function TitleInput({
   const commit = (value: string) => {
     if (value !== page.title) store.mutate('page.update', { id: page.id, title: value });
   };
+  const input = useRef<HTMLTextAreaElement>(null);
+  const caret = useRef<number | null>(null);
+  useEffect(() => {
+    handleRef.current = {
+      appendAndFocus: (text) => {
+        caret.current = draft.length;
+        const value = draft + text.replace(/\n/g, '');
+        clearTimeout(timer.current);
+        setDraft(value);
+        commit(value);
+      },
+    };
+  });
+  // Place the cursor once the appended text is rendered.
+  useLayoutEffect(() => {
+    const at = caret.current;
+    if (at === null || !input.current) return;
+    caret.current = null;
+    input.current.focus();
+    input.current.setSelectionRange(at, at);
+  });
   return (
     <textarea
+      ref={input}
       aria-label={t('pages.title')}
       className="w-full resize-none overflow-hidden bg-transparent text-4xl font-bold leading-tight outline-none placeholder:text-muted-foreground/60 disabled:cursor-default"
       rows={1}
@@ -229,6 +266,7 @@ export function PageView({ workspaceId, pageId }: { workspaceId: string; pageId:
   const [sharing, setSharing] = useState(false);
   const [moving, setMoving] = useState(false);
   const editorRef = useRef<PageEditorHandle | null>(null);
+  const titleRef = useRef<TitleHandle | null>(null);
 
   useEffect(() => {
     if (!detail.data) return;
@@ -501,6 +539,7 @@ export function PageView({ workspaceId, pageId }: { workspaceId: string; pageId:
             page={page}
             disabled={!editable}
             onEnter={() => editorRef.current?.enterFromTitle() ?? false}
+            handleRef={titleRef}
           />
         </div>
         {!editable && canShare && page.isLocked && (
@@ -517,6 +556,9 @@ export function PageView({ workspaceId, pageId }: { workspaceId: string; pageId:
               showLockBanner={!canShare}
               me={me}
               handleRef={editorRef}
+              onLeaveToTitle={
+                editable ? (text) => titleRef.current?.appendAndFocus(text) : undefined
+              }
             />
           </Suspense>
         </div>

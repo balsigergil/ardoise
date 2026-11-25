@@ -829,3 +829,41 @@ export const enterFromTitle: Command = (state, dispatch) => {
   dispatch(tr.scrollIntoView());
   return true;
 };
+
+/** Plain text of a block's text part, as the page title would hold it. */
+function plainText(text: PMNode): string {
+  return text.textBetween(0, text.content.size, undefined, (leaf) =>
+    leaf.type.name === 'hardBreak' ? ' ' : (leaf.type.spec.leafText?.(leaf) ?? ''),
+  );
+}
+
+/**
+ * Backspace at the very start of the first paragraph of the page: the paragraph leaves
+ * the content and its text goes to the end of the page title. `onLeave` receives that
+ * plain text (empty for an empty paragraph) and moves the focus to the title. Its
+ * children take its place; a blank page keeps its single empty paragraph.
+ */
+export function joinIntoTitle(onLeave: (text: string) => void): Command {
+  return (state, dispatch) => {
+    const found = cursorTextBlock(state);
+    if (!found || found.$cursor.parentOffset !== 0) return false;
+    const { block } = found;
+    if (block.pos !== 0 || block.node.type.name !== 'paragraph') return false;
+    if (!dispatch) return true;
+    const text = plainText(block.node.firstChild!);
+    const kids = childrenOf(block.node);
+    const end = block.pos + block.node.nodeSize;
+    if (kids) {
+      const tr = state.tr.replaceWith(block.pos, end, kids.content);
+      dispatch(tr.setSelection(Selection.atStart(tr.doc)));
+    } else if (state.doc.childCount > 1) {
+      const tr = state.tr.delete(block.pos, end);
+      dispatch(tr.setSelection(Selection.atStart(tr.doc)));
+    } else if (text !== '') {
+      // The only block: keep it, emptied, so the page still has a paragraph.
+      dispatch(state.tr.delete(2, 2 + block.node.firstChild!.content.size));
+    }
+    onLeave(text);
+    return true;
+  };
+}
