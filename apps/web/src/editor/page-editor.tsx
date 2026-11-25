@@ -31,6 +31,7 @@ import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 import { EmojiPicker } from '@/components/emoji-picker';
 import { usePageActions } from '@/components/page-tree/page-actions';
+import { useDelayedFlag } from '@/hooks/use-delayed-flag';
 import { api, ApiError } from '@/lib/api';
 import { useSyncStore } from '@/sync/hooks';
 import { openDocument, sessionHolder, type DocSession } from './collab';
@@ -48,6 +49,17 @@ import { PagePicker } from './ui/page-picker';
 import { MentionPopup, SlashPopup } from './ui/popups';
 import { Presence } from './ui/presence';
 import { TableToolbar } from './ui/table-toolbar';
+
+/** Connections usually take a fraction of a second: only say so when it drags on. */
+export const CONNECTING_NOTICE_DELAY_MS = 3000;
+
+function ConnectingNotice({ active }: { active: boolean }) {
+  const { t } = useTranslation();
+  const show = useDelayedFlag(active, CONNECTING_NOTICE_DELAY_MS);
+  return show ? (
+    <p className="text-sm text-muted-foreground">{t('editor.status.connecting')}</p>
+  ) : null;
+}
 
 /** The page's collab session, open while mounted; null until the first commit. */
 function useSession(workspaceId: string, pageId: string, user: CollabUser): DocSession | null {
@@ -71,7 +83,6 @@ export interface PageEditorProps {
 }
 
 export function PageEditor(props: PageEditorProps) {
-  const { t } = useTranslation();
   const { me } = props;
   const user = useMemo<CollabUser>(
     () => ({ id: me.id, name: me.name, color: presenceColor(me.id) }),
@@ -81,7 +92,7 @@ export function PageEditor(props: PageEditorProps) {
   if (!session)
     return (
       <div className="ardoise-editor-frame relative" data-status="connecting">
-        <p className="text-sm text-muted-foreground">{t('editor.status.connecting')}</p>
+        <ConnectingNotice active />
       </div>
     );
   // One editor per session: a new session (other page, remount) starts from scratch.
@@ -390,9 +401,9 @@ function PageEditorBody({
             {banner.text}
           </p>
         )}
-        {session.status === 'connecting' && !editor?.state.doc.childCount && (
-          <p className="text-sm text-muted-foreground">{t('editor.status.connecting')}</p>
-        )}
+        <ConnectingNotice
+          active={session.status === 'connecting' && !editor?.state.doc.childCount}
+        />
         <EditorContent editor={editor} />
         {editor && canWrite && (
           <>
