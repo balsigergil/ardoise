@@ -154,28 +154,49 @@ export interface SessionHolder {
 }
 
 /**
- * Opens the session on subscribe and destroys it on unsubscribe, so nothing connects
- * during render and a remount (React StrictMode mounts, unmounts and mounts again)
- * gets a live session instead of a destroyed one.
+ * Opens the session on subscribe and destroys it once nobody is subscribed any more, so
+ * nothing connects during render.
+ *
+ * The destroy is deferred (`schedule`) and cancelled by a new subscribe: StrictMode
+ * unmounts and mounts again right away, and destroying then reopening the document on
+ * the shared socket races the server. The close of the first provider is queued behind
+ * its pending authentication, the second provider's authentication is queued with it,
+ * so the server closes the document after the second provider is synced: the editor
+ * shows "offline" and drops edits until the socket times out (about 30 s).
  */
-export function sessionHolder(open: () => DocSession): SessionHolder {
+export function sessionHolder(
+  open: () => DocSession,
+  schedule: (task: () => void) => void = (task) => void setTimeout(task, 0),
+): SessionHolder {
   let session: DocSession | null = null;
   let generation = 0;
+  let subscribers = 0;
   return {
     get session() {
       return session;
     },
     subscribe(listener) {
-      const opened = open();
-      session = opened;
-      generation += 1;
+      subscribers += 1;
+      if (!session) {
+        session = open();
+        generation += 1;
+      }
+      const opened = session;
       const off = opened.subscribe(listener);
       listener();
+      let active = true;
       return () => {
+        if (!active) return;
+        active = false;
         off();
-        opened.destroy();
-        if (session === opened) session = null;
-        generation += 1;
+        subscribers -= 1;
+        if (subscribers > 0) return;
+        schedule(() => {
+          if (subscribers > 0 || session !== opened) return;
+          opened.destroy();
+          session = null;
+          generation += 1;
+        });
       };
     },
     snapshot: () =>
