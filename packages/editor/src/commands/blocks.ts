@@ -811,3 +811,21 @@ export function insertBlocksAfter(nodes: PMNode[], replaceEmpty = true): Command
     return true;
   };
 }
+
+/**
+ * Enter in the page title: moves the cursor to the start of the content. A blank page
+ * (no block, or a single empty paragraph) gets the cursor in that first paragraph;
+ * otherwise a new empty paragraph is inserted above every block, which all shift down.
+ */
+export const enterFromTitle: Command = (state, dispatch) => {
+  if (!dispatch) return true;
+  const { doc } = state;
+  const first = doc.firstChild;
+  const blank =
+    doc.childCount === 1 && first?.type.name === 'paragraph' && first.content.size === 2;
+  const tr = state.tr;
+  if (!blank) tr.insert(0, createTextBlock(state.schema, 'paragraph'));
+  tr.setSelection(TextSelection.create(tr.doc, 2));
+  dispatch(tr.scrollIntoView());
+  return true;
+};

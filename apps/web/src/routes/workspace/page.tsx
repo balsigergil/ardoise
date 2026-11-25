@@ -37,6 +37,7 @@ import { MovePageDialog } from '@/components/page-tree/move-dialog';
 import { usePageActions } from '@/components/page-tree/page-actions';
 import { ShareDialog } from '@/components/share-dialog';
 import { InlineSidebarTrigger } from '@/components/sidebar-toggle';
+import type { PageEditorHandle } from '@/editor/page-editor';
 const PageEditor = lazy(() =>
   import('@/editor/page-editor').then((m) => ({ default: m.PageEditor })),
 );
@@ -65,7 +66,16 @@ import { useMutate, useSyncSelector } from '@/sync/hooks';
 
 const FONT_CLASSES = { default: '', serif: 'font-serif', mono: 'font-mono' } as const;
 
-function TitleInput({ page, disabled }: { page: PageDto; disabled: boolean }) {
+function TitleInput({
+  page,
+  disabled,
+  onEnter,
+}: {
+  page: PageDto;
+  disabled: boolean;
+  /** Moves the cursor into the content; false when it cannot (e.g. still loading). */
+  onEnter: () => boolean;
+}) {
   const { t } = useTranslation();
   const { store } = useSyncContext();
   const [draft, setDraft] = useState(page.title);
@@ -99,10 +109,10 @@ function TitleInput({ page, disabled }: { page: PageDto; disabled: boolean }) {
         timer.current = setTimeout(() => commit(value), 400);
       }}
       onKeyDown={(e) => {
-        if (e.key === 'Enter') {
-          e.preventDefault();
-          e.currentTarget.blur();
-        }
+        if (e.key !== 'Enter' || e.nativeEvent.isComposing) return;
+        e.preventDefault();
+        // Focusing the content blurs the title, which commits it.
+        if (!onEnter()) e.currentTarget.blur();
       }}
     />
   );
@@ -218,6 +228,7 @@ export function PageView({ workspaceId, pageId }: { workspaceId: string; pageId:
   });
   const [sharing, setSharing] = useState(false);
   const [moving, setMoving] = useState(false);
+  const editorRef = useRef<PageEditorHandle | null>(null);
 
   useEffect(() => {
     if (!detail.data) return;
@@ -485,7 +496,12 @@ export function PageView({ workspaceId, pageId }: { workspaceId: string; pageId:
           </div>
         )}
         <div className="mt-2">
-          <TitleInput key={page.id} page={page} disabled={!editable} />
+          <TitleInput
+            key={page.id}
+            page={page}
+            disabled={!editable}
+            onEnter={() => editorRef.current?.enterFromTitle() ?? false}
+          />
         </div>
         {!editable && canShare && page.isLocked && (
           <p className="text-sm text-muted-foreground">{t('pages.lockedHint')}</p>
@@ -500,6 +516,7 @@ export function PageView({ workspaceId, pageId }: { workspaceId: string; pageId:
               locked={page.isLocked}
               showLockBanner={!canShare}
               me={me}
+              handleRef={editorRef}
             />
           </Suspense>
         </div>

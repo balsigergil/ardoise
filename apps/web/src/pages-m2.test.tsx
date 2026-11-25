@@ -3,8 +3,24 @@
 import type { PageDto, SharingDto, TeamspaceDto } from '@ardoise/shared';
 import { act, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
+import type * as PageEditorModule from '@/editor/page-editor';
 import { me, mockApi, renderApp, signedIn, workspace, type MockApi } from '@/test-utils';
+
+// Tests can swap the real editor for a stub that only exposes the title handover.
+const editorStub = vi.hoisted(() => ({
+  enabled: false,
+  enterFromTitle: vi.fn(() => true),
+}));
+vi.mock('@/editor/page-editor', async (importOriginal) => {
+  const real = await importOriginal<typeof PageEditorModule>();
+  function PageEditor(props: PageEditorModule.PageEditorProps) {
+    if (!editorStub.enabled) return <real.PageEditor {...props} />;
+    if (props.handleRef) props.handleRef.current = { enterFromTitle: editorStub.enterFromTitle };
+    return <div data-testid="editor-stub" />;
+  }
+  return { ...real, PageEditor };
+});
 
 const WS = workspace.id;
 const TS = '0190a000-0000-7000-8000-0000000000b1';
@@ -191,6 +207,27 @@ describe('page view', () => {
         title: 'Q4 goals',
       }),
     );
+  });
+
+  it('hands the cursor over to the content on Enter in the title', async () => {
+    editorStub.enabled = true;
+    try {
+      const api = mockApi(workspaceApi(detail()));
+      await renderApp(`/w/${WS}/p/${CHILD}`);
+      await screen.findByTestId('editor-stub');
+      const title = await screen.findByRole('textbox', { name: 'Page title' });
+      await userEvent.type(title, '!{Enter}');
+      expect(editorStub.enterFromTitle).toHaveBeenCalledTimes(1);
+      expect(title).toHaveProperty('value', 'Q3 goals!');
+      act(() => title.blur());
+      await waitFor(() =>
+        expect(pushed(api).find((m) => m.name === 'page.update')?.args).toMatchObject({
+          title: 'Q3 goals!',
+        }),
+      );
+    } finally {
+      editorStub.enabled = false;
+    }
   });
 
   it('is read-only for viewers and when locked', async () => {

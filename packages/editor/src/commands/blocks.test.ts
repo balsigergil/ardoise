@@ -1,10 +1,11 @@
 // SPDX-License-Identifier: AGPL-3.0-only
-import type { Command, EditorState } from '@tiptap/pm/state';
+import { EditorState, type Command } from '@tiptap/pm/state';
 import { describe, expect, it } from 'vitest';
 import { lines, sketch, stateOf } from '../__fixtures__/sketch.js';
 import {
   deleteBlocks,
   duplicateBlocks,
+  enterFromTitle,
   indentBlocks,
   joinBackward,
   joinForward,
@@ -385,5 +386,29 @@ describe('moveBlocksTo (drag and drop)', () => {
     const node = state.doc.firstChild!;
     expect(moveBlocksTo(0, node.nodeSize, posOf(state, 'k'), 'after')(state, () => {})).toBe(false);
     expect(moveBlocksTo(0, node.nodeSize, 0, 'after')(state, () => {})).toBe(false);
+  });
+});
+
+describe('enterFromTitle', () => {
+  it('puts the cursor in the first paragraph of a blank page', () => {
+    expect(run('paragraph ', enterFromTitle)).toBe('paragraph |');
+  });
+
+  it('creates the first paragraph of a page without blocks', () => {
+    const empty = EditorState.create({ schema: stateOf('paragraph a').schema });
+    expect(sketch(apply(empty, enterFromTitle))).toBe('paragraph |');
+  });
+
+  it('shifts every block down and focuses a new first paragraph', () => {
+    const state = stateOf('heading:level=1 Intro\nparagraph bo|dy');
+    const next = apply(state, enterFromTitle);
+    expect(sketch(next)).toBe('paragraph |\nheading Intro\nparagraph body');
+    expect(next.doc.firstChild!.attrs['blockId']).toBeTruthy();
+  });
+
+  it('shifts the blocks when the first paragraph is empty but others follow', () => {
+    expect(run('paragraph \nparagraph b', enterFromTitle)).toBe(
+      'paragraph |\nparagraph\nparagraph b',
+    );
   });
 });

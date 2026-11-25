@@ -6,6 +6,7 @@
  * locked page) and the page state given by the page view.
  */
 import {
+  enterFromTitle,
   findBlock,
   insertBlocksAfter,
   normalize,
@@ -26,7 +27,7 @@ import { useNavigate } from '@tanstack/react-router';
 import type { Editor } from '@tiptap/core';
 import { EditorContent, useEditor } from '@tiptap/react';
 import { AlertTriangle, CloudOff, Eye, Lock } from 'lucide-react';
-import { useEffect, useMemo, useState, useSyncExternalStore } from 'react';
+import { useEffect, useMemo, useState, useSyncExternalStore, type RefObject } from 'react';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 import { EmojiPicker } from '@/components/emoji-picker';
@@ -80,6 +81,13 @@ export interface PageEditorProps {
   /** False when the page view already explains the lock (people who can unlock). */
   showLockBanner?: boolean;
   me: { id: string; name: string };
+  /** Filled while the editor is mounted, so the page title can hand over the cursor. */
+  handleRef?: RefObject<PageEditorHandle | null>;
+}
+
+export interface PageEditorHandle {
+  /** Enter in the title: cursor to the start of the content. False when not writable. */
+  enterFromTitle(): boolean;
 }
 
 export function PageEditor(props: PageEditorProps) {
@@ -105,6 +113,7 @@ function PageEditorBody({
   editable,
   locked,
   showLockBanner = true,
+  handleRef,
   user,
   session,
 }: PageEditorProps & { user: CollabUser; session: DocSession }) {
@@ -312,6 +321,21 @@ function PageEditorBody({
     editor.setEditable(canWrite);
     editor.view.dispatch(editor.state.tr.setMeta('editableChanged', true));
   }, [editor, canWrite]);
+
+  useEffect(() => {
+    if (!handleRef) return;
+    handleRef.current = {
+      enterFromTitle: () => {
+        if (!editor || editor.isDestroyed || !editor.isEditable) return false;
+        enterFromTitle(editor.state, editor.view.dispatch);
+        editor.view.focus();
+        return true;
+      },
+    };
+    return () => {
+      handleRef.current = null;
+    };
+  }, [editor, handleRef]);
 
   // Scroll to `#block-<id>` once the content is there.
   useEffect(() => {

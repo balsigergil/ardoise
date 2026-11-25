@@ -84,6 +84,8 @@ reference for the clean-room implementation (see `CLAUDE.md` §1.1). Scope marke
 
 - Every page has a title, an optional icon (emoji or uploaded image), an optional
   cover (uploaded image or solid/gradient color), content blocks and child pages.
+- Enter in the title moves the cursor to the content: into the first paragraph of a
+  blank page, or into a new empty paragraph inserted above the existing blocks.
 - Page options:
   - page width (normal/full) and font style (default/serif/mono);
   - lock (prevents content and structure edits until unlocked; requires full access to toggle);
