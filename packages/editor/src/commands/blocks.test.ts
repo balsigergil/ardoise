@@ -442,6 +442,16 @@ describe('joinIntoTitle', () => {
     });
   });
 
+  it('removes an empty first block of any type', () => {
+    expect(leave('heading:level=1 |\nparagraph body')).toMatchObject({
+      handled: true,
+      left: [''],
+      doc: 'paragraph |body',
+    });
+    expect(leave('todo |\nparagraph body')).toMatchObject({ doc: 'paragraph |body' });
+    expect(leave('bulletedItem |')).toMatchObject({ left: [''], doc: 'paragraph |' });
+  });
+
   it('keeps the single paragraph of a page, emptied', () => {
     expect(leave('paragraph |only')).toMatchObject({ left: ['only'], doc: 'paragraph |' });
     expect(leave('paragraph |')).toMatchObject({ left: [''], doc: 'paragraph |' });
@@ -458,6 +468,7 @@ describe('joinIntoTitle', () => {
     expect(leave('paragraph he|llo').handled).toBe(false);
     expect(leave('paragraph a\nparagraph |b').handled).toBe(false);
     expect(leave('heading:level=1 |Intro').handled).toBe(false);
+    expect(leave('todo |\n  paragraph child').handled).toBe(false);
     expect(leave('paragraph |he|llo').handled).toBe(false);
     expect(leave('paragraph a\n  paragraph |child').handled).toBe(false);
   });

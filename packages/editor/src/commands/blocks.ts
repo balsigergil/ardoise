@@ -838,31 +838,30 @@ function plainText(text: PMNode): string {
 }
 
 /**
- * Backspace at the very start of the first paragraph of the page: the paragraph leaves
- * the content and its text goes to the end of the page title. `onLeave` receives that
- * plain text (empty for an empty paragraph) and moves the focus to the title. Its
- * children take its place; a blank page keeps its single empty paragraph.
+ * Backspace at the very start of the first block of the page: the block leaves the
+ * content and `onLeave` moves the focus to the end of the page title. A paragraph gives
+ * its plain text to the title (its children take its place); an empty block of any type
+ * without children is simply removed. The page keeps one empty paragraph when it would
+ * otherwise have no block left, so its content area stays clickable.
  */
 export function joinIntoTitle(onLeave: (text: string) => void): Command {
   return (state, dispatch) => {
     const found = cursorTextBlock(state);
     if (!found || found.$cursor.parentOffset !== 0) return false;
     const { block } = found;
-    if (block.pos !== 0 || block.node.type.name !== 'paragraph') return false;
+    if (block.pos !== 0) return false;
+    const kids = childrenOf(block.node);
+    const empty = block.node.firstChild!.content.size === 0 && !kids;
+    if (!empty && block.node.type.name !== 'paragraph') return false;
     if (!dispatch) return true;
     const text = plainText(block.node.firstChild!);
-    const kids = childrenOf(block.node);
     const end = block.pos + block.node.nodeSize;
-    if (kids) {
-      const tr = state.tr.replaceWith(block.pos, end, kids.content);
-      dispatch(tr.setSelection(Selection.atStart(tr.doc)));
-    } else if (state.doc.childCount > 1) {
-      const tr = state.tr.delete(block.pos, end);
-      dispatch(tr.setSelection(Selection.atStart(tr.doc)));
-    } else if (text !== '') {
-      // The only block: keep it, emptied, so the page still has a paragraph.
-      dispatch(state.tr.delete(2, 2 + block.node.firstChild!.content.size));
-    }
+    const tr = state.tr;
+    if (kids) tr.replaceWith(block.pos, end, kids.content);
+    else if (state.doc.childCount > 1) tr.delete(block.pos, end);
+    // The only block: an empty paragraph stays in its place.
+    else tr.replaceWith(block.pos, end, createTextBlock(state.schema, 'paragraph'));
+    dispatch(tr.setSelection(Selection.atStart(tr.doc)));
     onLeave(text);
     return true;
   };
