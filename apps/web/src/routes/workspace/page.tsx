@@ -29,15 +29,8 @@ import {
   Trash2,
   Unlock,
 } from 'lucide-react';
-import {
-  lazy,
-  Suspense,
-  useEffect,
-  useLayoutEffect,
-  useRef,
-  useState,
-  type RefObject,
-} from 'react';
+import { lazy, Suspense, useEffect, useRef, useState, type RefObject } from 'react';
+import { flushSync } from 'react-dom';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 import { EmojiPicker } from '@/components/emoji-picker';
@@ -104,25 +97,21 @@ function TitleInput({
     if (value !== page.title) store.mutate('page.update', { id: page.id, title: value });
   };
   const input = useRef<HTMLTextAreaElement>(null);
-  const caret = useRef<number | null>(null);
   useEffect(() => {
     handleRef.current = {
       appendAndFocus: (text) => {
-        caret.current = draft.length;
+        const el = input.current;
+        if (!el) return;
+        const at = draft.length;
         const value = draft + text.replace(/\n/g, '');
         clearTimeout(timer.current);
-        setDraft(value);
+        // Rendered now, so the cursor can be placed even when the title is unchanged.
+        flushSync(() => setDraft(value));
         commit(value);
+        el.focus();
+        el.setSelectionRange(at, at);
       },
     };
-  });
-  // Place the cursor once the appended text is rendered.
-  useLayoutEffect(() => {
-    const at = caret.current;
-    if (at === null || !input.current) return;
-    caret.current = null;
-    input.current.focus();
-    input.current.setSelectionRange(at, at);
   });
   return (
     <textarea

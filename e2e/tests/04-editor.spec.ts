@@ -106,7 +106,7 @@ test.describe.serial('editor: real-time collaboration', () => {
     await ownerContext.close();
   });
 
-  test('Markdown shortcuts and the slash menu create blocks', async ({ page }) => {
+  test('Markdown shortcuts, the slash menu and Backspace into the title', async ({ page }) => {
     await login(page, admin);
     await page.goto(pageUrl);
     await startTyping(page);
@@ -129,6 +129,46 @@ test.describe.serial('editor: real-time collaboration', () => {
     await expect(body.locator('[data-type="todo"]')).toHaveText('Ship M3');
     await body.locator('.ardoise-todo-box').click();
     await expect(body.locator('[data-type="todo"]')).toHaveAttribute('data-checked', 'true');
+
+    // Same session (sign-ins are rate limited): Backspace from the first block.
+    await page.getByRole('button', { name: 'New private page' }).click();
+    const title = page.getByRole('textbox', { name: 'Page title' });
+    await setTitle(page, 'Plan');
+    await expect(editor(page)).toHaveAttribute('contenteditable', 'true', { timeout: 15_000 });
+
+    // Blank page: the cursor moves to the end of the title.
+    await expect(editor(page)).toBeFocused();
+    await page.keyboard.press('Backspace');
+    await expect(title).toBeFocused();
+    await expect(title).toHaveValue('Plan');
+    expect(await title.evaluate((el: HTMLTextAreaElement) => el.selectionStart)).toBe(4);
+
+    // An empty first block is removed.
+    await title.press('Enter');
+    await page.keyboard.type('body');
+    await title.click();
+    await title.press('End');
+    await title.press('Enter'); // a new empty paragraph above "body"
+    const paragraphs = editor(page).locator('[data-type="paragraph"]');
+    await expect(paragraphs).toHaveCount(2);
+    await page.keyboard.press('Backspace');
+    await expect(title).toBeFocused();
+    await expect(title).toHaveValue('Plan');
+    await expect(paragraphs).toHaveCount(1);
+    await expect(editor(page)).toHaveText('body');
+
+    // A paragraph's text goes to the end of the title, cursor at the join point.
+    await title.press('Enter');
+    await page.keyboard.press('ArrowDown'); // start of "body", now the second block
+    await page.keyboard.press('Backspace'); // merges it into the empty first block
+    await expect(paragraphs).toHaveCount(1);
+    await expect(editor(page)).toBeFocused();
+    await page.keyboard.press('Backspace');
+    await expect(title).toBeFocused();
+    await expect(title).toHaveValue('Planbody');
+    expect(await title.evaluate((el: HTMLTextAreaElement) => el.selectionStart)).toBe(4);
+    await expect(paragraphs).toHaveCount(1);
+    await expect(editor(page)).toHaveText('');
   });
 
   test('a locked page is read-only for collaborators', async ({ browser }) => {
